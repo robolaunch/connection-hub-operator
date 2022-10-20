@@ -8,7 +8,7 @@ rules:
 - apiGroups:
   - connection-hub.roboscale.io
   resources:
-  - submariners
+  - submarinerbrokers
   verbs:
   - create
   - delete
@@ -20,13 +20,13 @@ rules:
 - apiGroups:
   - connection-hub.roboscale.io
   resources:
-  - submariners/finalizers
+  - submarinerbrokers/finalizers
   verbs:
   - update
 - apiGroups:
   - connection-hub.roboscale.io
   resources:
-  - submariners/status
+  - submarinerbrokers/status
   verbs:
   - get
   - patch
