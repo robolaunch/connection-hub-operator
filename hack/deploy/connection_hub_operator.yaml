@@ -88,6 +88,7 @@ spec:
                       type: object
                   type: object
                 phase:
+                  default: NotExists
                   type: string
               type: object
           type: object
@@ -212,6 +213,18 @@ metadata:
   name: connection-hub-operator-manager-role
 rules:
   - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - connection-hub.roboscale.io
     resources:
       - submarinerbrokers
@@ -267,6 +280,54 @@ rules:
       - ""
     resources:
       - nodes
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
     verbs:
       - create
       - delete
@@ -492,7 +553,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.17
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.23
           livenessProbe:
             httpGet:
               path: /healthz

@@ -70,6 +70,7 @@ spec:
                     type: object
                 type: object
               phase:
+                default: NotExists
                 type: string
             type: object
         type: object

@@ -5,7 +5,8 @@ metadata:
     robolaunch.io/cloud-instance: instance1
   name: submarinerbroker-sample
 spec:
+  # TODO: Add Helm repository details
   helm:
-    releaseName: "asd"
-    chartName: "asd"
-    version: "asd"
+    releaseName: "<chart>"
+    chartName: "<repo>/<chart>"
+    version: "<version>"
