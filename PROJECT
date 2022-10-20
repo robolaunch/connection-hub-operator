@@ -1,0 +1,6 @@
+domain: roboscale.io
+layout:
+- go.kubebuilder.io/v3
+projectName: connection-hub-operator
+repo: github.com/robolaunch/connection-hub-operator
+version: "3"
