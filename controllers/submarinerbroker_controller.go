@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,12 +18,14 @@ import (
 
 	"github.com/go-logr/logr"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
 )
 
 // SubmarinerBrokerReconciler reconciles a SubmarinerBroker object
 type SubmarinerBrokerReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme     *runtime.Scheme
+	RESTConfig *rest.Config
 }
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submarinerbrokers,verbs=get;list;watch;create;update;patch;delete
@@ -30,6 +33,11 @@ type SubmarinerBrokerReconciler struct {
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submarinerbrokers/finalizers,verbs=update
 
 //+kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 
 var logger logr.Logger
 
@@ -73,6 +81,28 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+
+	// TODO: Check Submariner Broker namespace existance
+
+	switch instance.Status.Phase {
+	case connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists:
+		err := r.smbReconcileInstallChart(ctx, instance)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (r *SubmarinerBrokerReconciler) smbReconcileInstallChart(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+
+	err := helmops.InstallSubmarinerBrokerChart(*instance, r.RESTConfig)
+	if err != nil {
+		return err
+	}
+
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+
 	return nil
 }
 

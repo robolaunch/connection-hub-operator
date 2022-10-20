@@ -34,8 +34,13 @@ const (
 	SubmarinerBrokerPhaseMalfunctioned SubmarinerBrokerPhase = "Malfunctioned"
 )
 
+const (
+	SubmarinerBrokerNamespace string = "submariner-k8s-broker"
+)
+
 // SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
 type SubmarinerBrokerStatus struct {
+	// +kubebuilder:default="NotExists"
 	Phase       SubmarinerBrokerPhase `json:"phase,omitempty"`
 	NodeInfo    K8sNodeInfo           `json:"nodeInfo,omitempty"`
 	BrokerURL   string                `json:"brokerURL,omitempty"`
