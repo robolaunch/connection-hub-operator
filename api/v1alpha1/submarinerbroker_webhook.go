@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"errors"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -33,12 +35,22 @@ var _ webhook.Validator = &SubmarinerBroker{}
 func (r *SubmarinerBroker) ValidateCreate() error {
 	submarinerbrokerlog.Info("validate create", "name", r.Name)
 
+	err := r.checkTenancyLabelsForSMB()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SubmarinerBroker) ValidateUpdate(old runtime.Object) error {
 	submarinerbrokerlog.Info("validate update", "name", r.Name)
+
+	err := r.checkTenancyLabelsForSMB()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -47,5 +59,18 @@ func (r *SubmarinerBroker) ValidateUpdate(old runtime.Object) error {
 func (r *SubmarinerBroker) ValidateDelete() error {
 	submarinerbrokerlog.Info("validate delete", "name", r.Name)
 
+	return nil
+}
+
+func (r *SubmarinerBroker) checkTenancyLabelsForSMB() error {
+	labels := r.GetLabels()
+
+	if _, ok := labels[RobolaunchCloudInstanceLabelKey]; !ok {
+		return errors.New("cloud instance label should be added with key " + RobolaunchCloudInstanceLabelKey)
+	}
+
+	if _, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
+		return errors.New("cloud instance label should be empty for submariner broker")
+	}
 	return nil
 }

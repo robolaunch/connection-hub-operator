@@ -67,3 +67,15 @@ type SubmarinerBrokerList struct {
 func init() {
 	SchemeBuilder.Register(&SubmarinerBroker{}, &SubmarinerBrokerList{})
 }
+
+func GetTenancySelectorsForSMB(submarinerBroker SubmarinerBroker) *Tenancy {
+
+	tenancy := &Tenancy{}
+	labels := submarinerBroker.GetLabels()
+
+	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
+		tenancy.RobolaunchCloudInstance = cloudInstance
+	}
+
+	return tenancy
+}
