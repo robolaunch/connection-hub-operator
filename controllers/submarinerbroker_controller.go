@@ -2,9 +2,13 @@ package controllers
 
 import (
 	"context"
+	basicErr "errors"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -40,6 +44,11 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
+	err = r.smbReconcileCheckNode(ctx, instance)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	err = r.smbReconcileCheckStatus(ctx, instance)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -68,6 +77,47 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+	return nil
+}
+
+func (r *SubmarinerBrokerReconciler) smbReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+	tenancy := connectionhubv1alpha1.GetTenancySelectorsForSMB(*instance)
+
+	instance.Status.NodeInfo.Selectors = make(map[string]string)
+
+	if tenancy.RobolaunchCloudInstance != "" {
+		instance.Status.NodeInfo.Selectors[connectionhubv1alpha1.RobolaunchCloudInstanceLabelKey] = tenancy.RobolaunchCloudInstance
+	}
+
+	requirements := []labels.Requirement{}
+	requirementsMap := instance.Status.NodeInfo.Selectors
+	for k, v := range requirementsMap {
+		newReq, err := labels.NewRequirement(k, selection.In, []string{v})
+		if err != nil {
+			return err
+		}
+		requirements = append(requirements, *newReq)
+	}
+
+	nodeSelector := labels.NewSelector().Add(requirements...)
+
+	nodes := &corev1.NodeList{}
+	err := r.List(ctx, nodes, &client.ListOptions{
+		LabelSelector: nodeSelector,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(nodes.Items) == 0 {
+		return basicErr.New("no nodes are listed with node selector")
+	} else if len(nodes.Items) > 1 {
+		return basicErr.New("multiple nodes are listed, no specific target")
+	}
+
+	node := nodes.Items[0]
+	instance.Status.NodeInfo.Name = node.Name
+
 	return nil
 }
 
