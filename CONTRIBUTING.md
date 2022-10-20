@@ -1,7 +1,7 @@
 # Contributing
 
-[fork]: https://github.com/robolaunch/template/fork
-[pr]: https://github.com/robolaunch/template/compare
+[fork]: https://github.com/robolaunch/connection-hub-operator/fork
+[pr]: https://github.com/robolaunch/connection-hub-operator/compare
 [style]: STYLEGUIDE
 [code-of-conduct]: CODE_OF_CONDUCT.md
 
