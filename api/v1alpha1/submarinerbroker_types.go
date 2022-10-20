@@ -4,12 +4,42 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type HelmChartProperties struct {
+	// +kubebuilder:validation:Required
+	ReleaseName string `json:"releaseName"`
+	// +kubebuilder:validation:Required
+	ChartName string `json:"chartName"`
+	// +kubebuilder:validation:Required
+	Version string `json:"version"`
+	Values  string `json:"values,omitempty"`
+}
+
 // SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
 type SubmarinerBrokerSpec struct {
+	// +kubebuilder:validation:Required
+	Helm HelmChartProperties `json:"helm"`
 }
+
+type K8sNodeInfo struct {
+	Name      string            `json:"name,omitempty"`
+	Selectors map[string]string `json:"selectors,omitempty"`
+}
+
+type SubmarinerBrokerPhase string
+
+const (
+	SubmarinerBrokerPhaseNotExists     SubmarinerBrokerPhase = "NotExists"
+	SubmarinerBrokerPhaseDeploying     SubmarinerBrokerPhase = "Deploying"
+	SubmarinerBrokerPhaseRunning       SubmarinerBrokerPhase = "Running"
+	SubmarinerBrokerPhaseMalfunctioned SubmarinerBrokerPhase = "Malfunctioned"
+)
 
 // SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
 type SubmarinerBrokerStatus struct {
+	Phase       SubmarinerBrokerPhase `json:"phase,omitempty"`
+	NodeInfo    K8sNodeInfo           `json:"nodeInfo,omitempty"`
+	BrokerURL   string                `json:"brokerURL,omitempty"`
+	BrokerToken string                `json:"brokerToken,omitempty"`
 }
 
 //+kubebuilder:object:root=true
