@@ -19,3 +19,15 @@ build=platform \
     make select-node \
         LABEL_KEY="robolaunch.io/cloud-instance" LABEL_VAL="instance1"
 ```
+
+## Deploying Operator
+
+```bash
+make apply
+```
+
+## Watching Controller Logs
+
+```bash
+connectionhub=logs k logs --follow pod/$(kubectl get pods -n connection-hub-system | tail -n1 | awk '{print $1}') -n connection-hub-system -c manager
+```
