@@ -13,6 +13,7 @@ type SubmarinerBrokerStatus struct {
 }
 
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
 
 // SubmarinerBroker is the Schema for the submarinerbrokers API

@@ -13,7 +13,7 @@ spec:
     listKind: SubmarinerBrokerList
     plural: submarinerbrokers
     singular: submarinerbroker
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:
@@ -34,11 +34,6 @@ spec:
             type: object
           spec:
             description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
-            properties:
-              foo:
-                description: Foo is an example field of SubmarinerBroker. Edit submarinerbroker_types.go
-                  to remove/update
-                type: string
             type: object
           status:
             description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker

@@ -13,6 +13,7 @@ type SubmarinerStatus struct {
 }
 
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
 
 // Submariner is the Schema for the submariners API

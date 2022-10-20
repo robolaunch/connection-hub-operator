@@ -13,7 +13,7 @@ spec:
     listKind: SubmarinerList
     plural: submariners
     singular: submariner
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:
