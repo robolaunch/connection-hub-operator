@@ -7,6 +7,9 @@ metadata:
 spec:
   # TODO: Add Helm repository details
   helm:
-    releaseName: "<chart>"
-    chartName: "<repo>/<chart>"
-    version: "<version>"
+    repository:
+      name: <REPO>
+      url: <REPO-URL>
+    releaseName: "<CHART>"
+    chartName: "<REPO>/<CHART>"
+    version: "<VERSION>"

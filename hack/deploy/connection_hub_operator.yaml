@@ -59,6 +59,16 @@ spec:
                       type: string
                     releaseName:
                       type: string
+                    repository:
+                      properties:
+                        name:
+                          type: string
+                        url:
+                          type: string
+                      required:
+                        - name
+                        - url
+                      type: object
                     values:
                       type: string
                     version:
@@ -66,6 +76,7 @@ spec:
                   required:
                     - chartName
                     - releaseName
+                    - repository
                     - version
                   type: object
               required:
@@ -313,6 +324,54 @@ rules:
       - update
       - watch
   - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices/restricted
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - lighthouse.submariner.io
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - rbac.authorization.k8s.io
     resources:
       - rolebindings
@@ -328,6 +387,30 @@ rules:
       - rbac.authorization.k8s.io
     resources:
       - roles
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - submariner.io
+    resources:
+      - clusters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - submariner.io
+    resources:
+      - endpoints
     verbs:
       - create
       - delete
@@ -553,7 +636,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.23
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.32
           livenessProbe:
             httpGet:
               path: /healthz

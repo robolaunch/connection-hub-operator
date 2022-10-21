@@ -41,6 +41,16 @@ spec:
                     type: string
                   releaseName:
                     type: string
+                  repository:
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                    required:
+                    - name
+                    - url
+                    type: object
                   values:
                     type: string
                   version:
@@ -48,6 +58,7 @@ spec:
                 required:
                 - chartName
                 - releaseName
+                - repository
                 - version
                 type: object
             required:
