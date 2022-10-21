@@ -27,6 +27,8 @@ type HelmChartProperties struct {
 type SubmarinerBrokerSpec struct {
 	// +kubebuilder:validation:Required
 	Helm HelmChartProperties `json:"helm"`
+	// +kubebuilder:validation:Required
+	BrokerURL string `json:"brokerURL"`
 }
 
 type K8sNodeInfo struct {
@@ -47,13 +49,18 @@ const (
 	SubmarinerBrokerNamespace string = "submariner-k8s-broker"
 )
 
+type BrokerInfo struct {
+	BrokerURL   string `json:"brokerURL,omitempty"`
+	BrokerToken string `json:"brokerToken,omitempty"`
+	BrokerCA    string `json:"brokerCA,omitempty"`
+}
+
 // SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
 type SubmarinerBrokerStatus struct {
 	// +kubebuilder:default="NotExists"
-	Phase       SubmarinerBrokerPhase `json:"phase,omitempty"`
-	NodeInfo    K8sNodeInfo           `json:"nodeInfo,omitempty"`
-	BrokerURL   string                `json:"brokerURL,omitempty"`
-	BrokerToken string                `json:"brokerToken,omitempty"`
+	Phase    SubmarinerBrokerPhase `json:"phase,omitempty"`
+	NodeInfo K8sNodeInfo           `json:"nodeInfo,omitempty"`
+	Broker   BrokerInfo            `json:"broker,omitempty"`
 }
 
 //+kubebuilder:object:root=true
