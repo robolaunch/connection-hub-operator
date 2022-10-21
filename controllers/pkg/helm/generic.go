@@ -2,7 +2,6 @@ package helm
 
 import (
 	helm "github.com/mittwald/go-helm-client"
-	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"helm.sh/helm/v3/pkg/repo"
 	"k8s.io/client-go/rest"
 )
@@ -16,7 +15,7 @@ func getClient(config *rest.Config, namespace string) (helm.Client, error) {
 	})
 }
 
-func addRepository(config *rest.Config, namespace string, submarinerBroker connectionhubv1alpha1.SubmarinerBroker) error {
+func addRepository(config *rest.Config, namespace string, repoName string, repoURL string) error {
 	cli, err := getClient(config, namespace)
 	if err != nil {
 		return err
@@ -24,8 +23,8 @@ func addRepository(config *rest.Config, namespace string, submarinerBroker conne
 
 	// TODO: Add SSL to repository
 	err = cli.AddOrUpdateChartRepo(repo.Entry{
-		Name:                  "repo-name",
-		URL:                   "http://ip:port",
+		Name:                  repoName,
+		URL:                   repoURL,
 		InsecureSkipTLSverify: true,
 	})
 

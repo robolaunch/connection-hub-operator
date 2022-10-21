@@ -8,12 +8,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
@@ -38,6 +40,12 @@ type SubmarinerBrokerReconciler struct {
 //+kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=discovery.k8s.io,resources=endpointslices/restricted,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=discovery.k8s.io,resources=endpointslices,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=lighthouse.submariner.io,resources=*,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=multicluster.x-k8s.io,resources=*,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=endpoints,verbs=get;list;watch;create;update;patch;delete
 
 var logger logr.Logger
 
@@ -54,6 +62,16 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 	err = r.smbReconcileCheckNode(ctx, instance)
 	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = r.smbReconcileCheckDeletion(ctx, instance)
+	if err != nil {
+
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
 		return ctrl.Result{}, err
 	}
 
@@ -94,6 +112,63 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context
 	return nil
 }
 
+func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+
+	if ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig); err != nil {
+		return err
+	} else {
+		if ok {
+			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+		} else {
+			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists
+		}
+	}
+
+	return nil
+}
+
+func (r *SubmarinerBrokerReconciler) smbReconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+
+	submarinerBrokerFinalizer := "connection-hub.roboscale.io/finalizer"
+
+	if instance.DeletionTimestamp.IsZero() {
+
+		if !controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
+			controllerutil.AddFinalizer(instance, submarinerBrokerFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+	} else {
+
+		if controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
+			if ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig); err != nil {
+				return err
+			} else {
+				if ok {
+					err := helmops.UninstallSubmarinerBrokerChart(*instance, r.RESTConfig)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			controllerutil.RemoveFinalizer(instance, submarinerBrokerFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+		return errors.NewNotFound(schema.GroupResource{
+			Group:    instance.GetObjectKind().GroupVersionKind().Group,
+			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
+		}, instance.Name)
+	}
+
+	return nil
+}
+
 func (r *SubmarinerBrokerReconciler) smbReconcileInstallChart(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
 	err := helmops.InstallSubmarinerBrokerChart(*instance, r.RESTConfig)
@@ -106,8 +181,19 @@ func (r *SubmarinerBrokerReconciler) smbReconcileInstallChart(ctx context.Contex
 	return nil
 }
 
-func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
-	return nil
+func (r *SubmarinerBrokerReconciler) smbReconcileCheckIfChartExisted(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) (bool, error) {
+
+	ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig)
+	if err != nil {
+		return false, err
+	}
+
+	if !ok {
+		instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
