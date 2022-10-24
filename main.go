@@ -96,6 +96,22 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Submariner")
 		os.Exit(1)
 	}
+	if err = (&controllers.SubmarinerBrokerReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		RESTConfig: mgr.GetConfig(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SubmarinerBroker")
+		os.Exit(1)
+	}
+	if err = (&connectionhubv1alpha1.SubmarinerBroker{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SubmarinerBroker")
+		os.Exit(1)
+	}
+	if err = (&connectionhubv1alpha1.Submariner{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "Submariner")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

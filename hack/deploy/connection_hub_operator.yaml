@@ -1,0 +1,840 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: system
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: namespace
+    app.kubernetes.io/part-of: connection-hub-operator
+    control-plane: controller-manager
+  name: connection-hub-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
+    controller-gen.kubebuilder.io/version: v0.9.2
+  name: submarinerbrokers.connection-hub.roboscale.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: connection-hub-operator-webhook-service
+          namespace: connection-hub-system
+          path: /convert
+      conversionReviewVersions:
+        - v1
+  group: connection-hub.roboscale.io
+  names:
+    kind: SubmarinerBroker
+    listKind: SubmarinerBrokerList
+    plural: submarinerbrokers
+    singular: submarinerbroker
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: SubmarinerBroker is the Schema for the submarinerbrokers API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
+              properties:
+                brokerURL:
+                  type: string
+                helm:
+                  properties:
+                    chartName:
+                      type: string
+                    releaseName:
+                      type: string
+                    repository:
+                      properties:
+                        name:
+                          type: string
+                        url:
+                          type: string
+                      required:
+                        - name
+                        - url
+                      type: object
+                    values:
+                      type: string
+                    version:
+                      type: string
+                  required:
+                    - chartName
+                    - releaseName
+                    - repository
+                    - version
+                  type: object
+              required:
+                - brokerURL
+                - helm
+              type: object
+            status:
+              description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
+              properties:
+                broker:
+                  properties:
+                    brokerCA:
+                      type: string
+                    brokerToken:
+                      type: string
+                    brokerURL:
+                      type: string
+                  type: object
+                nodeInfo:
+                  properties:
+                    name:
+                      type: string
+                    selectors:
+                      additionalProperties:
+                        type: string
+                      type: object
+                  type: object
+                phase:
+                  default: NotExists
+                  type: string
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
+    controller-gen.kubebuilder.io/version: v0.9.2
+  name: submariners.connection-hub.roboscale.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: connection-hub-operator-webhook-service
+          namespace: connection-hub-system
+          path: /convert
+      conversionReviewVersions:
+        - v1
+  group: connection-hub.roboscale.io
+  names:
+    kind: Submariner
+    listKind: SubmarinerList
+    plural: submariners
+    singular: submariner
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: Submariner is the Schema for the submariners API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: SubmarinerSpec defines the desired state of Submariner
+              type: object
+            status:
+              description: SubmarinerStatus defines the observed state of Submariner
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kuberentes.io/instance: controller-manager
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: serviceaccount
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-controller-manager
+  namespace: connection-hub-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: leader-election-role
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: role
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-leader-election-role
+  namespace: connection-hub-system
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: connection-hub-operator-manager-role
+rules:
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarinerbrokers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarinerbrokers/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarinerbrokers/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submariners
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submariners/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submariners/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices/restricted
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - lighthouse.submariner.io
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - '*'
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - submariner.io
+    resources:
+      - clusters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - submariner.io
+    resources:
+      - endpoints
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: metrics-reader
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-metrics-reader
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: proxy-role
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-proxy-role
+rules:
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: leader-election-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: rolebinding
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-leader-election-rolebinding
+  namespace: connection-hub-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: connection-hub-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: connection-hub-operator-controller-manager
+    namespace: connection-hub-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: manager-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: connection-hub-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: connection-hub-operator-controller-manager
+    namespace: connection-hub-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: proxy-rolebinding
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: clusterrolebinding
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: connection-hub-operator-proxy-role
+subjects:
+  - kind: ServiceAccount
+    name: connection-hub-operator-controller-manager
+    namespace: connection-hub-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: controller-manager-metrics-service
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: service
+    app.kubernetes.io/part-of: connection-hub-operator
+    control-plane: controller-manager
+  name: connection-hub-operator-controller-manager-metrics-service
+  namespace: connection-hub-system
+spec:
+  ports:
+    - name: https
+      port: 8443
+      protocol: TCP
+      targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: webhook-service
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: service
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-webhook-service
+  namespace: connection-hub-system
+spec:
+  ports:
+    - port: 443
+      protocol: TCP
+      targetPort: 9443
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/component: manager
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: controller-manager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/part-of: connection-hub-operator
+    control-plane: controller-manager
+  name: connection-hub-operator-controller-manager
+  namespace: connection-hub-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        control-plane: controller-manager
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - amd64
+                      - arm64
+                      - ppc64le
+                      - s390x
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
+      containers:
+        - args:
+            - --secure-listen-address=0.0.0.0:8443
+            - --upstream=http://127.0.0.1:8080/
+            - --logtostderr=true
+            - --v=0
+          image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.0
+          name: kube-rbac-proxy
+          ports:
+            - containerPort: 8443
+              name: https
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+        - args:
+            - --health-probe-bind-address=:8081
+            - --metrics-bind-address=127.0.0.1:8080
+            - --leader-elect
+          command:
+            - /manager
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.40
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          name: manager
+          ports:
+            - containerPort: 9443
+              name: webhook-server
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - mountPath: /tmp/k8s-webhook-server/serving-certs
+              name: cert
+              readOnly: true
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: connection-hub-operator-controller-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cert
+          secret:
+            defaultMode: 420
+            secretName: webhook-server-cert
+      nodeSelector:
+        robolaunch.io/organization: robot-operator
+        robolaunch.io/department: robotics
+        robolaunch.io/super-cluster: aws-helsinki-1
+        robolaunch.io/cloud-instance: instance1
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/component: certificate
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: serving-cert
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: certificate
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-serving-cert
+  namespace: connection-hub-system
+spec:
+  dnsNames:
+    - connection-hub-operator-webhook-service.connection-hub-system.svc
+    - connection-hub-operator-webhook-service.connection-hub-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: connection-hub-operator-selfsigned-issuer
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kuberentes.io/name: issuer
+    app.kubernetes.io/component: certificate
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: selfsigned-issuer
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-selfsigned-issuer
+  namespace: connection-hub-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: mutating-webhook-configuration
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: mutatingwebhookconfiguration
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-mutating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /mutate-connection-hub-roboscale-io-v1alpha1-submariner
+    failurePolicy: Fail
+    name: msubmariner.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submariners
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /mutate-connection-hub-roboscale-io-v1alpha1-submarinerbroker
+    failurePolicy: Fail
+    name: msubmarinerbroker.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submarinerbrokers
+    sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/instance: validating-webhook-configuration
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: validatingwebhookconfiguration
+    app.kubernetes.io/part-of: connection-hub-operator
+  name: connection-hub-operator-validating-webhook-configuration
+webhooks:
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /validate-connection-hub-roboscale-io-v1alpha1-submariner
+    failurePolicy: Fail
+    name: vsubmariner.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submariners
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /validate-connection-hub-roboscale-io-v1alpha1-submarinerbroker
+    failurePolicy: Fail
+    name: vsubmarinerbroker.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submarinerbrokers
+    sideEffects: None
