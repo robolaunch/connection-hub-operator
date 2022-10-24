@@ -53,6 +53,8 @@ spec:
             spec:
               description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
               properties:
+                brokerURL:
+                  type: string
                 helm:
                   properties:
                     chartName:
@@ -80,15 +82,21 @@ spec:
                     - version
                   type: object
               required:
+                - brokerURL
                 - helm
               type: object
             status:
               description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
               properties:
-                brokerToken:
-                  type: string
-                brokerURL:
-                  type: string
+                broker:
+                  properties:
+                    brokerCA:
+                      type: string
+                    brokerToken:
+                      type: string
+                    brokerURL:
+                      type: string
+                  type: object
                 nodeInfo:
                   properties:
                     name:
@@ -636,7 +644,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.32
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.40
           livenessProbe:
             httpGet:
               path: /healthz

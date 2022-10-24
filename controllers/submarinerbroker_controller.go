@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -95,7 +96,10 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: time.Second * 10,
+	}, nil
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
@@ -114,6 +118,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
+	// check if the release exists
 	if ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig); err != nil {
 		return err
 	} else {
@@ -123,6 +128,16 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Cont
 			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists
 		}
 	}
+
+	// get token and ca
+	if instance.Status.Phase == connectionhubv1alpha1.SubmarinerBrokerPhaseRunning {
+		err := r.smbReconcileUpdateBrokerInfo(ctx, instance)
+		if err != nil {
+			return err
+		}
+	}
+
+	instance.Status.Broker.BrokerURL = instance.Spec.BrokerURL
 
 	return nil
 }
@@ -194,6 +209,37 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckIfChartExisted(ctx context
 	}
 
 	return true, nil
+}
+
+func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+	secretList := &corev1.SecretList{}
+	err := r.List(ctx, secretList, &client.ListOptions{
+		Namespace: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, secret := range secretList.Items {
+		if val, ok := secret.GetAnnotations()["kubernetes.io/service-account.name"]; ok {
+
+			if val == connectionhubv1alpha1.SubmarinerBrokerNamespace+"-client" {
+
+				if token, ok := secret.Data["token"]; ok {
+					instance.Status.Broker.BrokerToken = string(token[:])
+				}
+
+				if ca, ok := secret.Data["ca.crt"]; ok {
+					instance.Status.Broker.BrokerCA = string(ca[:])
+				}
+
+				break
+
+			}
+
+		}
+	}
+	return nil
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
