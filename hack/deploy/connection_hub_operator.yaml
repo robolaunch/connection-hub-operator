@@ -122,6 +122,57 @@ metadata:
   annotations:
     cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
     controller-gen.kubebuilder.io/version: v0.9.2
+  name: submarineroperators.connection-hub.roboscale.io
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: connection-hub-operator-webhook-service
+          namespace: connection-hub-system
+          path: /convert
+      conversionReviewVersions:
+        - v1
+  group: connection-hub.roboscale.io
+  names:
+    kind: SubmarinerOperator
+    listKind: SubmarinerOperatorList
+    plural: submarineroperators
+    singular: submarineroperator
+  scope: Cluster
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: SubmarinerOperator is the Schema for the submarineroperators API
+          properties:
+            apiVersion:
+              description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+              type: string
+            kind:
+              description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+              type: string
+            metadata:
+              type: object
+            spec:
+              description: SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
+              type: object
+            status:
+              description: SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
+              type: object
+          type: object
+      served: true
+      storage: true
+      subresources:
+        status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: connection-hub-system/connection-hub-operator-serving-cert
+    controller-gen.kubebuilder.io/version: v0.9.2
   name: submariners.connection-hub.roboscale.io
 spec:
   conversion:
@@ -265,6 +316,32 @@ rules:
       - connection-hub.roboscale.io
     resources:
       - submarinerbrokers/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarineroperators
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarineroperators/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - connection-hub.roboscale.io
+    resources:
+      - submarineroperators/status
     verbs:
       - get
       - patch
@@ -644,7 +721,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.40
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.1.41
           livenessProbe:
             httpGet:
               path: /healthz
@@ -783,6 +860,26 @@ webhooks:
         resources:
           - submarinerbrokers
     sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /mutate-connection-hub-roboscale-io-v1alpha1-submarineroperator
+    failurePolicy: Fail
+    name: msubmarineroperator.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submarineroperators
+    sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -837,4 +934,24 @@ webhooks:
           - UPDATE
         resources:
           - submarinerbrokers
+    sideEffects: None
+  - admissionReviewVersions:
+      - v1
+    clientConfig:
+      service:
+        name: connection-hub-operator-webhook-service
+        namespace: connection-hub-system
+        path: /validate-connection-hub-roboscale-io-v1alpha1-submarineroperator
+    failurePolicy: Fail
+    name: vsubmarineroperator.kb.io
+    rules:
+      - apiGroups:
+          - connection-hub.roboscale.io
+        apiVersions:
+          - v1alpha1
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - submarineroperators
     sideEffects: None
