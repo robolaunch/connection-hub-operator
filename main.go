@@ -113,8 +113,9 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.SubmarinerOperatorReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		RESTConfig: mgr.GetConfig(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SubmarinerOperator")
 		os.Exit(1)
