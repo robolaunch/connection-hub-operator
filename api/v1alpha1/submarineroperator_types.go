@@ -20,6 +20,8 @@ type SubmarinerOperatorSpec struct {
 	Broker BrokerInfo `json:"broker"`
 	// +kubebuilder:validation:Required
 	ClusterID string `json:"clusterID"`
+	// +kubebuilder:validation:Required
+	Helm HelmChartProperties `json:"helm"`
 }
 
 type SubmarinerOperatorPhase string
