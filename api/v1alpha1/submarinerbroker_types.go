@@ -89,10 +89,10 @@ func init() {
 	SchemeBuilder.Register(&SubmarinerBroker{}, &SubmarinerBrokerList{})
 }
 
-func GetTenancySelectorsForSMB(submarinerBroker SubmarinerBroker) *Tenancy {
+func (smb *SubmarinerBroker) GetTenancySelectors() *Tenancy {
 
 	tenancy := &Tenancy{}
-	labels := submarinerBroker.GetLabels()
+	labels := smb.GetLabels()
 
 	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
 		tenancy.RobolaunchCloudInstance = cloudInstance

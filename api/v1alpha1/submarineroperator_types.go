@@ -15,22 +15,6 @@ type SubmarinerOperatorResourceItem struct {
 	GroupVersionKind metav1.GroupVersionKind
 }
 
-func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourceItem {
-	return []SubmarinerOperatorResourceItem{
-		{
-			ObjectKey: types.NamespacedName{
-				Namespace: SubmarinerOperatorNamespace,
-				Name:      "submariner-operator",
-			},
-			GroupVersionKind: metav1.GroupVersionKind{
-				Group:   "apps",
-				Version: "v1",
-				Kind:    "Deployment",
-			},
-		},
-	}
-}
-
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
@@ -104,10 +88,10 @@ func init() {
 	SchemeBuilder.Register(&SubmarinerOperator{}, &SubmarinerOperatorList{})
 }
 
-func GetTenancySelectorsForSO(submarinerOperator SubmarinerOperator) *Tenancy {
+func (so *SubmarinerOperator) GetTenancySelectors() *Tenancy {
 
 	tenancy := &Tenancy{}
-	labels := submarinerOperator.GetLabels()
+	labels := so.GetLabels()
 
 	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
 		tenancy.RobolaunchCloudInstance = cloudInstance
@@ -118,4 +102,20 @@ func GetTenancySelectorsForSO(submarinerOperator SubmarinerOperator) *Tenancy {
 	}
 
 	return tenancy
+}
+
+func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourceItem {
+	return []SubmarinerOperatorResourceItem{
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-operator",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+	}
 }

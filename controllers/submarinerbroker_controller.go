@@ -243,7 +243,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
-	tenancy := connectionhubv1alpha1.GetTenancySelectorsForSMB(*instance)
+	tenancy := instance.GetTenancySelectors()
 
 	instance.Status.NodeInfo.Selectors = make(map[string]string)
 

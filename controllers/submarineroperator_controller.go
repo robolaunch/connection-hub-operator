@@ -248,7 +248,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileInstallChart(ctx context.Conte
 }
 
 func (r *SubmarinerOperatorReconciler) soReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
-	tenancy := connectionhubv1alpha1.GetTenancySelectorsForSO(*instance)
+	tenancy := instance.GetTenancySelectors()
 
 	instance.Status.NodeInfo.Selectors = make(map[string]string)
 
