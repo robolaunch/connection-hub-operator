@@ -41,7 +41,7 @@ const (
 	SubmarinerOperatorPhaseMalfunctioned     SubmarinerOperatorPhase = "Malfunctioned"
 )
 
-type OperatorNamespaceStatus struct {
+type NamespaceStatus struct {
 	Created bool `json:"created,omitempty"`
 }
 
@@ -55,11 +55,11 @@ type ChartResourceStatus struct {
 
 // SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
 type SubmarinerOperatorStatus struct {
-	OperatorNamespaceStatus OperatorNamespaceStatus `json:"operatorNamespaceStatus,omitempty"`
-	ChartStatus             ChartStatus             `json:"chartStatus,omitempty"`
-	ChartResourceStatus     ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
-	Phase                   SubmarinerOperatorPhase `json:"phase,omitempty"`
-	NodeInfo                K8sNodeInfo             `json:"nodeInfo,omitempty"`
+	NamespaceStatus     NamespaceStatus         `json:"namespaceStatus,omitempty"`
+	ChartStatus         ChartStatus             `json:"chartStatus,omitempty"`
+	ChartResourceStatus ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
+	Phase               SubmarinerOperatorPhase `json:"phase,omitempty"`
+	NodeInfo            K8sNodeInfo             `json:"nodeInfo,omitempty"`
 }
 
 //+kubebuilder:object:root=true

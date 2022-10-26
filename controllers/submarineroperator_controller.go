@@ -126,7 +126,7 @@ func (r *SubmarinerOperatorReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 func (r *SubmarinerOperatorReconciler) soReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
 
-	switch instance.Status.OperatorNamespaceStatus.Created {
+	switch instance.Status.NamespaceStatus.Created {
 	case true:
 
 		switch instance.Status.ChartStatus.Deployed {
@@ -169,7 +169,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckResources(ctx context.Con
 		Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
 	}, operatorNamespaceQuery)
 	if err != nil && errors.IsNotFound(err) {
-		instance.Status.OperatorNamespaceStatus.Created = false
+		instance.Status.NamespaceStatus.Created = false
 	} else if err != nil {
 		return err
 	}
@@ -227,7 +227,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCreateNamespace(ctx context.Co
 	}
 
 	logger.Info("STATUS: Submariner Operator's namespace is created.")
-	instance.Status.OperatorNamespaceStatus.Created = true
+	instance.Status.NamespaceStatus.Created = true
 
 	return nil
 }
