@@ -22,7 +22,6 @@ import (
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
-	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 )
 
 // SubmarinerOperatorReconciler reconciles a SubmarinerOperator object
@@ -287,7 +286,6 @@ func (r *SubmarinerOperatorReconciler) soReconcileUpdateInstanceStatus(ctx conte
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *SubmarinerOperatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	submv1alpha1.AddToScheme(r.Scheme)
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&connectionhubv1alpha1.SubmarinerOperator{}).
 		Complete(r)

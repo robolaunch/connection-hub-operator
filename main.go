@@ -34,7 +34,7 @@ import (
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
-	//submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
+	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -48,7 +48,7 @@ func init() {
 
 	utilruntime.Must(connectionhubv1alpha1.AddToScheme(scheme))
 	_ = extensionsv1.AddToScheme(scheme)
-	//_ = submv1alpha1.AddToScheme(scheme)
+	_ = submv1alpha1.AddToScheme(scheme)
 	//+kubebuilder:scaffold:scheme
 }
 
