@@ -126,42 +126,38 @@ func (r *SubmarinerOperatorReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 func (r *SubmarinerOperatorReconciler) soReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
 
-	switch instance.Status.Phase {
-	case connectionhubv1alpha1.SubmarinerOperatorPhaseNamespaceNotExists:
+	switch instance.Status.OperatorNamespaceStatus.Created {
+	case true:
+
+		switch instance.Status.ChartStatus.Deployed {
+		case true:
+
+			switch instance.Status.ChartResourceStatus.Deployed {
+			case true:
+
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed
+
+			case false:
+
+				logger.Info("STATUS: Checking for Submariner Operator resources.")
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseCheckingResources
+
+			}
+
+		case false:
+			err := r.soReconcileInstallChart(ctx, instance)
+			if err != nil {
+				return err
+			}
+		}
+
+	case false:
+
 		err := r.soReconcileCreateNamespace(ctx, instance)
 		if err != nil {
 			return err
 		}
 
-	case connectionhubv1alpha1.SubmarinerOperatorPhaseChartNotExists:
-		err := r.soReconcileInstallChart(ctx, instance)
-		if err != nil {
-			return err
-		}
-
-	case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployingChart:
-		resources := instance.GetResourcesForCheck()
-		for _, resource := range resources {
-			var obj client.Object
-
-			if resource.GroupVersionKind.Kind == "Deployment" {
-				obj = &appsv1.Deployment{}
-			} else {
-				return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
-			}
-
-			objKey := resource.ObjectKey
-			err := r.Get(ctx, objKey, obj)
-			if err != nil {
-				logger.Info("RESOURCE: Waiting for submariner operator resources.")
-				return nil
-			}
-		}
-
-		logger.Info("RESOURCE: Submariner Operator resource are running.")
-
-		instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed
-		return nil
 	}
 
 	return nil
@@ -173,41 +169,80 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckResources(ctx context.Con
 		Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
 	}, operatorNamespaceQuery)
 	if err != nil && errors.IsNotFound(err) {
-		instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseNamespaceNotExists
+		instance.Status.OperatorNamespaceStatus.Created = false
 	} else if err != nil {
 		return err
 	}
 
-	// check operator deployment
+	ok, err := helmops.CheckIfSubmarinerOperatorExists(*instance, r.RESTConfig)
+	if err != nil {
+		return err
+	} else {
+		if ok {
+			instance.Status.ChartStatus.Deployed = true
+		} else {
+			instance.Status.ChartStatus.Deployed = false
+		}
+	}
+
+	instance.Status.ChartResourceStatus.Deployed = true
+	resources := instance.GetResourcesForCheck()
+	for _, resource := range resources {
+		var obj client.Object
+
+		if resource.GroupVersionKind.Kind == "Deployment" {
+			obj = &appsv1.Deployment{}
+		} else {
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+		}
+
+		objKey := resource.ObjectKey
+		err := r.Get(ctx, objKey, obj)
+		if err != nil {
+			instance.Status.ChartResourceStatus.Deployed = false
+		}
+	}
 
 	return nil
 }
 
 func (r *SubmarinerOperatorReconciler) soReconcileCreateNamespace(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseCreatingNamespace
+
 	operatorNamespace := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
 		},
 	}
 
-	err := r.Create(ctx, operatorNamespace)
+	err := ctrl.SetControllerReference(instance, operatorNamespace, r.Scheme)
 	if err != nil {
 		return err
 	}
 
-	instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseChartNotExists
+	err = r.Create(ctx, operatorNamespace)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner Operator's namespace is created.")
+	instance.Status.OperatorNamespaceStatus.Created = true
 
 	return nil
 }
 
 func (r *SubmarinerOperatorReconciler) soReconcileInstallChart(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
 
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseDeployingChart
+
 	err := helmops.InstallSubmarinerOperatorChart(*instance, r.RESTConfig)
 	if err != nil {
 		return err
 	}
 
-	instance.Status.Phase = connectionhubv1alpha1.SubmarinerOperatorPhaseDeployingChart
+	logger.Info("STATUS: Submariner Operator Helm chart is deployed.")
+	instance.Status.ChartResourceStatus.Deployed = true
 
 	return nil
 }
@@ -288,5 +323,6 @@ func (r *SubmarinerOperatorReconciler) soReconcileUpdateInstanceStatus(ctx conte
 func (r *SubmarinerOperatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&connectionhubv1alpha1.SubmarinerOperator{}).
+		Owns(&corev1.Namespace{}).
 		Complete(r)
 }

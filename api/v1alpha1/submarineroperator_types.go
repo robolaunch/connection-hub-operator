@@ -50,17 +50,32 @@ type SubmarinerOperatorSpec struct {
 type SubmarinerOperatorPhase string
 
 const (
-	SubmarinerOperatorPhaseNamespaceNotExists SubmarinerOperatorPhase = "NamespaceNotExists"
-	SubmarinerOperatorPhaseChartNotExists     SubmarinerOperatorPhase = "ChartNotExists"
-	SubmarinerOperatorPhaseDeployingChart     SubmarinerOperatorPhase = "DeployingChart"
-	SubmarinerOperatorPhaseDeployed           SubmarinerOperatorPhase = "Deployed"
-	SubmarinerOperatorPhaseMalfunctioned      SubmarinerOperatorPhase = "Malfunctioned"
+	SubmarinerOperatorPhaseCreatingNamespace SubmarinerOperatorPhase = "CreatingNamespace"
+	SubmarinerOperatorPhaseDeployingChart    SubmarinerOperatorPhase = "DeployingChart"
+	SubmarinerOperatorPhaseCheckingResources SubmarinerOperatorPhase = "CheckingResources"
+	SubmarinerOperatorPhaseDeployed          SubmarinerOperatorPhase = "Deployed"
+	SubmarinerOperatorPhaseMalfunctioned     SubmarinerOperatorPhase = "Malfunctioned"
 )
+
+type OperatorNamespaceStatus struct {
+	Created bool `json:"created,omitempty"`
+}
+
+type ChartStatus struct {
+	Deployed bool `json:"deployed,omitempty"`
+}
+
+type ChartResourceStatus struct {
+	Deployed bool `json:"deployed,omitempty"`
+}
 
 // SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
 type SubmarinerOperatorStatus struct {
-	Phase    SubmarinerOperatorPhase `json:"phase,omitempty"`
-	NodeInfo K8sNodeInfo             `json:"nodeInfo,omitempty"`
+	OperatorNamespaceStatus OperatorNamespaceStatus `json:"operatorNamespaceStatus,omitempty"`
+	ChartStatus             ChartStatus             `json:"chartStatus,omitempty"`
+	ChartResourceStatus     ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
+	Phase                   SubmarinerOperatorPhase `json:"phase,omitempty"`
+	NodeInfo                K8sNodeInfo             `json:"nodeInfo,omitempty"`
 }
 
 //+kubebuilder:object:root=true
