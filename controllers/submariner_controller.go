@@ -16,6 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
+	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 )
 
 // SubmarinerReconciler reconciles a Submariner object
@@ -27,6 +29,10 @@ type SubmarinerReconciler struct {
 // +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners/finalizers,verbs=update
+
+// +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submarinerbrokers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submarineroperators,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=submariner.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
 
 func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger = log.FromContext(ctx)
@@ -68,10 +74,88 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	switch instance.Status.BrokerStatus.Created {
+	case true:
+
+		switch instance.Status.BrokerStatus.Phase {
+		case connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed:
+
+			switch instance.Status.OperatorStatus.Created {
+			case true:
+
+				switch instance.Status.OperatorStatus.Phase {
+				case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
+
+					// create submariner custom resource
+
+					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+
+				}
+
+			case false:
+				err := r.submarinerReconcileCreateOperator(ctx, instance)
+				if err != nil {
+					return err
+				}
+			}
+
+		}
+
+	case false:
+		err := r.submarinerReconcileCreateBroker(ctx, instance)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingBroker
+
+	submarinerBroker := resources.GetSubmarinerBroker(instance)
+
+	err := ctrl.SetControllerReference(instance, submarinerBroker, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, submarinerBroker)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner broker is created.")
+
+	instance.Status.BrokerStatus.Created = true
+
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingOperator
+
+	submarinerOperator := resources.GetSubmarinerOperator(instance)
+
+	err := ctrl.SetControllerReference(instance, submarinerOperator, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, submarinerOperator)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner operator is created.")
+
+	instance.Status.OperatorStatus.Created = true
+
 	return nil
 }
 
@@ -151,5 +235,8 @@ func (r *SubmarinerReconciler) submarinerReconcileUpdateInstanceStatus(ctx conte
 func (r *SubmarinerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&connectionhubv1alpha1.Submariner{}).
+		Owns(&connectionhubv1alpha1.SubmarinerBroker{}).
+		Owns(&connectionhubv1alpha1.SubmarinerOperator{}).
+		Owns(&submv1alpha1.Submariner{}).
 		Complete(r)
 }

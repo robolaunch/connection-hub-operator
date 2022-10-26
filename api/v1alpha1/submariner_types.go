@@ -2,15 +2,49 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
+	// +kubebuilder:validation:Required
+	APIServerURL      string              `json:"apiServerURL"`
+	BrokerHelmChart   HelmChartProperties `json:"brokerHelmChart,omitempty"`
+	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart,omitempty"`
 }
+
+type BrokerStatus struct {
+	Created bool                  `json:"created,omitempty"`
+	Phase   SubmarinerBrokerPhase `json:"phase,omitempty"`
+}
+
+type OperatorStatus struct {
+	Created bool                    `json:"created,omitempty"`
+	Phase   SubmarinerOperatorPhase `json:"phase,omitempty"`
+}
+
+type CustomResourceStatus struct {
+	Created bool `json:"created,omitempty"`
+}
+
+type SubmarinerPhase string
+
+const (
+	SubmarinerPhaseCreatingBroker         SubmarinerPhase = "CreatingBroker"
+	SubmarinerPhaseCreatingOperator       SubmarinerPhase = "CreatingOperator"
+	SubmarinerPhaseCreatingCustomResource SubmarinerPhase = "CreatingCustomResource"
+	SubmarinerPhaseReadyToConnect         SubmarinerPhase = "ReadyToConnect"
+	SubmarinerPhaseMalfunctioned          SubmarinerPhase = "Malfunctioned"
+)
 
 // SubmarinerStatus defines the observed state of Submariner
 type SubmarinerStatus struct {
-	NodeInfo K8sNodeInfo `json:"nodeInfo,omitempty"`
+	Phase    SubmarinerPhase `json:"phase,omitempty"`
+	NodeInfo K8sNodeInfo     `json:"nodeInfo,omitempty"`
+
+	BrokerStatus         BrokerStatus         `json:"brokerStatus,omitempty"`
+	OperatorStatus       OperatorStatus       `json:"operatorStatus,omitempty"`
+	CustomResourceStatus CustomResourceStatus `json:"customResourceStatus,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -53,4 +87,16 @@ func GetTenancySelectorsForSubmariner(submariner Submariner) *Tenancy {
 	}
 
 	return tenancy
+}
+
+func (submariner *Submariner) GetSubmarinerBrokerMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: submariner.Name + "-broker",
+	}
+}
+
+func (submariner *Submariner) GetSubmarinerOperatorMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: submariner.Name + "-operator",
+	}
 }
