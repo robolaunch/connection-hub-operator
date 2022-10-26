@@ -184,7 +184,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Con
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
-	tenancy := connectionhubv1alpha1.GetTenancySelectorsForSubmariner(*instance)
+	tenancy := instance.GetTenancySelectors()
 
 	instance.Status.NodeInfo.Selectors = make(map[string]string)
 

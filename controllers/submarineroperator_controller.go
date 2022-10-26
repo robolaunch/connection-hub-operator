@@ -242,7 +242,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileInstallChart(ctx context.Conte
 	}
 
 	logger.Info("STATUS: Submariner Operator Helm chart is deployed.")
-	instance.Status.ChartResourceStatus.Deployed = true
+	instance.Status.ChartStatus.Deployed = true
 
 	return nil
 }

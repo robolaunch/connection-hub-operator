@@ -63,8 +63,6 @@ spec:
                 type: object
               clusterCIDR:
                 type: string
-              clusterID:
-                type: string
               operatorHelmChart:
                 properties:
                   chartName:
@@ -92,15 +90,13 @@ spec:
               presharedKey:
                 type: string
               serviceCIDR:
+                default: 10.32.0.0/16
                 type: string
             required:
             - apiServerURL
             - brokerHelmChart
             - clusterCIDR
-            - clusterID
             - operatorHelmChart
-            - presharedKey
-            - serviceCIDR
             type: object
           status:
             description: SubmarinerStatus defines the observed state of Submariner

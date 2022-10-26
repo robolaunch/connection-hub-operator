@@ -112,8 +112,6 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 		&helmclient.GenericHelmOptions{},
 	)
 
-	time.Sleep(5 * time.Second)
-
 	return err
 }
 

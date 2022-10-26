@@ -11,14 +11,12 @@ type SubmarinerSpec struct {
 	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
 	// +kubebuilder:validation:Required
 	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart"`
+
+	PresharedKey string `json:"presharedKey,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
-	// +kubebuilder:validation:Required
-	ServiceCIDR string `json:"serviceCIDR"`
-	// +kubebuilder:validation:Required
-	PresharedKey string `json:"presharedKey"`
-	// +kubebuilder:validation:Required
-	ClusterID string `json:"clusterID"`
+	// +kubebuilder:default="10.32.0.0/16"
+	ServiceCIDR string `json:"serviceCIDR,omitempty"`
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
 }
@@ -84,7 +82,7 @@ func init() {
 	SchemeBuilder.Register(&Submariner{}, &SubmarinerList{})
 }
 
-func GetTenancySelectorsForSubmariner(submariner Submariner) *Tenancy {
+func (submariner *Submariner) GetTenancySelectors() *Tenancy {
 
 	tenancy := &Tenancy{}
 	labels := submariner.GetLabels()

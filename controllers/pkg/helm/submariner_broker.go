@@ -49,8 +49,6 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 		&helmclient.GenericHelmOptions{},
 	)
 
-	time.Sleep(2 * time.Second)
-
 	return err
 }
 

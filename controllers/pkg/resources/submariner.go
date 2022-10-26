@@ -28,7 +28,7 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 	token := cr.Status.BrokerStatus.Status.Broker.BrokerToken
 	ca := cr.Status.BrokerStatus.Status.Broker.BrokerCA
 
-	// TODO: generate some of the fields in cr
+	tenancy := cr.GetTenancySelectors()
 
 	operatorSpec := connectionhubv1alpha1.SubmarinerOperatorSpec{
 		ClusterCIDR:  cr.Spec.ClusterCIDR,
@@ -39,7 +39,7 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 			BrokerToken: token,
 			BrokerCA:    ca,
 		},
-		ClusterID: cr.Spec.ClusterID,
+		ClusterID: tenancy.RobolaunchCloudInstance,
 		Helm:      cr.Spec.OperatorHelmChart,
 	}
 

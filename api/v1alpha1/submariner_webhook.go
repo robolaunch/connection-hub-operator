@@ -3,6 +3,8 @@ package v1alpha1
 import (
 	"errors"
 
+	"github.com/lucasjones/reggen"
+	_ "github.com/lucasjones/reggen"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -25,6 +27,8 @@ var _ webhook.Defaulter = &Submariner{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Submariner) Default() {
 	submarinerlog.Info("default", "name", r.Name)
+
+	r.generatePresharedKey()
 }
 
 //+kubebuilder:webhook:path=/validate-connection-hub-roboscale-io-v1alpha1-submariner,mutating=false,failurePolicy=fail,sideEffects=None,groups=connection-hub.roboscale.io,resources=submariners,verbs=create;update,versions=v1alpha1,name=vsubmariner.kb.io,admissionReviewVersions=v1
@@ -70,4 +74,15 @@ func (r *Submariner) checkTenancyLabelsForSubmariner() error {
 	}
 
 	return nil
+}
+
+func (r *Submariner) generatePresharedKey() {
+
+	psk, err := reggen.Generate("^([A-Za-z0-9]){64}$", 0)
+	if err != nil {
+		r.Spec.PresharedKey = "cfZ7CsGkN88z6eW3Z0A6Pj5W0G46GJuNKQu6onvscD19FIbOYpqe9OrNmL1R303Q"
+	}
+
+	r.Spec.PresharedKey = psk
+
 }
