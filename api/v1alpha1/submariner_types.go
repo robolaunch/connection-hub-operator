@@ -10,6 +10,7 @@ type SubmarinerSpec struct {
 
 // SubmarinerStatus defines the observed state of Submariner
 type SubmarinerStatus struct {
+	NodeInfo K8sNodeInfo `json:"nodeInfo,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -36,4 +37,16 @@ type SubmarinerList struct {
 
 func init() {
 	SchemeBuilder.Register(&Submariner{}, &SubmarinerList{})
+}
+
+func GetTenancySelectorsForSubmariner(submariner Submariner) *Tenancy {
+
+	tenancy := &Tenancy{}
+	labels := submariner.GetLabels()
+
+	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
+		tenancy.RobolaunchCloudInstance = cloudInstance
+	}
+
+	return tenancy
 }
