@@ -60,7 +60,7 @@ func getBrokerDefault() Broker {
 		Namespace: "xyz",
 		Insecure:  false,
 		Ca:        "",
-		GlobalNet: false,
+		GlobalNet: true,
 	}
 }
 

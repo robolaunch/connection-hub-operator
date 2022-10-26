@@ -5,6 +5,7 @@ import (
 
 	helmclient "github.com/mittwald/go-helm-client"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	"gopkg.in/yaml.v3"
 	"k8s.io/client-go/rest"
 )
 
@@ -37,6 +38,20 @@ helm install submariner-operator  ./submariner-operator \
 --set submariner.images.tag="dev-v11"
 */
 
+func CheckIfSubmarinerOperatorExists(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) (bool, error) {
+	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
+	if err != nil {
+		return false, err
+	}
+
+	_, err = cli.GetRelease(submarinerOperator.Spec.Helm.ReleaseName)
+	if err != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
 func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) error {
 	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
 	if err != nil {
@@ -55,6 +70,7 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 	valuesObj.Submariner.ClusterCIDR = submarinerOperator.Spec.ClusterCIDR
 	valuesObj.Submariner.ServiceCIDR = submarinerOperator.Spec.ServiceCIDR
 	valuesObj.IPSEC.PSK = submarinerOperator.Spec.PresharedKey
+	valuesObj.Broker.Namespace = connectionhubv1alpha1.SubmarinerBrokerNamespace
 	valuesObj.Broker.Server = submarinerOperator.Spec.Broker.BrokerURL
 	valuesObj.Broker.Token = submarinerOperator.Spec.Broker.BrokerToken
 	valuesObj.Broker.Ca = submarinerOperator.Spec.Broker.BrokerCA
@@ -76,15 +92,45 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
 	valuesObj.Submariner.Images.Tag = "dev-v11"
 
+	valuesBytes, err := yaml.Marshal(&valuesObj)
+	if err != nil {
+		return err
+	}
+
 	_, err = cli.InstallChart(
 		context.Background(),
 		&helmclient.ChartSpec{
+			Namespace:   connectionhubv1alpha1.SubmarinerOperatorNamespace,
 			ReleaseName: submarinerOperator.Spec.Helm.ReleaseName,
 			ChartName:   submarinerOperator.Spec.Helm.ChartName,
 			Version:     submarinerOperator.Spec.Helm.Version,
+			ValuesYaml:  string(valuesBytes),
 		},
 		&helmclient.GenericHelmOptions{},
 	)
+
+	return err
+}
+
+func UninstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) error {
+	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
+	if err != nil {
+		return err
+	}
+
+	repoName := submarinerOperator.Spec.Helm.Repository.Name
+	repoURL := submarinerOperator.Spec.Helm.Repository.URL
+
+	err = addRepository(config, connectionhubv1alpha1.SubmarinerOperatorNamespace, repoName, repoURL)
+	if err != nil {
+		return err
+	}
+
+	err = cli.UninstallRelease(&helmclient.ChartSpec{
+		ReleaseName: submarinerOperator.Spec.Helm.ReleaseName,
+		ChartName:   submarinerOperator.Spec.Helm.ChartName,
+		Version:     submarinerOperator.Spec.Helm.Version,
+	})
 
 	return err
 }
