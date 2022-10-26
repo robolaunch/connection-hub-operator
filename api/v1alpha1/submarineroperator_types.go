@@ -2,11 +2,34 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
 	SubmarinerOperatorNamespace string = "submariner-operator"
 )
+
+type SubmarinerOperatorResourceItem struct {
+	client.ObjectKey
+	GroupVersionKind metav1.GroupVersionKind
+}
+
+func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourceItem {
+	return []SubmarinerOperatorResourceItem{
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-operator",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+	}
+}
 
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
@@ -30,7 +53,7 @@ const (
 	SubmarinerOperatorPhaseNamespaceNotExists SubmarinerOperatorPhase = "NamespaceNotExists"
 	SubmarinerOperatorPhaseChartNotExists     SubmarinerOperatorPhase = "ChartNotExists"
 	SubmarinerOperatorPhaseDeployingChart     SubmarinerOperatorPhase = "DeployingChart"
-	SubmarinerOperatorPhaseRunning            SubmarinerOperatorPhase = "Running"
+	SubmarinerOperatorPhaseDeployed           SubmarinerOperatorPhase = "Deployed"
 	SubmarinerOperatorPhaseMalfunctioned      SubmarinerOperatorPhase = "Malfunctioned"
 )
 
