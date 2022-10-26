@@ -144,7 +144,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Cont
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
-	submarinerBrokerFinalizer := "connection-hub.roboscale.io/finalizer"
+	submarinerBrokerFinalizer := "submarinerbroker.connection-hub.roboscale.io/finalizer"
 
 	if instance.DeletionTimestamp.IsZero() {
 

@@ -8,6 +8,7 @@ type Images struct {
 }
 
 type Submariner struct {
+	DeployCR            bool                `yaml:"deployCR"`
 	ClusterID           string              `yaml:"clusterId"`
 	Token               string              `yaml:"token"`
 	ClusterCIDR         string              `yaml:"clusterCidr"`
@@ -25,6 +26,7 @@ type Submariner struct {
 
 func getSubmarinerDefault() Submariner {
 	return Submariner{
+		DeployCR:            false,
 		ClusterID:           "",
 		Token:               "",
 		ClusterCIDR:         "",
