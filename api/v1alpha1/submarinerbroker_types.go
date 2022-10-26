@@ -39,10 +39,10 @@ type K8sNodeInfo struct {
 type SubmarinerBrokerPhase string
 
 const (
-	SubmarinerBrokerPhaseNotExists     SubmarinerBrokerPhase = "NotExists"
-	SubmarinerBrokerPhaseDeploying     SubmarinerBrokerPhase = "Deploying"
-	SubmarinerBrokerPhaseRunning       SubmarinerBrokerPhase = "Running"
-	SubmarinerBrokerPhaseMalfunctioned SubmarinerBrokerPhase = "Malfunctioned"
+	SubmarinerBrokerPhaseNotExists      SubmarinerBrokerPhase = "NotExists"
+	SubmarinerBrokerPhaseDeployingChart SubmarinerBrokerPhase = "DeployingChart"
+	SubmarinerBrokerPhaseDeployed       SubmarinerBrokerPhase = "Deployed"
+	SubmarinerBrokerPhaseMalfunctioned  SubmarinerBrokerPhase = "Malfunctioned"
 )
 
 const (

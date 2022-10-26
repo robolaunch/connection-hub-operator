@@ -123,14 +123,14 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Cont
 		return err
 	} else {
 		if ok {
-			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
 		} else {
 			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists
 		}
 	}
 
 	// get token and ca
-	if instance.Status.Phase == connectionhubv1alpha1.SubmarinerBrokerPhaseRunning {
+	if instance.Status.Phase == connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed {
 		err := r.smbReconcileUpdateBrokerInfo(ctx, instance)
 		if err != nil {
 			return err
@@ -191,7 +191,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileInstallChart(ctx context.Contex
 		return err
 	}
 
-	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
 
 	return nil
 }
@@ -204,7 +204,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckIfChartExisted(ctx context
 	}
 
 	if !ok {
-		instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseRunning
+		instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
 		return false, nil
 	}
 
