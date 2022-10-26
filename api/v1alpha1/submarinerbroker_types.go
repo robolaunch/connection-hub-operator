@@ -20,7 +20,6 @@ type HelmChartProperties struct {
 	ChartName string `json:"chartName"`
 	// +kubebuilder:validation:Required
 	Version string `json:"version"`
-	Values  string `json:"values,omitempty"`
 }
 
 // SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
