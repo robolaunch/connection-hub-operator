@@ -149,6 +149,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckStatus(ctx context.Contex
 			if err != nil {
 				return err
 			}
+
 		}
 
 	case false:

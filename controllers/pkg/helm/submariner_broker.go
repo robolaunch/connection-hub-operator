@@ -2,6 +2,7 @@ package helm
 
 import (
 	"context"
+	"time"
 
 	helmclient "github.com/mittwald/go-helm-client"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
@@ -42,9 +43,13 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 			ReleaseName: submarinerBroker.Spec.Helm.ReleaseName,
 			ChartName:   submarinerBroker.Spec.Helm.ChartName,
 			Version:     submarinerBroker.Spec.Helm.Version,
+			Wait:        true,
+			Timeout:     time.Minute * 2,
 		},
 		&helmclient.GenericHelmOptions{},
 	)
+
+	time.Sleep(2 * time.Second)
 
 	return err
 }
@@ -67,6 +72,8 @@ func UninstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Subma
 		ReleaseName: submarinerBroker.Spec.Helm.ReleaseName,
 		ChartName:   submarinerBroker.Spec.Helm.ChartName,
 		Version:     submarinerBroker.Spec.Helm.Version,
+		Wait:        true,
+		Timeout:     time.Minute * 2,
 	})
 
 	return err
