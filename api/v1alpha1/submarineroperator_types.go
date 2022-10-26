@@ -27,16 +27,17 @@ type SubmarinerOperatorSpec struct {
 type SubmarinerOperatorPhase string
 
 const (
-	SubmarinerOperatorPhaseNotExists     SubmarinerOperatorPhase = "NotExists"
-	SubmarinerOperatorPhaseDeploying     SubmarinerOperatorPhase = "Deploying"
-	SubmarinerOperatorPhaseRunning       SubmarinerOperatorPhase = "Running"
-	SubmarinerOperatorPhaseMalfunctioned SubmarinerOperatorPhase = "Malfunctioned"
+	SubmarinerOperatorPhaseNamespaceNotExists SubmarinerOperatorPhase = "NamespaceNotExists"
+	SubmarinerOperatorPhaseChartNotExists     SubmarinerOperatorPhase = "ChartNotExists"
+	SubmarinerOperatorPhaseDeployingChart     SubmarinerOperatorPhase = "DeployingChart"
+	SubmarinerOperatorPhaseRunning            SubmarinerOperatorPhase = "Running"
+	SubmarinerOperatorPhaseMalfunctioned      SubmarinerOperatorPhase = "Malfunctioned"
 )
 
 // SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
 type SubmarinerOperatorStatus struct {
-	// +kubebuilder:default="NotExists"
-	Phase SubmarinerOperatorPhase `json:"phase,omitempty"`
+	Phase    SubmarinerOperatorPhase `json:"phase,omitempty"`
+	NodeInfo K8sNodeInfo             `json:"nodeInfo,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -63,4 +64,20 @@ type SubmarinerOperatorList struct {
 
 func init() {
 	SchemeBuilder.Register(&SubmarinerOperator{}, &SubmarinerOperatorList{})
+}
+
+func GetTenancySelectorsForSO(submarinerOperator SubmarinerOperator) *Tenancy {
+
+	tenancy := &Tenancy{}
+	labels := submarinerOperator.GetLabels()
+
+	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
+		tenancy.RobolaunchCloudInstance = cloudInstance
+	}
+
+	if physicalInstance, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
+		tenancy.RobolaunchPhysicalInstance = physicalInstance
+	}
+
+	return tenancy
 }

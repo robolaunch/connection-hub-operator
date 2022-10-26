@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"errors"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -32,17 +34,39 @@ var _ webhook.Validator = &SubmarinerOperator{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *SubmarinerOperator) ValidateCreate() error {
 	submarineroperatorlog.Info("validate create", "name", r.Name)
+
+	err := r.checkTenancyLabelsForSO()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *SubmarinerOperator) ValidateUpdate(old runtime.Object) error {
 	submarineroperatorlog.Info("validate update", "name", r.Name)
+
+	err := r.checkTenancyLabelsForSO()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *SubmarinerOperator) ValidateDelete() error {
 	submarineroperatorlog.Info("validate delete", "name", r.Name)
+	return nil
+}
+
+func (r *SubmarinerOperator) checkTenancyLabelsForSO() error {
+	labels := r.GetLabels()
+
+	if _, ok := labels[RobolaunchCloudInstanceLabelKey]; !ok {
+		return errors.New("cloud instance label should be added with key " + RobolaunchCloudInstanceLabelKey)
+	}
+
 	return nil
 }
