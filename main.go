@@ -22,6 +22,7 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,6 +34,7 @@ import (
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
+	//submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -45,6 +47,8 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(connectionhubv1alpha1.AddToScheme(scheme))
+	_ = extensionsv1.AddToScheme(scheme)
+	//_ = submv1alpha1.AddToScheme(scheme)
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -110,6 +114,18 @@ func main() {
 	}
 	if err = (&connectionhubv1alpha1.Submariner{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Submariner")
+		os.Exit(1)
+	}
+	if err = (&controllers.SubmarinerOperatorReconciler{
+		Client:     mgr.GetClient(),
+		Scheme:     mgr.GetScheme(),
+		RESTConfig: mgr.GetConfig(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "SubmarinerOperator")
+		os.Exit(1)
+	}
+	if err = (&connectionhubv1alpha1.SubmarinerOperator{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "SubmarinerOperator")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
