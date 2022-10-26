@@ -53,8 +53,6 @@ spec:
                     - name
                     - url
                     type: object
-                  values:
-                    type: string
                   version:
                     type: string
                 required:
@@ -83,8 +81,6 @@ spec:
                     - name
                     - url
                     type: object
-                  values:
-                    type: string
                   version:
                     type: string
                 required:
@@ -128,6 +124,21 @@ spec:
                           brokerURL:
                             type: string
                         type: object
+                      chartResourceStatus:
+                        properties:
+                          deployed:
+                            type: boolean
+                        type: object
+                      chartStatus:
+                        properties:
+                          deployed:
+                            type: boolean
+                        type: object
+                      namespaceStatus:
+                        properties:
+                          created:
+                            type: boolean
+                        type: object
                       nodeInfo:
                         properties:
                           name:
@@ -138,7 +149,6 @@ spec:
                             type: object
                         type: object
                       phase:
-                        default: NotExists
                         type: string
                     type: object
                 type: object

@@ -174,8 +174,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckResources(ctx context.Con
 		return err
 	}
 
-	ok, err := helmops.CheckIfSubmarinerOperatorExists(*instance, r.RESTConfig)
-	if err != nil {
+	if ok, err := helmops.CheckIfSubmarinerOperatorExists(*instance, r.RESTConfig); err != nil {
 		return err
 	} else {
 		if ok {

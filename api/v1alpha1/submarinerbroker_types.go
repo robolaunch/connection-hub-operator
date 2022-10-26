@@ -38,10 +38,11 @@ type K8sNodeInfo struct {
 type SubmarinerBrokerPhase string
 
 const (
-	SubmarinerBrokerPhaseNotExists      SubmarinerBrokerPhase = "NotExists"
-	SubmarinerBrokerPhaseDeployingChart SubmarinerBrokerPhase = "DeployingChart"
-	SubmarinerBrokerPhaseDeployed       SubmarinerBrokerPhase = "Deployed"
-	SubmarinerBrokerPhaseMalfunctioned  SubmarinerBrokerPhase = "Malfunctioned"
+	SubmarinerBrokerPhaseCreatingNamespace SubmarinerBrokerPhase = "CreatingNamespace"
+	SubmarinerBrokerPhaseDeployingChart    SubmarinerBrokerPhase = "DeployingChart"
+	SubmarinerBrokerPhaseCheckingResources SubmarinerBrokerPhase = "CheckingResources"
+	SubmarinerBrokerPhaseDeployed          SubmarinerBrokerPhase = "Deployed"
+	SubmarinerBrokerPhaseMalfunctioned     SubmarinerBrokerPhase = "Malfunctioned"
 )
 
 const (
@@ -56,9 +57,12 @@ type BrokerInfo struct {
 
 // SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
 type SubmarinerBrokerStatus struct {
-	Phase    SubmarinerBrokerPhase `json:"phase,omitempty"`
-	NodeInfo K8sNodeInfo           `json:"nodeInfo,omitempty"`
-	Broker   BrokerInfo            `json:"broker,omitempty"`
+	NamespaceStatus     NamespaceStatus       `json:"namespaceStatus,omitempty"`
+	ChartStatus         ChartStatus           `json:"chartStatus,omitempty"`
+	ChartResourceStatus ChartResourceStatus   `json:"chartResourceStatus,omitempty"`
+	Phase               SubmarinerBrokerPhase `json:"phase,omitempty"`
+	NodeInfo            K8sNodeInfo           `json:"nodeInfo,omitempty"`
+	Broker              BrokerInfo            `json:"broker,omitempty"`
 }
 
 //+kubebuilder:object:root=true

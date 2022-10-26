@@ -2,21 +2,21 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	basicErr "errors"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
@@ -104,114 +104,121 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
-	// TODO: Check Submariner Broker namespace existance
+	switch instance.Status.NamespaceStatus.Created {
+	case true:
 
-	switch instance.Status.Phase {
-	case connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists:
-		err := r.smbReconcileInstallChart(ctx, instance)
+		switch instance.Status.ChartStatus.Deployed {
+		case true:
+
+			switch instance.Status.ChartResourceStatus.Deployed {
+			case true:
+
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
+
+			case false:
+
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseCheckingResources
+
+			}
+
+		case false:
+
+			err := r.smbReconcileInstallChart(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+		}
+
+	case false:
+
+		err := r.smbReconcileCreateNamespace(ctx, instance)
 		if err != nil {
 			return err
 		}
+
 	}
+
 	return nil
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
-	// check if the release exists
+	brokerNamespaceQuery := &corev1.Namespace{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+	}, brokerNamespaceQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.NamespaceStatus.Created = false
+	} else if err != nil {
+		return err
+	}
+
 	if ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig); err != nil {
 		return err
 	} else {
 		if ok {
-			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
+			instance.Status.ChartStatus.Deployed = true
 		} else {
-			instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseNotExists
+			instance.Status.ChartStatus.Deployed = false
 		}
 	}
 
 	// get token and ca
-	if instance.Status.Phase == connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed {
-		err := r.smbReconcileUpdateBrokerInfo(ctx, instance)
-		if err != nil {
-			return err
-		}
+	err = r.smbReconcileUpdateBrokerInfo(ctx, instance)
+	if err != nil {
+		return err
 	}
 
-	instance.Status.Broker.BrokerURL = instance.Spec.BrokerURL
+	if instance.Status.Broker.BrokerToken != "" && instance.Status.Broker.BrokerCA != "" {
+		instance.Status.ChartResourceStatus.Deployed = true
+	}
 
 	return nil
 }
 
-func (r *SubmarinerBrokerReconciler) smbReconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+func (r *SubmarinerBrokerReconciler) smbReconcileCreateNamespace(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
-	submarinerBrokerFinalizer := "submarinerbroker.connection-hub.roboscale.io/finalizer"
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseCreatingNamespace
 
-	if instance.DeletionTimestamp.IsZero() {
-
-		if !controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
-			controllerutil.AddFinalizer(instance, submarinerBrokerFinalizer)
-			if err := r.Update(ctx, instance); err != nil {
-				return err
-			}
-		}
-
-	} else {
-
-		if controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
-			if ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig); err != nil {
-				return err
-			} else {
-				if ok {
-					err := helmops.UninstallSubmarinerBrokerChart(*instance, r.RESTConfig)
-					if err != nil {
-						return err
-					}
-				}
-			}
-
-			controllerutil.RemoveFinalizer(instance, submarinerBrokerFinalizer)
-			if err := r.Update(ctx, instance); err != nil {
-				return err
-			}
-		}
-
-		return errors.NewNotFound(schema.GroupResource{
-			Group:    instance.GetObjectKind().GroupVersionKind().Group,
-			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
-		}, instance.Name)
+	brokerNamespace := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+		},
 	}
+
+	err := ctrl.SetControllerReference(instance, brokerNamespace, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, brokerNamespace)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner Broker's namespace is created.")
+	instance.Status.NamespaceStatus.Created = true
 
 	return nil
 }
 
 func (r *SubmarinerBrokerReconciler) smbReconcileInstallChart(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployingChart
+
 	err := helmops.InstallSubmarinerBrokerChart(*instance, r.RESTConfig)
 	if err != nil {
 		return err
 	}
 
-	instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
+	instance.Status.ChartStatus.Deployed = true
 
 	return nil
 }
 
-func (r *SubmarinerBrokerReconciler) smbReconcileCheckIfChartExisted(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) (bool, error) {
-
-	ok, err := helmops.CheckIfSubmarinerBrokerExists(*instance, r.RESTConfig)
-	if err != nil {
-		return false, err
-	}
-
-	if !ok {
-		instance.Status.Phase = connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed
-		return false, nil
-	}
-
-	return true, nil
-}
-
 func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+
 	secretList := &corev1.SecretList{}
 	err := r.List(ctx, secretList, &client.ListOptions{
 		Namespace: connectionhubv1alpha1.SubmarinerBrokerNamespace,
@@ -230,15 +237,17 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 				}
 
 				if ca, ok := secret.Data["ca.crt"]; ok {
-					instance.Status.Broker.BrokerCA = string(ca[:])
+					instance.Status.Broker.BrokerCA = base64.StdEncoding.EncodeToString([]byte(string(ca[:])))
 				}
 
 				break
 
 			}
-
 		}
 	}
+
+	instance.Status.Broker.BrokerURL = instance.Spec.BrokerURL
+
 	return nil
 }
 

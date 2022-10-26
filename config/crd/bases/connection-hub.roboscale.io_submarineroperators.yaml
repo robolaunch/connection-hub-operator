@@ -65,8 +65,6 @@ spec:
                     - name
                     - url
                     type: object
-                  values:
-                    type: string
                   version:
                     type: string
                 required:
@@ -90,6 +88,21 @@ spec:
           status:
             description: SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
             properties:
+              chartResourceStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              chartStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              namespaceStatus:
+                properties:
+                  created:
+                    type: boolean
+                type: object
               nodeInfo:
                 properties:
                   name:
