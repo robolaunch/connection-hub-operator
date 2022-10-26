@@ -66,7 +66,7 @@ func (r *SubmarinerBrokerReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
-	err = r.smbReconcileCheckDeletion(ctx, instance)
+	err = r.reconcileCheckDeletion(ctx, instance)
 	if err != nil {
 
 		if errors.IsNotFound(err) {
@@ -146,7 +146,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Cont
 
 	brokerNamespaceQuery := &corev1.Namespace{}
 	err := r.Get(ctx, types.NamespacedName{
-		Name: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+		Name: instance.GetNamespaceMetadata().Name,
 	}, brokerNamespaceQuery)
 	if err != nil && errors.IsNotFound(err) {
 		instance.Status.NamespaceStatus.Created = false
@@ -183,7 +183,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCreateNamespace(ctx context.Con
 
 	brokerNamespace := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+			Name: instance.GetNamespaceMetadata().Name,
 		},
 	}
 
@@ -221,7 +221,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 
 	secretList := &corev1.SecretList{}
 	err := r.List(ctx, secretList, &client.ListOptions{
-		Namespace: connectionhubv1alpha1.SubmarinerBrokerNamespace,
+		Namespace: instance.GetNamespaceMetadata().Name,
 	})
 	if err != nil {
 		return err
@@ -230,7 +230,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 	for _, secret := range secretList.Items {
 		if val, ok := secret.GetAnnotations()["kubernetes.io/service-account.name"]; ok {
 
-			if val == connectionhubv1alpha1.SubmarinerBrokerNamespace+"-client" {
+			if val == instance.GetNamespaceMetadata().Name+"-client" {
 
 				if token, ok := secret.Data["token"]; ok {
 					instance.Status.Broker.BrokerToken = string(token[:])

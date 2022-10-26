@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type HelmRepository struct {
@@ -101,4 +102,10 @@ func (smb *SubmarinerBroker) GetTenancySelectors() *Tenancy {
 	}
 
 	return tenancy
+}
+
+func (smb *SubmarinerBroker) GetNamespaceMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: SubmarinerBrokerNamespace,
+	}
 }

@@ -88,7 +88,7 @@ func (r *SubmarinerOperatorReconciler) Reconcile(ctx context.Context, req ctrl.R
 		return ctrl.Result{}, err
 	}
 
-	err = r.soReconcileCheckDeletion(ctx, instance)
+	err = r.reconcileCheckDeletion(ctx, instance)
 	if err != nil {
 
 		if errors.IsNotFound(err) {
@@ -166,7 +166,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckStatus(ctx context.Contex
 func (r *SubmarinerOperatorReconciler) soReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
 	operatorNamespaceQuery := &corev1.Namespace{}
 	err := r.Get(ctx, types.NamespacedName{
-		Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
+		Name: instance.GetNamespaceMetadata().Name,
 	}, operatorNamespaceQuery)
 	if err != nil && errors.IsNotFound(err) {
 		instance.Status.NamespaceStatus.Created = false
@@ -211,7 +211,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCreateNamespace(ctx context.Co
 
 	operatorNamespace := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
+			Name: instance.GetNamespaceMetadata().Name,
 		},
 	}
 

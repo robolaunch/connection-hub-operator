@@ -9,7 +9,7 @@ import (
 )
 
 func CheckIfSubmarinerBrokerExists(submarinerBroker connectionhubv1alpha1.SubmarinerBroker, config *rest.Config) (bool, error) {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerBrokerNamespace)
+	cli, err := getClient(config, submarinerBroker.GetNamespaceMetadata().Name)
 	if err != nil {
 		return false, err
 	}
@@ -23,7 +23,7 @@ func CheckIfSubmarinerBrokerExists(submarinerBroker connectionhubv1alpha1.Submar
 }
 
 func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.SubmarinerBroker, config *rest.Config) error {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerBrokerNamespace)
+	cli, err := getClient(config, submarinerBroker.GetNamespaceMetadata().Name)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 	repoName := submarinerBroker.Spec.Helm.Repository.Name
 	repoURL := submarinerBroker.Spec.Helm.Repository.URL
 
-	err = addRepository(config, connectionhubv1alpha1.SubmarinerBrokerNamespace, repoName, repoURL)
+	err = addRepository(config, submarinerBroker.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 }
 
 func UninstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.SubmarinerBroker, config *rest.Config) error {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerBrokerNamespace)
+	cli, err := getClient(config, submarinerBroker.GetNamespaceMetadata().Name)
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ func UninstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Subma
 	repoName := submarinerBroker.Spec.Helm.Repository.Name
 	repoURL := submarinerBroker.Spec.Helm.Repository.URL
 
-	err = addRepository(config, connectionhubv1alpha1.SubmarinerBrokerNamespace, repoName, repoURL)
+	err = addRepository(config, submarinerBroker.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
 		return err
 	}

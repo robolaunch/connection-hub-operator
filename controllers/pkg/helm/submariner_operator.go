@@ -39,7 +39,7 @@ helm install submariner-operator  ./submariner-operator \
 */
 
 func CheckIfSubmarinerOperatorExists(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) (bool, error) {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
+	cli, err := getClient(config, submarinerOperator.GetNamespaceMetadata().Name)
 	if err != nil {
 		return false, err
 	}
@@ -53,7 +53,7 @@ func CheckIfSubmarinerOperatorExists(submarinerOperator connectionhubv1alpha1.Su
 }
 
 func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) error {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
+	cli, err := getClient(config, submarinerOperator.GetNamespaceMetadata().Name)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 	repoName := submarinerOperator.Spec.Helm.Repository.Name
 	repoURL := submarinerOperator.Spec.Helm.Repository.URL
 
-	err = addRepository(config, connectionhubv1alpha1.SubmarinerOperatorNamespace, repoName, repoURL)
+	err = addRepository(config, submarinerOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 	_, err = cli.InstallChart(
 		context.Background(),
 		&helmclient.ChartSpec{
-			Namespace:   connectionhubv1alpha1.SubmarinerOperatorNamespace,
+			Namespace:   submarinerOperator.GetNamespaceMetadata().Name,
 			ReleaseName: submarinerOperator.Spec.Helm.ReleaseName,
 			ChartName:   submarinerOperator.Spec.Helm.ChartName,
 			Version:     submarinerOperator.Spec.Helm.Version,
@@ -113,7 +113,7 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 }
 
 func UninstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) error {
-	cli, err := getClient(config, connectionhubv1alpha1.SubmarinerOperatorNamespace)
+	cli, err := getClient(config, submarinerOperator.GetNamespaceMetadata().Name)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func UninstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.S
 	repoName := submarinerOperator.Spec.Helm.Repository.Name
 	repoURL := submarinerOperator.Spec.Helm.Repository.URL
 
-	err = addRepository(config, connectionhubv1alpha1.SubmarinerOperatorNamespace, repoName, repoURL)
+	err = addRepository(config, submarinerOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
 		return err
 	}

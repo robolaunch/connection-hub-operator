@@ -5,14 +5,12 @@ import (
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *SubmarinerBrokerReconciler) smbReconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
+func (r *SubmarinerBrokerReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
 
 	submarinerBrokerFinalizer := "submarinerbroker.connection-hub.roboscale.io/finalizer"
 
@@ -63,7 +61,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckDeletion(ctx context.Conte
 	return nil
 }
 
-func (r *SubmarinerOperatorReconciler) soReconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
+func (r *SubmarinerOperatorReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
 
 	submarinerOperatorFinalizer := "submarineroperator.connection-hub.roboscale.io/finalizer"
 
@@ -111,42 +109,6 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckDeletion(ctx context.Cont
 			Group:    instance.GetObjectKind().GroupVersionKind().Group,
 			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
 		}, instance.Name)
-	}
-
-	return nil
-}
-
-func (r *SubmarinerOperatorReconciler) soReconcileDeleteNamespace(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerOperator) error {
-	operatorNamespace := &corev1.Namespace{}
-
-	err := r.Get(ctx, types.NamespacedName{
-		Name: connectionhubv1alpha1.SubmarinerOperatorNamespace,
-	}, operatorNamespace)
-	if err != nil {
-		return err
-	} else {
-		err = r.Delete(ctx, operatorNamespace)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (r *SubmarinerBrokerReconciler) smbReconcileDeleteNamespace(ctx context.Context, instance *connectionhubv1alpha1.SubmarinerBroker) error {
-	brokerNamespace := &corev1.Namespace{}
-
-	err := r.Get(ctx, types.NamespacedName{
-		Name: connectionhubv1alpha1.SubmarinerBrokerNamespace,
-	}, brokerNamespace)
-	if err != nil {
-		return err
-	} else {
-		err = r.Delete(ctx, brokerNamespace)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

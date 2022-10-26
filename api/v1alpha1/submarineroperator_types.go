@@ -108,7 +108,7 @@ func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourc
 	return []SubmarinerOperatorResourceItem{
 		{
 			ObjectKey: types.NamespacedName{
-				Namespace: SubmarinerOperatorNamespace,
+				Namespace: so.GetNamespaceMetadata().Name,
 				Name:      "submariner-operator",
 			},
 			GroupVersionKind: metav1.GroupVersionKind{
@@ -117,5 +117,11 @@ func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourc
 				Kind:    "Deployment",
 			},
 		},
+	}
+}
+
+func (so *SubmarinerOperator) GetNamespaceMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: SubmarinerOperatorNamespace,
 	}
 }
