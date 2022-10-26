@@ -428,3 +428,15 @@ rules:
   - servicediscoveries
   verbs:
   - '*'
+- apiGroups:
+  - submariner.io
+  resources:
+  - submariners
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

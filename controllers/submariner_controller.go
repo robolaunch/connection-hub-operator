@@ -112,6 +112,30 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Contex
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+
+	submarinerBrokerQuery := &connectionhubv1alpha1.SubmarinerBroker{}
+	err := r.Get(ctx, *instance.GetSubmarinerBrokerMetadata(), submarinerBrokerQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.BrokerStatus = connectionhubv1alpha1.BrokerStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.BrokerStatus.Created = true
+		instance.Status.BrokerStatus.Phase = submarinerBrokerQuery.Status.Phase
+		instance.Status.BrokerStatus.Status = submarinerBrokerQuery.Status
+	}
+
+	submarinerOperatorQuery := &connectionhubv1alpha1.SubmarinerOperator{}
+	err = r.Get(ctx, *instance.GetSubmarinerOperatorMetadata(), submarinerOperatorQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.OperatorStatus = connectionhubv1alpha1.OperatorStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.OperatorStatus.Created = true
+		instance.Status.OperatorStatus.Phase = submarinerOperatorQuery.Status.Phase
+	}
+
 	return nil
 }
 

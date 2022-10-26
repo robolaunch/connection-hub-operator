@@ -8,14 +8,25 @@ import (
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
 	// +kubebuilder:validation:Required
-	APIServerURL      string              `json:"apiServerURL"`
-	BrokerHelmChart   HelmChartProperties `json:"brokerHelmChart,omitempty"`
-	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart,omitempty"`
+	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
+	// +kubebuilder:validation:Required
+	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart"`
+	// +kubebuilder:validation:Required
+	ClusterCIDR string `json:"clusterCIDR"`
+	// +kubebuilder:validation:Required
+	ServiceCIDR string `json:"serviceCIDR"`
+	// +kubebuilder:validation:Required
+	PresharedKey string `json:"presharedKey"`
+	// +kubebuilder:validation:Required
+	ClusterID string `json:"clusterID"`
+	// +kubebuilder:validation:Required
+	APIServerURL string `json:"apiServerURL"`
 }
 
 type BrokerStatus struct {
-	Created bool                  `json:"created,omitempty"`
-	Phase   SubmarinerBrokerPhase `json:"phase,omitempty"`
+	Created bool                   `json:"created,omitempty"`
+	Phase   SubmarinerBrokerPhase  `json:"phase,omitempty"`
+	Status  SubmarinerBrokerStatus `json:"status,omitempty"`
 }
 
 type OperatorStatus struct {
