@@ -11,8 +11,8 @@ import (
 func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerBroker {
 
 	brokerSpec := connectionhubv1alpha1.SubmarinerBrokerSpec{
-		Helm:      cr.Spec.BrokerHelmChart,
-		BrokerURL: cr.Spec.APIServerURL,
+		Helm:         cr.Spec.BrokerHelmChart,
+		APIServerURL: cr.Spec.APIServerURL,
 	}
 
 	broker := connectionhubv1alpha1.SubmarinerBroker{
@@ -26,10 +26,10 @@ func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1a
 	return &broker
 }
 
-func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerOperator {
+func GetSubmarinerOperatorForCloudInstance(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerOperator {
 
-	token := cr.Status.BrokerStatus.Status.Broker.BrokerToken
-	ca := cr.Status.BrokerStatus.Status.Broker.BrokerCA
+	token := cr.Status.BrokerStatus.Status.BrokerCredentials.Token
+	ca := cr.Status.BrokerStatus.Status.BrokerCredentials.CA
 
 	tenancy := cr.GetTenancySelectors()
 
@@ -37,13 +37,13 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 		ClusterCIDR:  cr.Spec.ClusterCIDR,
 		ServiceCIDR:  cr.Spec.ServiceCIDR,
 		PresharedKey: cr.Spec.PresharedKey,
-		Broker: connectionhubv1alpha1.BrokerInfo{
-			BrokerURL:   cr.Spec.APIServerURL,
-			BrokerToken: token,
-			BrokerCA:    ca,
+		Broker: connectionhubv1alpha1.BrokerCredentials{
+			Token: token,
+			CA:    ca,
 		},
-		ClusterID: tenancy.RobolaunchCloudInstance,
-		Helm:      cr.Spec.OperatorHelmChart,
+		ClusterID:    tenancy.RobolaunchCloudInstance,
+		APIServerURL: cr.Spec.APIServerURL,
+		Helm:         cr.Spec.OperatorHelmChart,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{
@@ -59,7 +59,7 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 
 func GetSubmarinerCustomResource(cr *connectionhubv1alpha1.Submariner) *submv1alpha1.Submariner {
 
-	submarinerOperator := GetSubmarinerOperator(cr)
+	submarinerOperator := GetSubmarinerOperatorForCloudInstance(cr)
 	valuesObj := helm.GetSubmarinerOperatorValues(*submarinerOperator)
 
 	submariner := submv1alpha1.Submariner{

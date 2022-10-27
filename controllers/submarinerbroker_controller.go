@@ -172,7 +172,7 @@ func (r *SubmarinerBrokerReconciler) smbReconcileCheckResources(ctx context.Cont
 		return err
 	}
 
-	if instance.Status.Broker.BrokerToken != "" && instance.Status.Broker.BrokerCA != "" {
+	if instance.Status.BrokerCredentials.Token != "" && instance.Status.BrokerCredentials.CA != "" {
 		instance.Status.ChartResourceStatus.Deployed = true
 	}
 
@@ -235,11 +235,11 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 			if val == instance.GetNamespaceMetadata().Name+"-client" {
 
 				if token, ok := secret.Data["token"]; ok {
-					instance.Status.Broker.BrokerToken = string(token[:])
+					instance.Status.BrokerCredentials.Token = string(token[:])
 				}
 
 				if ca, ok := secret.Data["ca.crt"]; ok {
-					instance.Status.Broker.BrokerCA = base64.StdEncoding.EncodeToString([]byte(string(ca[:])))
+					instance.Status.BrokerCredentials.CA = base64.StdEncoding.EncodeToString([]byte(string(ca[:])))
 				}
 
 				break
@@ -247,8 +247,6 @@ func (r *SubmarinerBrokerReconciler) smbReconcileUpdateBrokerInfo(ctx context.Co
 			}
 		}
 	}
-
-	instance.Status.Broker.BrokerURL = instance.Spec.BrokerURL
 
 	return nil
 }

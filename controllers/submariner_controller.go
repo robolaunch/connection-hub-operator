@@ -91,44 +91,74 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	switch instance.Spec.InstanceType {
+	case connectionhubv1alpha1.InstanceTypeCloud:
+
+		err := r.submarinerReconcileCheckStatusForCloudInstance(ctx, instance)
+		if err != nil {
+			return err
+		}
+
+	case connectionhubv1alpha1.InstanceTypePhysical:
+
+		err := r.submarinerReconcileCheckStatusForBothInstances(ctx, instance)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForCloudInstance(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	switch instance.Status.BrokerStatus.Created {
 	case true:
 
 		switch instance.Status.BrokerStatus.Phase {
 		case connectionhubv1alpha1.SubmarinerBrokerPhaseDeployed:
 
-			switch instance.Status.OperatorStatus.Created {
+			err := r.submarinerReconcileCheckStatusForBothInstances(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+		}
+
+	case false:
+		err := r.submarinerReconcileCreateBroker(ctx, instance)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForBothInstances(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	switch instance.Status.OperatorStatus.Created {
+	case true:
+
+		switch instance.Status.OperatorStatus.Phase {
+		case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
+
+			switch instance.Status.CustomResourceStatus.Created {
 			case true:
 
-				switch instance.Status.OperatorStatus.Phase {
-				case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
+				switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
+				case true:
 
-					switch instance.Status.CustomResourceStatus.Created {
-					case true:
+					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
 
-						switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
-						case true:
+				case false:
 
-							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
-
-						case false:
-
-							logger.Info("STATUS: Checking for Submariner CR resources.")
-							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
-
-						}
-
-					case false:
-						err := r.submarinerReconcileCreateCustomResource(ctx, instance)
-						if err != nil {
-							return err
-						}
-					}
+					logger.Info("STATUS: Checking for Submariner CR resources.")
+					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
 
 				}
 
 			case false:
-				err := r.submarinerReconcileCreateOperator(ctx, instance)
+				err := r.submarinerReconcileCreateCustomResource(ctx, instance)
 				if err != nil {
 					return err
 				}
@@ -137,7 +167,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Contex
 		}
 
 	case false:
-		err := r.submarinerReconcileCreateBroker(ctx, instance)
+		err := r.submarinerReconcileCreateOperator(ctx, instance)
 		if err != nil {
 			return err
 		}
@@ -229,7 +259,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Conte
 func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingOperator
 
-	submarinerOperator := resources.GetSubmarinerOperator(instance)
+	submarinerOperator := resources.GetSubmarinerOperatorForCloudInstance(instance)
 
 	err := ctrl.SetControllerReference(instance, submarinerOperator, r.Scheme)
 	if err != nil {
