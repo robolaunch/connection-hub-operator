@@ -156,6 +156,11 @@ spec:
                 properties:
                   created:
                     type: boolean
+                  ownedResourceStatus:
+                    properties:
+                      deployed:
+                        type: boolean
+                    type: object
                 type: object
               nodeInfo:
                 properties:

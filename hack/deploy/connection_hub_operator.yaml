@@ -573,6 +573,11 @@ spec:
                   properties:
                     created:
                       type: boolean
+                    ownedResourceStatus:
+                      properties:
+                        deployed:
+                          type: boolean
+                      type: object
                   type: object
                 nodeInfo:
                   properties:
@@ -2054,7 +2059,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.15
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.17
           livenessProbe:
             httpGet:
               path: /healthz
