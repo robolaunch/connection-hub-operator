@@ -17,6 +17,8 @@ type ResourceItem struct {
 
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:validation:Required

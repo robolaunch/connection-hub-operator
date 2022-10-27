@@ -25,6 +25,8 @@ var _ webhook.Defaulter = &SubmarinerOperator{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *SubmarinerOperator) Default() {
 	submarineroperatorlog.Info("default", "name", r.Name)
+
+	r.setInstanceType()
 }
 
 //+kubebuilder:webhook:path=/validate-connection-hub-roboscale-io-v1alpha1-submarineroperator,mutating=false,failurePolicy=fail,sideEffects=None,groups=connection-hub.roboscale.io,resources=submarineroperators,verbs=create;update,versions=v1alpha1,name=vsubmarineroperator.kb.io,admissionReviewVersions=v1
@@ -69,4 +71,15 @@ func (r *SubmarinerOperator) checkTenancyLabelsForSO() error {
 	}
 
 	return nil
+}
+
+func (r *SubmarinerOperator) setInstanceType() {
+
+	tenancy := r.GetTenancySelectors()
+	if tenancy.RobolaunchPhysicalInstance != "" {
+		r.Spec.InstanceType = InstanceTypePhysical
+	}
+
+	r.Spec.InstanceType = InstanceTypeCloud
+
 }

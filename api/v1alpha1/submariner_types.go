@@ -5,8 +5,17 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type InstanceType string
+
+const (
+	InstanceTypeCloud    InstanceType = "CloudInstance"
+	InstanceTypePhysical InstanceType = "PhysicalInstance"
+)
+
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
 	// +kubebuilder:validation:Required

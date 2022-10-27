@@ -29,6 +29,7 @@ func (r *Submariner) Default() {
 	submarinerlog.Info("default", "name", r.Name)
 
 	r.generatePresharedKey()
+	r.setInstanceType()
 }
 
 //+kubebuilder:webhook:path=/validate-connection-hub-roboscale-io-v1alpha1-submariner,mutating=false,failurePolicy=fail,sideEffects=None,groups=connection-hub.roboscale.io,resources=submariners,verbs=create;update,versions=v1alpha1,name=vsubmariner.kb.io,admissionReviewVersions=v1
@@ -74,6 +75,17 @@ func (r *Submariner) checkTenancyLabelsForSubmariner() error {
 	}
 
 	return nil
+}
+
+func (r *Submariner) setInstanceType() {
+
+	tenancy := r.GetTenancySelectors()
+	if tenancy.RobolaunchPhysicalInstance != "" {
+		r.Spec.InstanceType = InstanceTypePhysical
+	}
+
+	r.Spec.InstanceType = InstanceTypeCloud
+
 }
 
 func (r *Submariner) generatePresharedKey() {
