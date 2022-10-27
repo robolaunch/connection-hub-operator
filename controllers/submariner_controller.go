@@ -15,9 +15,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
-	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 )
 
 // SubmarinerReconciler reconciles a Submariner object
@@ -86,9 +86,17 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Contex
 				switch instance.Status.OperatorStatus.Phase {
 				case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
 
-					// create submariner custom resource
+					switch instance.Status.CustomResourceStatus.Created {
+					case true:
 
-					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+						instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+
+					case false:
+						err := r.submarinerReconcileCreateCustomResource(ctx, instance)
+						if err != nil {
+							return err
+						}
+					}
 
 				}
 
@@ -180,6 +188,27 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Con
 
 	instance.Status.OperatorStatus.Created = true
 
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCreateCustomResource(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingCustomResource
+
+	submarinerCR := resources.GetSubmarinerCustomResource(instance)
+
+	err := ctrl.SetControllerReference(instance, submarinerCR, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, submarinerCR)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner custom resource is created.")
+
+	instance.Status.CustomResourceStatus.Created = true
 	return nil
 }
 

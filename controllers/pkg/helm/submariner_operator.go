@@ -67,31 +67,7 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 		return err
 	}
 
-	valuesObj := GetSubmarinerOperatorValuesDefault()
-	valuesObj.Submariner.ClusterCIDR = submarinerOperator.Spec.ClusterCIDR
-	valuesObj.Submariner.ServiceCIDR = submarinerOperator.Spec.ServiceCIDR
-	valuesObj.IPSEC.PSK = submarinerOperator.Spec.PresharedKey
-	valuesObj.Broker.Namespace = connectionhubv1alpha1.SubmarinerBrokerNamespace
-	valuesObj.Broker.Server = submarinerOperator.Spec.Broker.BrokerURL
-	valuesObj.Broker.Token = submarinerOperator.Spec.Broker.BrokerToken
-	valuesObj.Broker.Ca = submarinerOperator.Spec.Broker.BrokerCA
-	valuesObj.Submariner.ServiceDiscovery = true
-	valuesObj.Submariner.CableDriver = "wireguard"
-	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
-	valuesObj.Submariner.NatEnabled = true
-	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
-	valuesObj.ServiceAccounts.LighthouseCoreDNS.Create = true
-	valuesObj.Submariner.HealthCheckEnabled = false
-	valuesObj.IPSEC.NATPort = 4500
-	valuesObj.IPSEC.IKEPort = 500
-	valuesObj.IPSEC.PreferredServer = true
-	valuesObj.IPSEC.NATDiscovery = 4490
-	valuesObj.Gateway.Image.Repository = "docker.io/robolaunchio/submariner-gateway"
-	valuesObj.Gateway.Image.Tag = "dev-v11"
-	valuesObj.Operator.Image.Repository = "docker.io/robolaunchio/submariner-operator"
-	valuesObj.Operator.Image.Tag = "dev-v14"
-	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
-	valuesObj.Submariner.Images.Tag = "dev-v11"
+	valuesObj := GetSubmarinerOperatorValues(submarinerOperator)
 
 	valuesBytes, err := yaml.Marshal(&valuesObj)
 	if err != nil {
