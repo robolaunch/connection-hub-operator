@@ -1,0 +1,27 @@
+# permissions for end users to view submarineroperators.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: submarineroperator-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: submarineroperator-viewer-role
+rules:
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarineroperators
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarineroperators/status
+  verbs:
+  - get

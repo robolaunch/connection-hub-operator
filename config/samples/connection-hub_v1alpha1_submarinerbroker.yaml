@@ -1,0 +1,15 @@
+apiVersion: connection-hub.roboscale.io/v1alpha1
+kind: SubmarinerBroker
+metadata:
+  labels:
+    robolaunch.io/cloud-instance: instance1
+  name: submarinerbroker-sample
+spec:
+  # TODO: Add Helm repository details
+  helm:
+    repository:
+      name: <REPO>
+      url: <REPO-URL>
+    releaseName: "<CHART>"
+    chartName: "<REPO>/<CHART>"
+    version: "<VERSION>"

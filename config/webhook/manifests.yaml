@@ -1,0 +1,134 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-submariner
+  failurePolicy: Fail
+  name: msubmariner.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submariners
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-submarinerbroker
+  failurePolicy: Fail
+  name: msubmarinerbroker.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarinerbrokers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-submarineroperator
+  failurePolicy: Fail
+  name: msubmarineroperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarineroperators
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  creationTimestamp: null
+  name: validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submariner
+  failurePolicy: Fail
+  name: vsubmariner.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submariners
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submarinerbroker
+  failurePolicy: Fail
+  name: vsubmarinerbroker.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarinerbrokers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submarineroperator
+  failurePolicy: Fail
+  name: vsubmarineroperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarineroperators
+  sideEffects: None
