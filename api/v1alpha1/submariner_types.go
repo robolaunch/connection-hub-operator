@@ -33,7 +33,12 @@ type OperatorStatus struct {
 }
 
 type CustomResourceStatus struct {
-	Created bool `json:"created,omitempty"`
+	Created             bool                `json:"created,omitempty"`
+	OwnedResourceStatus OwnedResourceStatus `json:"ownedResourceStatus,omitempty"`
+}
+
+type OwnedResourceStatus struct {
+	Deployed bool `json:"deployed,omitempty"`
 }
 
 type SubmarinerPhase string
@@ -42,9 +47,13 @@ const (
 	SubmarinerPhaseCreatingBroker         SubmarinerPhase = "CreatingBroker"
 	SubmarinerPhaseCreatingOperator       SubmarinerPhase = "CreatingOperator"
 	SubmarinerPhaseCreatingCustomResource SubmarinerPhase = "CreatingCustomResource"
+	SubmarinerPhaseCheckingResources      SubmarinerPhase = "CheckingResources"
 	SubmarinerPhaseReadyToConnect         SubmarinerPhase = "ReadyToConnect"
 	SubmarinerPhaseMalfunctioned          SubmarinerPhase = "Malfunctioned"
-	SubmarinerPhaseTerminatingSubmariner  SubmarinerPhase = "TerminatingSubmariner"
+
+	SubmarinerPhaseTerminatingSubmarinerCR       SubmarinerPhase = "TerminatingSubmarinerCR"
+	SubmarinerPhaseTerminatingSubmarinerOperator SubmarinerPhase = "TerminatingSubmarinerOperator"
+	SubmarinerPhaseTerminatingSubmarinerBroker   SubmarinerPhase = "TerminatingSubmarinerBroker"
 )
 
 // SubmarinerStatus defines the observed state of Submariner
@@ -98,6 +107,55 @@ func (submariner *Submariner) GetTenancySelectors() *Tenancy {
 	}
 
 	return tenancy
+}
+
+func (submariner *Submariner) GetResourcesForCheck() []ResourceItem {
+	return []ResourceItem{
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-lighthouse-agent",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-lighthouse-coredns",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-gateway",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "DaemonSet",
+			},
+		},
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: SubmarinerOperatorNamespace,
+				Name:      "submariner-routeagent",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "DaemonSet",
+			},
+		},
+	}
 }
 
 func (submariner *Submariner) GetSubmarinerBrokerMetadata() *types.NamespacedName {

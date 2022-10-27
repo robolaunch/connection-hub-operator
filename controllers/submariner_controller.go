@@ -3,7 +3,9 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
@@ -82,7 +84,10 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: 5 * time.Second,
+	}, nil
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
@@ -101,7 +106,17 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Contex
 					switch instance.Status.CustomResourceStatus.Created {
 					case true:
 
-						instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+						switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
+						case true:
+
+							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+
+						case false:
+
+							logger.Info("STATUS: Checking for Submariner CR resources.")
+							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
+
+						}
 
 					case false:
 						err := r.submarinerReconcileCreateCustomResource(ctx, instance)
@@ -164,6 +179,26 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 		return err
 	} else {
 		instance.Status.CustomResourceStatus.Created = true
+	}
+
+	instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed = true
+	resources := instance.GetResourcesForCheck()
+	for _, resource := range resources {
+		var obj client.Object
+
+		if resource.GroupVersionKind.Kind == "Deployment" {
+			obj = &appsv1.Deployment{}
+		} else if resource.GroupVersionKind.Kind == "DaemonSet" {
+			obj = &appsv1.DaemonSet{}
+		} else {
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+		}
+
+		objKey := resource.ObjectKey
+		err := r.Get(ctx, objKey, obj)
+		if err != nil {
+			instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed = false
+		}
 	}
 
 	return nil
