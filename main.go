@@ -32,9 +32,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
-	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -47,8 +47,9 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(connectionhubv1alpha1.AddToScheme(scheme))
-	_ = extensionsv1.AddToScheme(scheme)
 	_ = submv1alpha1.AddToScheme(scheme)
+	_ = extensionsv1.AddToScheme(scheme)
+
 	//+kubebuilder:scaffold:scheme
 }
 
