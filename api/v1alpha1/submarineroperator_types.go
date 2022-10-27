@@ -10,7 +10,7 @@ const (
 	SubmarinerOperatorNamespace string = "submariner-operator"
 )
 
-type SubmarinerOperatorResourceItem struct {
+type ResourceItem struct {
 	client.ObjectKey
 	GroupVersionKind metav1.GroupVersionKind
 }
@@ -39,6 +39,9 @@ const (
 	SubmarinerOperatorPhaseCheckingResources SubmarinerOperatorPhase = "CheckingResources"
 	SubmarinerOperatorPhaseDeployed          SubmarinerOperatorPhase = "Deployed"
 	SubmarinerOperatorPhaseMalfunctioned     SubmarinerOperatorPhase = "Malfunctioned"
+
+	SubmarinerOperatorPhaseUninstallingChart    SubmarinerOperatorPhase = "UninstallingChart"
+	SubmarinerOperatorPhaseTerminatingNamespace SubmarinerOperatorPhase = "TerminatingNamespace"
 )
 
 type NamespaceStatus struct {
@@ -104,8 +107,8 @@ func (so *SubmarinerOperator) GetTenancySelectors() *Tenancy {
 	return tenancy
 }
 
-func (so *SubmarinerOperator) GetResourcesForCheck() []SubmarinerOperatorResourceItem {
-	return []SubmarinerOperatorResourceItem{
+func (so *SubmarinerOperator) GetResourcesForCheck() []ResourceItem {
+	return []ResourceItem{
 		{
 			ObjectKey: types.NamespacedName{
 				Namespace: so.GetNamespaceMetadata().Name,

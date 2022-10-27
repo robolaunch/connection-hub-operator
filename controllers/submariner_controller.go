@@ -3,27 +3,31 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
-	submv1alpha1 "github.com/submariner-io/submariner-operator/apis/submariner/v1alpha1"
 )
 
 // SubmarinerReconciler reconciles a Submariner object
 type SubmarinerReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme        *runtime.Scheme
+	DynamicClient dynamic.Interface
 }
 
 // +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
@@ -50,6 +54,16 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	err = r.reconcileCheckDeletion(ctx, instance)
+	if err != nil {
+
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
 	err = r.submarinerReconcileCheckStatus(ctx, instance)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -70,7 +84,10 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{
+		Requeue:      true,
+		RequeueAfter: 5 * time.Second,
+	}, nil
 }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
@@ -86,9 +103,27 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatus(ctx context.Contex
 				switch instance.Status.OperatorStatus.Phase {
 				case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
 
-					// create submariner custom resource
+					switch instance.Status.CustomResourceStatus.Created {
+					case true:
 
-					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+						switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
+						case true:
+
+							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
+
+						case false:
+
+							logger.Info("STATUS: Checking for Submariner CR resources.")
+							instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
+
+						}
+
+					case false:
+						err := r.submarinerReconcileCreateCustomResource(ctx, instance)
+						if err != nil {
+							return err
+						}
+					}
 
 				}
 
@@ -136,6 +171,36 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 		instance.Status.OperatorStatus.Phase = submarinerOperatorQuery.Status.Phase
 	}
 
+	submarinerCRQuery := &submv1alpha1.Submariner{}
+	err = r.Get(ctx, *instance.GetSubmarinerCustomResourceMetadata(), submarinerCRQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.CustomResourceStatus = connectionhubv1alpha1.CustomResourceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.CustomResourceStatus.Created = true
+	}
+
+	instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed = true
+	resources := instance.GetResourcesForCheck()
+	for _, resource := range resources {
+		var obj client.Object
+
+		if resource.GroupVersionKind.Kind == "Deployment" {
+			obj = &appsv1.Deployment{}
+		} else if resource.GroupVersionKind.Kind == "DaemonSet" {
+			obj = &appsv1.DaemonSet{}
+		} else {
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+		}
+
+		objKey := resource.ObjectKey
+		err := r.Get(ctx, objKey, obj)
+		if err != nil {
+			instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed = false
+		}
+	}
+
 	return nil
 }
 
@@ -180,6 +245,27 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Con
 
 	instance.Status.OperatorStatus.Created = true
 
+	return nil
+}
+
+func (r *SubmarinerReconciler) submarinerReconcileCreateCustomResource(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingCustomResource
+
+	submarinerCR := resources.GetSubmarinerCustomResource(instance)
+
+	err := ctrl.SetControllerReference(instance, submarinerCR, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, submarinerCR)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Submariner custom resource is created.")
+
+	instance.Status.CustomResourceStatus.Created = true
 	return nil
 }
 

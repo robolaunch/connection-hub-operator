@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -27,8 +28,9 @@ import (
 // SubmarinerBrokerReconciler reconciles a SubmarinerBroker object
 type SubmarinerBrokerReconciler struct {
 	client.Client
-	Scheme     *runtime.Scheme
-	RESTConfig *rest.Config
+	Scheme        *runtime.Scheme
+	DynamicClient dynamic.Interface
+	RESTConfig    *rest.Config
 }
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submarinerbrokers,verbs=get;list;watch;create;update;patch;delete

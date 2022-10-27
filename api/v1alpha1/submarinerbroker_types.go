@@ -44,6 +44,9 @@ const (
 	SubmarinerBrokerPhaseCheckingResources SubmarinerBrokerPhase = "CheckingResources"
 	SubmarinerBrokerPhaseDeployed          SubmarinerBrokerPhase = "Deployed"
 	SubmarinerBrokerPhaseMalfunctioned     SubmarinerBrokerPhase = "Malfunctioned"
+
+	SubmarinerBrokerPhaseUninstallingChart    SubmarinerBrokerPhase = "UninstallingChart"
+	SubmarinerBrokerPhaseTerminatingNamespace SubmarinerBrokerPhase = "TerminatingNamespace"
 )
 
 const (
