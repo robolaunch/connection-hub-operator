@@ -44,6 +44,7 @@ const (
 	SubmarinerPhaseCreatingCustomResource SubmarinerPhase = "CreatingCustomResource"
 	SubmarinerPhaseReadyToConnect         SubmarinerPhase = "ReadyToConnect"
 	SubmarinerPhaseMalfunctioned          SubmarinerPhase = "Malfunctioned"
+	SubmarinerPhaseTerminatingSubmariner  SubmarinerPhase = "TerminatingSubmariner"
 )
 
 // SubmarinerStatus defines the observed state of Submariner
@@ -59,6 +60,7 @@ type SubmarinerStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // Submariner is the Schema for the submariners API
 type Submariner struct {

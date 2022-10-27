@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,7 +24,8 @@ import (
 // SubmarinerReconciler reconciles a Submariner object
 type SubmarinerReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme        *runtime.Scheme
+	DynamicClient dynamic.Interface
 }
 
 // +kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
@@ -47,6 +49,16 @@ func (r *SubmarinerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	err = r.submarinerReconcileCheckNode(ctx, instance)
 	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	err = r.reconcileCheckDeletion(ctx, instance)
+	if err != nil {
+
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
 		return ctrl.Result{}, err
 	}
 
@@ -142,6 +154,16 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 	} else {
 		instance.Status.OperatorStatus.Created = true
 		instance.Status.OperatorStatus.Phase = submarinerOperatorQuery.Status.Phase
+	}
+
+	submarinerCRQuery := &submv1alpha1.Submariner{}
+	err = r.Get(ctx, *instance.GetSubmarinerCustomResourceMetadata(), submarinerCRQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.CustomResourceStatus = connectionhubv1alpha1.CustomResourceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.CustomResourceStatus.Created = true
 	}
 
 	return nil
