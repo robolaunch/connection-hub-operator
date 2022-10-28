@@ -36,13 +36,13 @@ spec:
           spec:
             description: SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
             properties:
+              apiServerURL:
+                type: string
               broker:
                 properties:
-                  brokerCA:
+                  ca:
                     type: string
-                  brokerToken:
-                    type: string
-                  brokerURL:
+                  token:
                     type: string
                 type: object
               clusterCIDR:
@@ -78,6 +78,7 @@ spec:
               serviceCIDR:
                 type: string
             required:
+            - apiServerURL
             - broker
             - clusterCIDR
             - clusterID
