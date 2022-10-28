@@ -17,8 +17,6 @@ type ResourceItem struct {
 
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
-	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
-	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:validation:Required
@@ -26,7 +24,7 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	PresharedKey string `json:"presharedKey"`
 	// +kubebuilder:validation:Required
-	Broker BrokerCredentials `json:"broker"`
+	BrokerCredentials BrokerCredentials `json:"broker"`
 	// +kubebuilder:validation:Required
 	ClusterID string `json:"clusterID"`
 	// +kubebuilder:validation:Required

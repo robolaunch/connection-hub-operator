@@ -178,20 +178,24 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForBothInstances(ct
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 
-	submarinerBrokerQuery := &connectionhubv1alpha1.SubmarinerBroker{}
-	err := r.Get(ctx, *instance.GetSubmarinerBrokerMetadata(), submarinerBrokerQuery)
-	if err != nil && errors.IsNotFound(err) {
-		instance.Status.BrokerStatus = connectionhubv1alpha1.BrokerStatus{}
-	} else if err != nil {
-		return err
+	if instance.Spec.InstanceType == connectionhubv1alpha1.InstanceTypeCloud {
+		submarinerBrokerQuery := &connectionhubv1alpha1.SubmarinerBroker{}
+		err := r.Get(ctx, *instance.GetSubmarinerBrokerMetadata(), submarinerBrokerQuery)
+		if err != nil && errors.IsNotFound(err) {
+			instance.Status.BrokerStatus = connectionhubv1alpha1.BrokerStatus{}
+		} else if err != nil {
+			return err
+		} else {
+			instance.Status.BrokerStatus.Created = true
+			instance.Status.BrokerStatus.Phase = submarinerBrokerQuery.Status.Phase
+			instance.Status.BrokerStatus.Status = submarinerBrokerQuery.Status
+		}
 	} else {
-		instance.Status.BrokerStatus.Created = true
-		instance.Status.BrokerStatus.Phase = submarinerBrokerQuery.Status.Phase
-		instance.Status.BrokerStatus.Status = submarinerBrokerQuery.Status
+		instance.Status.BrokerStatus.Status.BrokerCredentials = instance.Spec.BrokerCredentials
 	}
 
 	submarinerOperatorQuery := &connectionhubv1alpha1.SubmarinerOperator{}
-	err = r.Get(ctx, *instance.GetSubmarinerOperatorMetadata(), submarinerOperatorQuery)
+	err := r.Get(ctx, *instance.GetSubmarinerOperatorMetadata(), submarinerOperatorQuery)
 	if err != nil && errors.IsNotFound(err) {
 		instance.Status.OperatorStatus = connectionhubv1alpha1.OperatorStatus{}
 	} else if err != nil {
@@ -234,6 +238,16 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 	return nil
 }
 
+func (r *SubmarinerReconciler) submarinerReconcileSetCredentials(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+
+	switch instance.Spec.InstanceType {
+	case connectionhubv1alpha1.InstanceTypePhysical:
+		instance.Status.BrokerStatus.Status.BrokerCredentials = instance.Spec.BrokerCredentials
+	}
+
+	return nil
+}
+
 func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingBroker
 
@@ -259,7 +273,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Conte
 func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingOperator
 
-	submarinerOperator := resources.GetSubmarinerOperatorForCloudInstance(instance)
+	submarinerOperator := resources.GetSubmarinerOperator(instance)
 
 	err := ctrl.SetControllerReference(instance, submarinerOperator, r.Scheme)
 	if err != nil {
@@ -309,7 +323,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckNode(ctx context.Context,
 	}
 
 	if tenancy.RobolaunchPhysicalInstance != "" {
-		instance.Status.NodeInfo.Selectors[connectionhubv1alpha1.RobolaunchPhysicalInstanceLabelKey] = tenancy.RobolaunchCloudInstance
+		instance.Status.NodeInfo.Selectors[connectionhubv1alpha1.RobolaunchPhysicalInstanceLabelKey] = tenancy.RobolaunchPhysicalInstance
 	}
 
 	requirements := []labels.Requirement{}

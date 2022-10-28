@@ -259,7 +259,7 @@ func (r *SubmarinerOperatorReconciler) soReconcileCheckNode(ctx context.Context,
 	}
 
 	if tenancy.RobolaunchPhysicalInstance != "" {
-		instance.Status.NodeInfo.Selectors[connectionhubv1alpha1.RobolaunchPhysicalInstanceLabelKey] = tenancy.RobolaunchCloudInstance
+		instance.Status.NodeInfo.Selectors[connectionhubv1alpha1.RobolaunchPhysicalInstanceLabelKey] = tenancy.RobolaunchPhysicalInstance
 	}
 
 	requirements := []labels.Requirement{}

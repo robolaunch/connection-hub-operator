@@ -26,22 +26,33 @@ func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1a
 	return &broker
 }
 
-func GetSubmarinerOperatorForCloudInstance(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerOperator {
-
-	token := cr.Status.BrokerStatus.Status.BrokerCredentials.Token
-	ca := cr.Status.BrokerStatus.Status.BrokerCredentials.CA
+func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerOperator {
 
 	tenancy := cr.GetTenancySelectors()
+
+	var clusterID connectionhubv1alpha1.InstanceType
+	var token string
+	var ca string
+
+	if cr.Spec.InstanceType == connectionhubv1alpha1.InstanceTypeCloud {
+		clusterID = connectionhubv1alpha1.InstanceType(tenancy.RobolaunchCloudInstance)
+		token = cr.Status.BrokerStatus.Status.BrokerCredentials.Token
+		ca = cr.Status.BrokerStatus.Status.BrokerCredentials.CA
+	} else if cr.Spec.InstanceType == connectionhubv1alpha1.InstanceTypePhysical {
+		clusterID = connectionhubv1alpha1.InstanceType(tenancy.RobolaunchPhysicalInstance)
+		token = cr.Spec.BrokerCredentials.Token
+		ca = cr.Spec.BrokerCredentials.CA
+	}
 
 	operatorSpec := connectionhubv1alpha1.SubmarinerOperatorSpec{
 		ClusterCIDR:  cr.Spec.ClusterCIDR,
 		ServiceCIDR:  cr.Spec.ServiceCIDR,
 		PresharedKey: cr.Spec.PresharedKey,
-		Broker: connectionhubv1alpha1.BrokerCredentials{
+		BrokerCredentials: connectionhubv1alpha1.BrokerCredentials{
 			Token: token,
 			CA:    ca,
 		},
-		ClusterID:    tenancy.RobolaunchCloudInstance,
+		ClusterID:    string(clusterID),
 		APIServerURL: cr.Spec.APIServerURL,
 		Helm:         cr.Spec.OperatorHelmChart,
 	}
@@ -59,7 +70,7 @@ func GetSubmarinerOperatorForCloudInstance(cr *connectionhubv1alpha1.Submariner)
 
 func GetSubmarinerCustomResource(cr *connectionhubv1alpha1.Submariner) *submv1alpha1.Submariner {
 
-	submarinerOperator := GetSubmarinerOperatorForCloudInstance(cr)
+	submarinerOperator := GetSubmarinerOperator(cr)
 	valuesObj := helm.GetSubmarinerOperatorValues(*submarinerOperator)
 
 	submariner := submv1alpha1.Submariner{
