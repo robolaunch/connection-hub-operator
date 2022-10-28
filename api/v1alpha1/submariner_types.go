@@ -15,8 +15,7 @@ const (
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
 	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
-	// +kubebuilder:validation:Required
-	InstanceType InstanceType `json:"instanceType"`
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:default="10.32.0.0/16"
