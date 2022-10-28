@@ -4,12 +4,26 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	SubmarinerDeployerLabelKey = "robolaunch.io/submariner-deployer"
+)
+
 // CloudInstanceSpec defines the desired state of CloudInstance
 type CloudInstanceSpec struct {
 }
 
+type CloudInstancePhase string
+
+const (
+	CloudInstancePhaseDeployerNotFound CloudInstancePhase = "DeployerNotFound"
+	CloudInstancePhaseDeployerNotReady CloudInstancePhase = "DeployerNotReady"
+	CloudInstancePhaseTryingToConnect  CloudInstancePhase = "TryingToConnect"
+	CloudInstancePhaseConnected        CloudInstancePhase = "Connected"
+)
+
 // CloudInstanceStatus defines the observed state of CloudInstance
 type CloudInstanceStatus struct {
+	Phase CloudInstancePhase `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true

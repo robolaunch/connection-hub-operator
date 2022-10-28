@@ -37,6 +37,9 @@ spec:
             type: object
           status:
             description: CloudInstanceStatus defines the observed state of CloudInstance
+            properties:
+              phase:
+                type: string
             type: object
         type: object
     served: true
