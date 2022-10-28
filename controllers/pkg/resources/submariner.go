@@ -11,8 +11,8 @@ import (
 func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerBroker {
 
 	brokerSpec := connectionhubv1alpha1.SubmarinerBrokerSpec{
-		Helm:      cr.Spec.BrokerHelmChart,
-		BrokerURL: cr.Spec.APIServerURL,
+		Helm:         cr.Spec.BrokerHelmChart,
+		APIServerURL: cr.Spec.APIServerURL,
 	}
 
 	broker := connectionhubv1alpha1.SubmarinerBroker{
@@ -28,22 +28,33 @@ func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1a
 
 func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerOperator {
 
-	token := cr.Status.BrokerStatus.Status.Broker.BrokerToken
-	ca := cr.Status.BrokerStatus.Status.Broker.BrokerCA
-
 	tenancy := cr.GetTenancySelectors()
+
+	var clusterID connectionhubv1alpha1.InstanceType
+	var token string
+	var ca string
+
+	if cr.Spec.InstanceType == connectionhubv1alpha1.InstanceTypeCloud {
+		clusterID = connectionhubv1alpha1.InstanceType(tenancy.RobolaunchCloudInstance)
+		token = cr.Status.BrokerStatus.Status.BrokerCredentials.Token
+		ca = cr.Status.BrokerStatus.Status.BrokerCredentials.CA
+	} else if cr.Spec.InstanceType == connectionhubv1alpha1.InstanceTypePhysical {
+		clusterID = connectionhubv1alpha1.InstanceType(tenancy.RobolaunchPhysicalInstance)
+		token = cr.Spec.BrokerCredentials.Token
+		ca = cr.Spec.BrokerCredentials.CA
+	}
 
 	operatorSpec := connectionhubv1alpha1.SubmarinerOperatorSpec{
 		ClusterCIDR:  cr.Spec.ClusterCIDR,
 		ServiceCIDR:  cr.Spec.ServiceCIDR,
 		PresharedKey: cr.Spec.PresharedKey,
-		Broker: connectionhubv1alpha1.BrokerInfo{
-			BrokerURL:   cr.Spec.APIServerURL,
-			BrokerToken: token,
-			BrokerCA:    ca,
+		BrokerCredentials: connectionhubv1alpha1.BrokerCredentials{
+			Token: token,
+			CA:    ca,
 		},
-		ClusterID: tenancy.RobolaunchCloudInstance,
-		Helm:      cr.Spec.OperatorHelmChart,
+		ClusterID:    string(clusterID),
+		APIServerURL: cr.Spec.APIServerURL,
+		Helm:         cr.Spec.OperatorHelmChart,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{

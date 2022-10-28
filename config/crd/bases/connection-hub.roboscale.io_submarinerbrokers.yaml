@@ -35,7 +35,7 @@ spec:
           spec:
             description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
             properties:
-              brokerURL:
+              apiServerURL:
                 type: string
               helm:
                 properties:
@@ -62,19 +62,17 @@ spec:
                 - version
                 type: object
             required:
-            - brokerURL
+            - apiServerURL
             - helm
             type: object
           status:
             description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
             properties:
-              broker:
+              brokerCredentials:
                 properties:
-                  brokerCA:
+                  ca:
                     type: string
-                  brokerToken:
-                    type: string
-                  brokerURL:
+                  token:
                     type: string
                 type: object
               chartResourceStatus:

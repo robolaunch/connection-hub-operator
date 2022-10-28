@@ -209,7 +209,7 @@ spec:
             spec:
               description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
               properties:
-                brokerURL:
+                apiServerURL:
                   type: string
                 helm:
                   properties:
@@ -236,19 +236,17 @@ spec:
                     - version
                   type: object
               required:
-                - brokerURL
+                - apiServerURL
                 - helm
               type: object
             status:
               description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
               properties:
-                broker:
+                brokerCredentials:
                   properties:
-                    brokerCA:
+                    ca:
                       type: string
-                    brokerToken:
-                      type: string
-                    brokerURL:
+                    token:
                       type: string
                   type: object
                 chartResourceStatus:
@@ -326,13 +324,13 @@ spec:
             spec:
               description: SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
               properties:
+                apiServerURL:
+                  type: string
                 broker:
                   properties:
-                    brokerCA:
+                    ca:
                       type: string
-                    brokerToken:
-                      type: string
-                    brokerURL:
+                    token:
                       type: string
                   type: object
                 clusterCIDR:
@@ -368,6 +366,7 @@ spec:
                 serviceCIDR:
                   type: string
               required:
+                - apiServerURL
                 - broker
                 - clusterCIDR
                 - clusterID
@@ -459,6 +458,13 @@ spec:
               properties:
                 apiServerURL:
                   type: string
+                broker:
+                  properties:
+                    ca:
+                      type: string
+                    token:
+                      type: string
+                  type: object
                 brokerHelmChart:
                   properties:
                     chartName:
@@ -484,6 +490,11 @@ spec:
                     - version
                   type: object
                 clusterCIDR:
+                  type: string
+                instanceType:
+                  enum:
+                    - CloudInstance
+                    - PhysicalInstance
                   type: string
                 operatorHelmChart:
                   properties:
@@ -532,13 +543,11 @@ spec:
                     status:
                       description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
                       properties:
-                        broker:
+                        brokerCredentials:
                           properties:
-                            brokerCA:
+                            ca:
                               type: string
-                            brokerToken:
-                              type: string
-                            brokerURL:
+                            token:
                               type: string
                           type: object
                         chartResourceStatus:
@@ -2059,7 +2068,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.17
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.26
           livenessProbe:
             httpGet:
               path: /healthz

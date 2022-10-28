@@ -234,9 +234,9 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Submariner.ServiceCIDR = submarinerOperator.Spec.ServiceCIDR
 	valuesObj.IPSEC.PSK = submarinerOperator.Spec.PresharedKey
 	valuesObj.Broker.Namespace = connectionhubv1alpha1.SubmarinerBrokerNamespace
-	valuesObj.Broker.Server = submarinerOperator.Spec.Broker.BrokerURL
-	valuesObj.Broker.Token = submarinerOperator.Spec.Broker.BrokerToken
-	valuesObj.Broker.Ca = submarinerOperator.Spec.Broker.BrokerCA
+	valuesObj.Broker.Server = submarinerOperator.Spec.APIServerURL
+	valuesObj.Broker.Token = submarinerOperator.Spec.BrokerCredentials.Token
+	valuesObj.Broker.Ca = submarinerOperator.Spec.BrokerCredentials.CA
 	valuesObj.Submariner.ServiceDiscovery = true
 	valuesObj.Submariner.CableDriver = "wireguard"
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID

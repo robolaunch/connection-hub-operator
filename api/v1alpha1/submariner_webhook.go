@@ -28,7 +28,11 @@ var _ webhook.Defaulter = &Submariner{}
 func (r *Submariner) Default() {
 	submarinerlog.Info("default", "name", r.Name)
 
-	r.generatePresharedKey()
+	r.setInstanceType()
+
+	if instanceType := r.getInstanceType(); instanceType == InstanceTypeCloud {
+		r.generatePresharedKey()
+	}
 }
 
 //+kubebuilder:webhook:path=/validate-connection-hub-roboscale-io-v1alpha1-submariner,mutating=false,failurePolicy=fail,sideEffects=None,groups=connection-hub.roboscale.io,resources=submariners,verbs=create;update,versions=v1alpha1,name=vsubmariner.kb.io,admissionReviewVersions=v1
@@ -44,6 +48,30 @@ func (r *Submariner) ValidateCreate() error {
 		return err
 	}
 
+	instanceType := r.getInstanceType()
+
+	switch instanceType {
+	case InstanceTypeCloud:
+
+		err := r.checkBrokerCredentialsForCloudInstance()
+		if err != nil {
+			return err
+		}
+
+	case InstanceTypePhysical:
+
+		err := r.checkBrokerCredentialsForPhysicalInstance()
+		if err != nil {
+			return err
+		}
+
+		err = r.checkPresharedKeyForPhysicalInstance()
+		if err != nil {
+			return err
+		}
+
+	}
+
 	return nil
 }
 
@@ -54,6 +82,30 @@ func (r *Submariner) ValidateUpdate(old runtime.Object) error {
 	err := r.checkTenancyLabelsForSubmariner()
 	if err != nil {
 		return err
+	}
+
+	instanceType := r.getInstanceType()
+
+	switch instanceType {
+	case InstanceTypeCloud:
+
+		err := r.checkBrokerCredentialsForCloudInstance()
+		if err != nil {
+			return err
+		}
+
+	case InstanceTypePhysical:
+
+		err := r.checkBrokerCredentialsForPhysicalInstance()
+		if err != nil {
+			return err
+		}
+
+		err = r.checkPresharedKeyForPhysicalInstance()
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
@@ -76,6 +128,19 @@ func (r *Submariner) checkTenancyLabelsForSubmariner() error {
 	return nil
 }
 
+func (r *Submariner) setInstanceType() {
+	r.Spec.InstanceType = r.getInstanceType()
+}
+
+func (r *Submariner) getInstanceType() InstanceType {
+	tenancy := r.GetTenancySelectors()
+	if tenancy.RobolaunchPhysicalInstance != "" {
+		return InstanceTypePhysical
+	}
+
+	return InstanceTypeCloud
+}
+
 func (r *Submariner) generatePresharedKey() {
 
 	psk, err := reggen.Generate("^([A-Za-z0-9]){64}$", 0)
@@ -85,4 +150,36 @@ func (r *Submariner) generatePresharedKey() {
 
 	r.Spec.PresharedKey = psk
 
+}
+
+func (r *Submariner) checkPresharedKeyForPhysicalInstance() error {
+	if r.Spec.PresharedKey == "" {
+		return errors.New("field `spec.presharedKey` cannot be empty in physical instances")
+	}
+
+	return nil
+}
+
+func (r *Submariner) checkBrokerCredentialsForPhysicalInstance() error {
+	if r.Spec.BrokerCredentials.Token == "" {
+		return errors.New("field `spec.brokerCredentials.token` cannot be empty in physical instances")
+	}
+
+	if r.Spec.BrokerCredentials.CA == "" {
+		return errors.New("field `spec.brokerCredentials.ca` cannot be empty in physical instances")
+	}
+
+	return nil
+}
+
+func (r *Submariner) checkBrokerCredentialsForCloudInstance() error {
+	if r.Spec.BrokerCredentials.Token != "" {
+		return errors.New("field `spec.brokerCredentials.token` should be empty in physical instances")
+	}
+
+	if r.Spec.BrokerCredentials.CA != "" {
+		return errors.New("field `spec.brokerCredentials.ca` should be empty in physical instances")
+	}
+
+	return nil
 }

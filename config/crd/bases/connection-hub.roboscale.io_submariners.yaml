@@ -41,6 +41,13 @@ spec:
             properties:
               apiServerURL:
                 type: string
+              broker:
+                properties:
+                  ca:
+                    type: string
+                  token:
+                    type: string
+                type: object
               brokerHelmChart:
                 properties:
                   chartName:
@@ -66,6 +73,11 @@ spec:
                 - version
                 type: object
               clusterCIDR:
+                type: string
+              instanceType:
+                enum:
+                - CloudInstance
+                - PhysicalInstance
                 type: string
               operatorHelmChart:
                 properties:
@@ -115,13 +127,11 @@ spec:
                     description: SubmarinerBrokerStatus defines the observed state
                       of SubmarinerBroker
                     properties:
-                      broker:
+                      brokerCredentials:
                         properties:
-                          brokerCA:
+                          ca:
                             type: string
-                          brokerToken:
-                            type: string
-                          brokerURL:
+                          token:
                             type: string
                         type: object
                       chartResourceStatus:

@@ -5,20 +5,31 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+type InstanceType string
+
+const (
+	InstanceTypeCloud    InstanceType = "CloudInstance"
+	InstanceTypePhysical InstanceType = "PhysicalInstance"
+)
+
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
-	// +kubebuilder:validation:Required
-	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
-	// +kubebuilder:validation:Required
-	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart"`
-
-	PresharedKey string `json:"presharedKey,omitempty"`
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:default="10.32.0.0/16"
 	ServiceCIDR string `json:"serviceCIDR,omitempty"`
+
+	PresharedKey string `json:"presharedKey,omitempty"`
+
+	BrokerCredentials BrokerCredentials `json:"broker,omitempty"`
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
+	// +kubebuilder:validation:Required
+	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
+	// +kubebuilder:validation:Required
+	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart"`
 }
 
 type BrokerStatus struct {

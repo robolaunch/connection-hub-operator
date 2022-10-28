@@ -24,9 +24,11 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	PresharedKey string `json:"presharedKey"`
 	// +kubebuilder:validation:Required
-	Broker BrokerInfo `json:"broker"`
+	BrokerCredentials BrokerCredentials `json:"broker"`
 	// +kubebuilder:validation:Required
 	ClusterID string `json:"clusterID"`
+	// +kubebuilder:validation:Required
+	APIServerURL string `json:"apiServerURL"`
 	// +kubebuilder:validation:Required
 	Helm HelmChartProperties `json:"helm"`
 }
