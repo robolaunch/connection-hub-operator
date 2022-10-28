@@ -11,6 +11,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-cloudinstance
+  failurePolicy: Fail
+  name: mcloudinstance.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - cloudinstances
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-connection-hub-roboscale-io-v1alpha1-submariner
   failurePolicy: Fail
   name: msubmariner.kb.io
@@ -72,6 +92,26 @@ metadata:
   creationTimestamp: null
   name: validating-webhook-configuration
 webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-cloudinstance
+  failurePolicy: Fail
+  name: vcloudinstance.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - cloudinstances
+  sideEffects: None
 - admissionReviewVersions:
   - v1
   clientConfig:
