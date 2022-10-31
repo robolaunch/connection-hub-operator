@@ -112,6 +112,23 @@ spec:
             status:
               description: CloudInstanceStatus defines the observed state of CloudInstance
               properties:
+                connectionResources:
+                  properties:
+                    clusterStatus:
+                      properties:
+                        exists:
+                          type: boolean
+                        name:
+                          type: string
+                      type: object
+                    endpointStatus:
+                      properties:
+                        exists:
+                          type: boolean
+                        name:
+                          type: string
+                      type: object
+                  type: object
                 deployerStatus:
                   properties:
                     exists:
@@ -2157,7 +2174,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.32
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.38
           livenessProbe:
             httpGet:
               path: /healthz
