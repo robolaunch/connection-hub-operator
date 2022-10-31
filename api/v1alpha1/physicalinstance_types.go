@@ -8,8 +8,20 @@ import (
 type PhysicalInstanceSpec struct {
 }
 
+type PhysicalInstancePhase string
+
+const (
+	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
+	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
+)
+
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
 type PhysicalInstanceStatus struct {
+	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	Phase               PhysicalInstancePhase      `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
