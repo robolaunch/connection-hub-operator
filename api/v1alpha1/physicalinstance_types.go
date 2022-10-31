@@ -12,10 +12,10 @@ type PhysicalInstanceSpec struct {
 type PhysicalInstancePhase string
 
 const (
-	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
-	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
-	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
-	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseLookingForDeployer           PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer           PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegisteredAndTryingToConnect PhysicalInstancePhase = "RegisteredAndTryingToConnect"
+	PhysicalInstancePhaseConnected                    PhysicalInstancePhase = "Connected"
 )
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
@@ -28,6 +28,7 @@ type PhysicalInstanceStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // PhysicalInstance is the Schema for the physicalinstances API
 type PhysicalInstance struct {
