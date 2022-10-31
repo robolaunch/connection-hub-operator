@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	SubmarinerDeployerLabelKey = "robolaunch.io/submariner-deployer"
+	EndpointClusterIDLabelKey = "submariner-io/clusterID"
 )
 
 // CloudInstanceSpec defines the desired state of CloudInstance
@@ -29,10 +29,21 @@ type DeployerStatus struct {
 	Phase  SubmarinerPhase `json:"phase,omitempty"`
 }
 
+type ConnectionResourceStatus struct {
+	Name   string `json:"name,omitempty"`
+	Exists bool   `json:"exists,omitempty"`
+}
+
+type ConnectionResourceStatuses struct {
+	ClusterStatus  ConnectionResourceStatus `json:"clusterStatus,omitempty"`
+	EndpointStatus ConnectionResourceStatus `json:"endpointStatus,omitempty"`
+}
+
 // CloudInstanceStatus defines the observed state of CloudInstance
 type CloudInstanceStatus struct {
-	DeployerStatus DeployerStatus     `json:"deployerStatus,omitempty"`
-	Phase          CloudInstancePhase `json:"phase,omitempty"`
+	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	Phase               CloudInstancePhase         `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -65,5 +76,13 @@ func (cloudinstance *CloudInstance) GetSubmarinerDeployerMetadata() types.Namesp
 
 	return types.NamespacedName{
 		Name: GlobalSubmarinerResourceName,
+	}
+}
+
+func (cloudinstance *CloudInstance) GetSubmarinerClusterMetadata() types.NamespacedName {
+
+	return types.NamespacedName{
+		Name:      cloudinstance.Name,
+		Namespace: SubmarinerOperatorNamespace,
 	}
 }
