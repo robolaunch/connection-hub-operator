@@ -1,0 +1,31 @@
+# permissions for end users to edit physicalinstances.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: physicalinstance-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: physicalinstance-editor-role
+rules:
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances/status
+  verbs:
+  - get
