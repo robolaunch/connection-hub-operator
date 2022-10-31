@@ -36,6 +36,7 @@ import (
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
+	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -49,6 +50,7 @@ func init() {
 
 	utilruntime.Must(connectionhubv1alpha1.AddToScheme(scheme))
 	_ = submv1alpha1.AddToScheme(scheme)
+	_ = brokerv1.AddToScheme(scheme)
 	_ = extensionsv1.AddToScheme(scheme)
 
 	//+kubebuilder:scaffold:scheme
@@ -136,6 +138,17 @@ func main() {
 	}
 	if err = (&connectionhubv1alpha1.SubmarinerOperator{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "SubmarinerOperator")
+		os.Exit(1)
+	}
+	if err = (&controllers.CloudInstanceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "CloudInstance")
+		os.Exit(1)
+	}
+	if err = (&connectionhubv1alpha1.CloudInstance{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "CloudInstance")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

@@ -1,0 +1,31 @@
+# permissions for end users to edit cloudinstances.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: cloudinstance-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: cloudinstance-editor-role
+rules:
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances/status
+  verbs:
+  - get

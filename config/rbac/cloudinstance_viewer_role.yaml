@@ -1,0 +1,27 @@
+# permissions for end users to view cloudinstances.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: cloudinstance-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: cloudinstance-viewer-role
+rules:
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances/status
+  verbs:
+  - get

@@ -28,6 +28,7 @@ var _ webhook.Defaulter = &Submariner{}
 func (r *Submariner) Default() {
 	submarinerlog.Info("default", "name", r.Name)
 
+	r.SetName(GlobalSubmarinerResourceName)
 	r.setInstanceType()
 
 	if instanceType := r.getInstanceType(); instanceType == InstanceTypeCloud {
