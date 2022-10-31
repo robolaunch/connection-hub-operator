@@ -15,7 +15,11 @@ spec:
     singular: physicalinstance
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: PhysicalInstance is the Schema for the physicalinstances API
@@ -37,6 +41,35 @@ spec:
             type: object
           status:
             description: PhysicalInstanceStatus defines the observed state of PhysicalInstance
+            properties:
+              connectionResources:
+                properties:
+                  clusterStatus:
+                    properties:
+                      exists:
+                        type: boolean
+                      name:
+                        type: string
+                    type: object
+                  endpointStatus:
+                    properties:
+                      exists:
+                        type: boolean
+                      name:
+                        type: string
+                    type: object
+                type: object
+              deployerStatus:
+                properties:
+                  exists:
+                    type: boolean
+                  name:
+                    type: string
+                  phase:
+                    type: string
+                type: object
+              phase:
+                type: string
             type: object
         type: object
     served: true
