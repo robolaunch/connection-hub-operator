@@ -38,6 +38,15 @@ spec:
           status:
             description: CloudInstanceStatus defines the observed state of CloudInstance
             properties:
+              deployerStatus:
+                properties:
+                  exists:
+                    type: boolean
+                  name:
+                    type: string
+                  phase:
+                    type: string
+                type: object
               phase:
                 type: string
             type: object
