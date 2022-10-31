@@ -81,7 +81,7 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 			case false:
 
-				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegistered
+				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegisteredAndTryingToConnect
 
 			}
 
@@ -135,7 +135,7 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 	// check endpoints.submariner.io
 
-	req, err := labels.NewRequirement(connectionhubv1alpha1.EndpointClusterIDLabelKey, selection.In, []string{instance.Name})
+	req, err := labels.NewRequirement(connectionhubv1alpha1.EndpointClusterIDLabelKey, selection.Equals, []string{instance.Name})
 	if err != nil {
 		return err
 	}
@@ -145,6 +145,7 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 	submarinerEndpoints := &brokerv1.EndpointList{}
 	err = r.List(ctx, submarinerEndpoints, &client.ListOptions{
 		LabelSelector: labelSelector,
+		Namespace:     connectionhubv1alpha1.SubmarinerOperatorNamespace,
 	})
 	if err != nil {
 		return err
