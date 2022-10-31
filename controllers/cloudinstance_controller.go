@@ -2,9 +2,12 @@ package controllers
 
 import (
 	"context"
+	basicErr "errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -14,6 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 )
 
 // CloudInstanceReconciler reconciles a CloudInstance object
@@ -27,10 +31,9 @@ type CloudInstanceReconciler struct {
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=cloudinstances/finalizers,verbs=update
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
 
 func (r *CloudInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-
-	logger.Info("Reconciling Cloud Instance")
 
 	instance, err := r.reconcileGetInstance(ctx, req.NamespacedName)
 	if err != nil {
@@ -71,7 +74,16 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 		switch instance.Status.DeployerStatus.Phase {
 		case connectionhubv1alpha1.SubmarinerPhaseReadyToConnect:
 
-			instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseTryingToConnect
+			switch instance.Status.ConnectionResources.ClusterStatus.Exists && instance.Status.ConnectionResources.EndpointStatus.Exists {
+			case true:
+
+				instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnected
+
+			case false:
+
+				instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseTryingToConnect
+
+			}
 
 		default:
 
@@ -88,6 +100,8 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 
 func (r *CloudInstanceReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.CloudInstance) error {
 
+	// check submariners.connection-hub.roboscale.io
+
 	instance.Status.DeployerStatus.Name = instance.GetSubmarinerDeployerMetadata().Name
 
 	submarinerDeployer := &connectionhubv1alpha1.Submariner{}
@@ -100,6 +114,50 @@ func (r *CloudInstanceReconciler) reconcileCheckResources(ctx context.Context, i
 
 		instance.Status.DeployerStatus.Exists = true
 		instance.Status.DeployerStatus.Phase = submarinerDeployer.Status.Phase
+
+	}
+
+	// check clusters.submariner.io
+
+	instance.Status.ConnectionResources.ClusterStatus.Name = instance.GetSubmarinerClusterMetadata().Name
+
+	submarinerCluster := &brokerv1.Cluster{}
+	err = r.Get(ctx, instance.GetSubmarinerClusterMetadata(), submarinerCluster)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.ConnectionResources.ClusterStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+
+		instance.Status.ConnectionResources.ClusterStatus.Exists = true
+
+	}
+
+	// check endpoints.submariner.io
+
+	req, err := labels.NewRequirement(connectionhubv1alpha1.EndpointClusterIDLabelKey, selection.In, []string{instance.Name})
+	if err != nil {
+		return err
+	}
+
+	labelSelector := labels.NewSelector().Add(*req)
+
+	submarinerEndpoints := &brokerv1.EndpointList{}
+	err = r.List(ctx, submarinerEndpoints, &client.ListOptions{
+		LabelSelector: labelSelector,
+	})
+	if err != nil {
+		return err
+	} else {
+
+		if len(submarinerEndpoints.Items) < 1 {
+			instance.Status.ConnectionResources.EndpointStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
+		} else if len(submarinerEndpoints.Items) == 1 {
+			instance.Status.ConnectionResources.EndpointStatus.Name = submarinerEndpoints.Items[0].Name
+			instance.Status.ConnectionResources.EndpointStatus.Exists = true
+		} else {
+			return basicErr.New("more than one endpoints is listed with same clusterID")
+		}
 
 	}
 
@@ -142,6 +200,12 @@ func (r *CloudInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &connectionhubv1alpha1.Submariner{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchSubmarinerDeployer),
 		).
+		Watches(
+			&source.Kind{Type: &brokerv1.Cluster{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchClusters)).
+		Watches(
+			&source.Kind{Type: &brokerv1.Endpoint{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchEndpoints)).
 		Complete(r)
 }
 
@@ -162,4 +226,47 @@ func (r *CloudInstanceReconciler) watchSubmarinerDeployer(o client.Object) []rec
 	}
 
 	return requests
+}
+
+func (r *CloudInstanceReconciler) watchClusters(o client.Object) []reconcile.Request {
+
+	cluster := o.(*brokerv1.Cluster)
+
+	cloudInstance := &connectionhubv1alpha1.CloudInstance{}
+	err := r.Get(context.TODO(), types.NamespacedName{
+		Name: cluster.Name,
+	}, cloudInstance)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	return []reconcile.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Name: cloudInstance.Name,
+			},
+		},
+	}
+}
+
+func (r *CloudInstanceReconciler) watchEndpoints(o client.Object) []reconcile.Request {
+
+	endpoint := o.(*brokerv1.Endpoint)
+
+	cloudInstance := &connectionhubv1alpha1.CloudInstance{}
+	err := r.Get(context.TODO(), types.NamespacedName{
+		Name: endpoint.Labels[connectionhubv1alpha1.EndpointClusterIDLabelKey],
+	}, cloudInstance)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	return []reconcile.Request{
+		{
+			NamespacedName: types.NamespacedName{
+				Name: cloudInstance.Name,
+			},
+		},
+	}
+
 }
