@@ -1,8 +1,6 @@
 package v1alpha1
 
 import (
-	"errors"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -46,15 +44,5 @@ func (r *CloudInstance) ValidateUpdate(old runtime.Object) error {
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *CloudInstance) ValidateDelete() error {
 	cloudinstancelog.Info("validate delete", "name", r.Name)
-	return nil
-}
-
-func (r *CloudInstance) checkSubmarinerDeployerLabel() error {
-	labels := r.GetLabels()
-
-	if _, ok := labels[SubmarinerDeployerLabelKey]; !ok {
-		return errors.New("submariner deployer label should be added with key " + SubmarinerDeployerLabelKey)
-	}
-
 	return nil
 }
