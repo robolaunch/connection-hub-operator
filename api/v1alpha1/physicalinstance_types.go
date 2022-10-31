@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 // PhysicalInstanceSpec defines the desired state of PhysicalInstance
@@ -48,4 +49,19 @@ type PhysicalInstanceList struct {
 
 func init() {
 	SchemeBuilder.Register(&PhysicalInstance{}, &PhysicalInstanceList{})
+}
+
+func (physicalinstance *PhysicalInstance) GetSubmarinerDeployerMetadata() types.NamespacedName {
+
+	return types.NamespacedName{
+		Name: GlobalSubmarinerResourceName,
+	}
+}
+
+func (physicalinstance *PhysicalInstance) GetSubmarinerClusterMetadata() types.NamespacedName {
+
+	return types.NamespacedName{
+		Name:      physicalinstance.Name,
+		Namespace: SubmarinerOperatorNamespace,
+	}
 }
