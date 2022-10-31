@@ -5,6 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+const (
+	GlobalSubmarinerResourceName = "submariner"
+)
+
 type InstanceType string
 
 const (
