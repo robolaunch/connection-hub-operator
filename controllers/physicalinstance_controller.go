@@ -79,11 +79,24 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 			switch instance.Status.ConnectionResources.ClusterStatus.Exists && instance.Status.ConnectionResources.EndpointStatus.Exists {
 			case true:
 
-				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+				switch instance.Status.GatewayConnection.ConnectionStatus {
+				case brokerv1.Connected:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+				case brokerv1.Connecting:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnecting
+
+				case brokerv1.ConnectionError:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnected
+
+				}
 
 			case false:
 
-				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegisteredAndTryingToConnect
+				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegistered
 
 			}
 
@@ -160,6 +173,34 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 			instance.Status.ConnectionResources.EndpointStatus.Exists = true
 		} else {
 			return basicErr.New("more than one endpoints is listed with same clusterID")
+		}
+
+	}
+
+	// check gateways.submariner.io
+
+	submarinerGateways := &brokerv1.GatewayList{}
+	err = r.List(ctx, submarinerGateways, &client.ListOptions{
+		Namespace: connectionhubv1alpha1.SubmarinerOperatorNamespace,
+	})
+	if err != nil {
+		return err
+	} else {
+
+		if len(submarinerGateways.Items) < 1 {
+			instance.Status.GatewayConnection = connectionhubv1alpha1.GatewayConnection{}
+		} else if len(submarinerGateways.Items) == 1 {
+			gw := submarinerGateways.Items[0]
+			instance.Status.GatewayConnection.GatewayResource = gw.Name
+			for _, connection := range gw.Status.Connections {
+				if instance.Name == connection.Endpoint.ClusterID {
+					instance.Status.GatewayConnection.ClusterID = connection.Endpoint.ClusterID
+					instance.Status.GatewayConnection.Hostname = connection.Endpoint.Hostname
+					instance.Status.GatewayConnection.ConnectionStatus = connection.Status
+				}
+			}
+		} else {
+			return basicErr.New("more than one gateways is listed")
 		}
 
 	}
