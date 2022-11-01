@@ -12,12 +12,12 @@ type PhysicalInstanceSpec struct {
 type PhysicalInstancePhase string
 
 const (
-	PhysicalInstancePhaseLookingForDeployer           PhysicalInstancePhase = "LookingForDeployer"
-	PhysicalInstancePhaseWaitingForDeployer           PhysicalInstancePhase = "WaitingForDeployer"
-	PhysicalInstancePhaseRegisteredAndTryingToConnect PhysicalInstancePhase = "RegisteredAndTryingToConnect"
-	PhysicalInstancePhaseWaitingForResources          PhysicalInstancePhase = "Connecting"
-	PhysicalInstancePhaseConnected                    PhysicalInstancePhase = "Connected"
-	PhysicalInstancePhaseNotConnected                 PhysicalInstancePhase = "NotConnected"
+	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
+	PhysicalInstancePhaseConnecting         PhysicalInstancePhase = "Connecting"
+	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseNotConnected       PhysicalInstancePhase = "NotConnected"
 )
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
