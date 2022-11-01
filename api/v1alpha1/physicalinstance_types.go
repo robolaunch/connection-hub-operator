@@ -16,13 +16,15 @@ const (
 	PhysicalInstancePhaseWaitingForDeployer           PhysicalInstancePhase = "WaitingForDeployer"
 	PhysicalInstancePhaseRegisteredAndTryingToConnect PhysicalInstancePhase = "RegisteredAndTryingToConnect"
 	PhysicalInstancePhaseConnected                    PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseNotConnected                 PhysicalInstancePhase = "NotConnected"
 )
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
 type PhysicalInstanceStatus struct {
-	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
-	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
-	Phase               PhysicalInstancePhase      `json:"phase,omitempty"`
+	DeployerStatus          DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources     ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	GatewayConnectionStatus GatewayConnectionStatus    `json:"gatewayConnectionStatus,omitempty"`
+	Phase                   PhysicalInstancePhase      `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true

@@ -21,6 +21,7 @@ const (
 	CloudInstancePhaseWaitingForDeployer CloudInstancePhase = "WaitingForDeployer"
 	CloudInstancePhaseTryingToConnect    CloudInstancePhase = "TryingToConnect"
 	CloudInstancePhaseConnected          CloudInstancePhase = "Connected"
+	CloudInstancePhaseNotConnected       CloudInstancePhase = "NotConnected"
 )
 
 type DeployerStatus struct {
@@ -34,6 +35,13 @@ type ConnectionResourceStatus struct {
 	Exists bool   `json:"exists,omitempty"`
 }
 
+type GatewayConnectionStatus struct {
+	GatewayResource string `json:"gatewayResource,omitempty"`
+	ClusterID       string `json:"clusterID,omitempty"`
+	Hostname        string `json:"hostname,omitempty"`
+	Connected       bool   `json:"connected,omitempty"`
+}
+
 type ConnectionResourceStatuses struct {
 	ClusterStatus  ConnectionResourceStatus `json:"clusterStatus,omitempty"`
 	EndpointStatus ConnectionResourceStatus `json:"endpointStatus,omitempty"`
@@ -41,9 +49,10 @@ type ConnectionResourceStatuses struct {
 
 // CloudInstanceStatus defines the observed state of CloudInstance
 type CloudInstanceStatus struct {
-	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
-	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
-	Phase               CloudInstancePhase         `json:"phase,omitempty"`
+	DeployerStatus          DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources     ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	GatewayConnectionStatus GatewayConnectionStatus    `json:"gatewayConnectionStatus,omitempty"`
+	Phase                   CloudInstancePhase         `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
