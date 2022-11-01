@@ -243,7 +243,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Submariner.NatEnabled = true
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
 	valuesObj.ServiceAccounts.LighthouseCoreDNS.Create = true
-	valuesObj.Submariner.HealthCheckEnabled = false
+	valuesObj.Submariner.HealthCheckEnabled = true
 	valuesObj.IPSEC.NATPort = 4500
 	valuesObj.IPSEC.IKEPort = 500
 	valuesObj.IPSEC.PreferredServer = true
