@@ -249,6 +249,9 @@ func (r *CloudInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Endpoint{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchEndpoints)).
+		Watches(
+			&source.Kind{Type: &brokerv1.Gateway{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
 		Complete(r)
 }
 
