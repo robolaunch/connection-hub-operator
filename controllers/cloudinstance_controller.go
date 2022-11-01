@@ -313,3 +313,35 @@ func (r *CloudInstanceReconciler) watchEndpoints(o client.Object) []reconcile.Re
 	}
 
 }
+
+func (r *CloudInstanceReconciler) watchGateways(o client.Object) []reconcile.Request {
+
+	gateway := o.(*brokerv1.Gateway)
+
+	cloudInstances := &connectionhubv1alpha1.CloudInstanceList{}
+	err := r.List(context.TODO(), cloudInstances)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(cloudInstances.Items))
+	for i, item := range cloudInstances.Items {
+
+		for _, conn := range gateway.Status.Connections {
+
+			if conn.Endpoint.ClusterID == item.Name {
+
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name: item.Name,
+					},
+				}
+
+			}
+
+		}
+
+	}
+
+	return requests
+}

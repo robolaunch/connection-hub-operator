@@ -313,3 +313,35 @@ func (r *PhysicalInstanceReconciler) watchEndpoints(o client.Object) []reconcile
 	}
 
 }
+
+func (r *PhysicalInstanceReconciler) watchGateways(o client.Object) []reconcile.Request {
+
+	gateway := o.(*brokerv1.Gateway)
+
+	physicalInstances := &connectionhubv1alpha1.PhysicalInstanceList{}
+	err := r.List(context.TODO(), physicalInstances)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(physicalInstances.Items))
+	for i, item := range physicalInstances.Items {
+
+		for _, conn := range gateway.Status.Connections {
+
+			if conn.Endpoint.ClusterID == item.Name {
+
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name: item.Name,
+					},
+				}
+
+			}
+
+		}
+
+	}
+
+	return requests
+}
