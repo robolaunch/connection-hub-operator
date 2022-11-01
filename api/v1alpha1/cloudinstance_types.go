@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -16,12 +17,13 @@ type CloudInstanceSpec struct {
 type CloudInstancePhase string
 
 const (
-	CloudInstancePhaseLookingForDeployer CloudInstancePhase = "LookingForDeployer"
-	CloudInstancePhaseOwningDeployer     CloudInstancePhase = "OwningDeployer"
-	CloudInstancePhaseWaitingForDeployer CloudInstancePhase = "WaitingForDeployer"
-	CloudInstancePhaseTryingToConnect    CloudInstancePhase = "TryingToConnect"
-	CloudInstancePhaseConnected          CloudInstancePhase = "Connected"
-	CloudInstancePhaseNotConnected       CloudInstancePhase = "NotConnected"
+	CloudInstancePhaseLookingForDeployer  CloudInstancePhase = "LookingForDeployer"
+	CloudInstancePhaseOwningDeployer      CloudInstancePhase = "OwningDeployer"
+	CloudInstancePhaseWaitingForDeployer  CloudInstancePhase = "WaitingForDeployer"
+	CloudInstancePhaseWaitingForResources CloudInstancePhase = "WaitingForResources"
+	CloudInstancePhaseConnecting          CloudInstancePhase = "Connecting"
+	CloudInstancePhaseConnected           CloudInstancePhase = "Connected"
+	CloudInstancePhaseNotConnected        CloudInstancePhase = "NotConnected"
 )
 
 type DeployerStatus struct {
@@ -35,11 +37,11 @@ type ConnectionResourceStatus struct {
 	Exists bool   `json:"exists,omitempty"`
 }
 
-type GatewayConnectionStatus struct {
-	GatewayResource string `json:"gatewayResource,omitempty"`
-	ClusterID       string `json:"clusterID,omitempty"`
-	Hostname        string `json:"hostname,omitempty"`
-	Connected       bool   `json:"connected,omitempty"`
+type GatewayConnection struct {
+	GatewayResource  string                    `json:"gatewayResource,omitempty"`
+	ClusterID        string                    `json:"clusterID,omitempty"`
+	Hostname         string                    `json:"hostname,omitempty"`
+	ConnectionStatus brokerv1.ConnectionStatus `json:"connectionStatus,omitempty"`
 }
 
 type ConnectionResourceStatuses struct {
@@ -49,10 +51,10 @@ type ConnectionResourceStatuses struct {
 
 // CloudInstanceStatus defines the observed state of CloudInstance
 type CloudInstanceStatus struct {
-	DeployerStatus          DeployerStatus             `json:"deployerStatus,omitempty"`
-	ConnectionResources     ConnectionResourceStatuses `json:"connectionResources,omitempty"`
-	GatewayConnectionStatus GatewayConnectionStatus    `json:"gatewayConnectionStatus,omitempty"`
-	Phase                   CloudInstancePhase         `json:"phase,omitempty"`
+	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	GatewayConnection   GatewayConnection          `json:"gatewayConnection,omitempty"`
+	Phase               CloudInstancePhase         `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
