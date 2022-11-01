@@ -12,22 +12,28 @@ type PhysicalInstanceSpec struct {
 type PhysicalInstancePhase string
 
 const (
-	PhysicalInstancePhaseLookingForDeployer           PhysicalInstancePhase = "LookingForDeployer"
-	PhysicalInstancePhaseWaitingForDeployer           PhysicalInstancePhase = "WaitingForDeployer"
-	PhysicalInstancePhaseRegisteredAndTryingToConnect PhysicalInstancePhase = "RegisteredAndTryingToConnect"
-	PhysicalInstancePhaseConnected                    PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
+	PhysicalInstancePhaseConnecting         PhysicalInstancePhase = "Connecting"
+	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseNotConnected       PhysicalInstancePhase = "NotConnected"
 )
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
 type PhysicalInstanceStatus struct {
 	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
 	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	GatewayConnection   GatewayConnection          `json:"gatewayConnection,omitempty"`
 	Phase               PhysicalInstancePhase      `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.gatewayConnection.gatewayResource`
+//+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.gatewayConnection.hostname`
+//+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.gatewayConnection.clusterID`
 //+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // PhysicalInstance is the Schema for the physicalinstances API

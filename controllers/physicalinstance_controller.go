@@ -32,6 +32,8 @@ type PhysicalInstanceReconciler struct {
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=endpoints,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=gateways,verbs=get;list;watch;create;update;patch;delete
 
 func (r *PhysicalInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
@@ -77,11 +79,24 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 			switch instance.Status.ConnectionResources.ClusterStatus.Exists && instance.Status.ConnectionResources.EndpointStatus.Exists {
 			case true:
 
-				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+				switch instance.Status.GatewayConnection.ConnectionStatus {
+				case brokerv1.Connected:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+				case brokerv1.Connecting:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnecting
+
+				case brokerv1.ConnectionError:
+
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnected
+
+				}
 
 			case false:
 
-				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegisteredAndTryingToConnect
+				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegistered
 
 			}
 
@@ -162,6 +177,34 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 	}
 
+	// check gateways.submariner.io
+
+	submarinerGateways := &brokerv1.GatewayList{}
+	err = r.List(ctx, submarinerGateways, &client.ListOptions{
+		Namespace: connectionhubv1alpha1.SubmarinerOperatorNamespace,
+	})
+	if err != nil {
+		return err
+	} else {
+
+		if len(submarinerGateways.Items) < 1 {
+			instance.Status.GatewayConnection = connectionhubv1alpha1.GatewayConnection{}
+		} else if len(submarinerGateways.Items) == 1 {
+			gw := submarinerGateways.Items[0]
+			instance.Status.GatewayConnection.GatewayResource = gw.Name
+			for _, connection := range gw.Status.Connections {
+				if instance.Name == connection.Endpoint.ClusterID {
+					instance.Status.GatewayConnection.ClusterID = connection.Endpoint.ClusterID
+					instance.Status.GatewayConnection.Hostname = connection.Endpoint.Hostname
+					instance.Status.GatewayConnection.ConnectionStatus = connection.Status
+				}
+			}
+		} else {
+			return basicErr.New("more than one gateways is listed")
+		}
+
+	}
+
 	return nil
 }
 
@@ -206,6 +249,9 @@ func (r *PhysicalInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Endpoint{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchEndpoints)).
+		Watches(
+			&source.Kind{Type: &brokerv1.Gateway{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
 		Complete(r)
 }
 
@@ -269,4 +315,36 @@ func (r *PhysicalInstanceReconciler) watchEndpoints(o client.Object) []reconcile
 		},
 	}
 
+}
+
+func (r *PhysicalInstanceReconciler) watchGateways(o client.Object) []reconcile.Request {
+
+	gateway := o.(*brokerv1.Gateway)
+
+	physicalInstances := &connectionhubv1alpha1.PhysicalInstanceList{}
+	err := r.List(context.TODO(), physicalInstances)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(physicalInstances.Items))
+	for i, item := range physicalInstances.Items {
+
+		for _, conn := range gateway.Status.Connections {
+
+			if conn.Endpoint.ClusterID == item.Name {
+
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name: item.Name,
+					},
+				}
+
+			}
+
+		}
+
+	}
+
+	return requests
 }

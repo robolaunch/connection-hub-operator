@@ -12,37 +12,37 @@ type Images struct {
 }
 
 type Submariner struct {
-	DeployCR            bool                `yaml:"deployCR"`
-	ClusterID           string              `yaml:"clusterId"`
-	Token               string              `yaml:"token"`
-	ClusterCIDR         string              `yaml:"clusterCidr"`
-	ServiceCIDR         string              `yaml:"serviceCidr"`
-	GlobalCIDR          string              `yaml:"globalCidr"`
-	NatEnabled          bool                `yaml:"natEnabled"`
-	ColorCodes          string              `yaml:"colorCodes"`
-	Debug               bool                `yaml:"debug"`
-	ServiceDiscovery    bool                `yaml:"serviceDiscovery"`
-	CableDriver         string              `yaml:"cableDriver"`
-	HealthCheckEnabled  bool                `yaml:"healthcheckEnabled"`
-	CoreDNSCustomConfig CoreDNSCustomConfig `yaml:"coreDNSCustomConfig"`
-	Images              Images              `yaml:"images"`
+	DeployCR  bool   `yaml:"deployCR"`
+	ClusterID string `yaml:"clusterId"`
+	// Token               string              `yaml:"token"`
+	ClusterCIDR string `yaml:"clusterCidr"`
+	ServiceCIDR string `yaml:"serviceCidr"`
+	// GlobalCIDR          string              `yaml:"globalCidr"`
+	NatEnabled bool `yaml:"natEnabled"`
+	// ColorCodes          string              `yaml:"colorCodes"`
+	// Debug               bool                `yaml:"debug"`
+	ServiceDiscovery   bool   `yaml:"serviceDiscovery"`
+	CableDriver        string `yaml:"cableDriver"`
+	HealthCheckEnabled bool   `yaml:"healthcheckEnabled"`
+	// CoreDNSCustomConfig CoreDNSCustomConfig `yaml:"coreDNSCustomConfig"`
+	Images Images `yaml:"images"`
 }
 
 func getSubmarinerDefault() Submariner {
 	return Submariner{
-		DeployCR:            false,
-		ClusterID:           "",
-		Token:               "",
-		ClusterCIDR:         "",
-		ServiceCIDR:         "",
-		GlobalCIDR:          "",
-		NatEnabled:          false,
-		ColorCodes:          "blue",
-		Debug:               false,
-		ServiceDiscovery:    true,
-		CableDriver:         "libreswan",
-		HealthCheckEnabled:  true,
-		CoreDNSCustomConfig: CoreDNSCustomConfig{},
+		DeployCR:  false,
+		ClusterID: "",
+		// Token:               "",
+		ClusterCIDR: "",
+		ServiceCIDR: "",
+		// GlobalCIDR:          "",
+		NatEnabled: false,
+		// ColorCodes:          "blue",
+		// Debug:               false,
+		ServiceDiscovery:   true,
+		CableDriver:        "libreswan",
+		HealthCheckEnabled: true,
+		// CoreDNSCustomConfig: CoreDNSCustomConfig{},
 		Images: Images{
 			Repository: "quay.io/submariner",
 			Tag:        "0.10.1",
@@ -54,9 +54,9 @@ type Broker struct {
 	Server    string `yaml:"server"`
 	Token     string `yaml:"token"`
 	Namespace string `yaml:"namespace"`
-	Insecure  bool   `yaml:"insecure"`
-	Ca        string `yaml:"ca"`
-	GlobalNet bool   `yaml:"globalnet"`
+	// Insecure  bool   `yaml:"insecure"`
+	Ca string `yaml:"ca"`
+	// GlobalNet bool   `yaml:"globalnet"`
 }
 
 func getBrokerDefault() Broker {
@@ -64,37 +64,37 @@ func getBrokerDefault() Broker {
 		Server:    "example.k8s.apiserver",
 		Token:     "test",
 		Namespace: "xyz",
-		Insecure:  false,
-		Ca:        "",
-		GlobalNet: true,
+		// Insecure:  false,
+		Ca: "",
+		// GlobalNet: false,
 	}
 }
 
-type RBAC struct {
-	Create bool `yaml:"create"`
-}
+// type RBAC struct {
+// 	Create bool `yaml:"create"`
+// }
 
-func getRBACDefault() RBAC {
-	return RBAC{
-		Create: true,
-	}
-}
+// func getRBACDefault() RBAC {
+// 	return RBAC{
+// 		Create: true,
+// 	}
+// }
 
 type IPSEC struct {
-	PSK             string `yaml:"psk"`
-	Debug           bool   `yaml:"debug"`
-	ForceUDPEncaps  bool   `yaml:"forceUDPEncaps"`
-	IKEPort         int    `yaml:"ikePort"`
-	NATPort         int    `yaml:"natPort"`
-	NATDiscovery    int    `yaml:"natDiscovery"`
-	PreferredServer bool   `yaml:"preferredServer"`
+	PSK string `yaml:"psk"`
+	// Debug           bool   `yaml:"debug"`
+	// ForceUDPEncaps  bool   `yaml:"forceUDPEncaps"`
+	IKEPort         int  `yaml:"ikePort"`
+	NATPort         int  `yaml:"natPort"`
+	NATDiscovery    int  `yaml:"natDiscovery"`
+	PreferredServer bool `yaml:"preferredServer"`
 }
 
 func getIPSECDefault() IPSEC {
 	return IPSEC{
-		PSK:             "",
-		Debug:           false,
-		ForceUDPEncaps:  false,
+		PSK: "",
+		// Debug:           false,
+		// ForceUDPEncaps:  false,
 		IKEPort:         500,
 		NATPort:         4500,
 		NATDiscovery:    4490,
@@ -102,24 +102,24 @@ func getIPSECDefault() IPSEC {
 	}
 }
 
-type Leadership struct {
-	LeaseDuration int `yaml:"leaseDuration"`
-	RenewDeadline int `yaml:"renewDeadline"`
-	RetryPeriod   int `yaml:"retryPeriod"`
-}
+// type Leadership struct {
+// 	LeaseDuration int `yaml:"leaseDuration"`
+// 	RenewDeadline int `yaml:"renewDeadline"`
+// 	RetryPeriod   int `yaml:"retryPeriod"`
+// }
 
-func getLeadershipDefault() Leadership {
-	return Leadership{
-		LeaseDuration: 10,
-		RenewDeadline: 5,
-		RetryPeriod:   2,
-	}
-}
+// func getLeadershipDefault() Leadership {
+// 	return Leadership{
+// 		LeaseDuration: 10,
+// 		RenewDeadline: 5,
+// 		RetryPeriod:   2,
+// 	}
+// }
 
 type OperatorImage struct {
 	Repository string `yaml:"repository"`
 	Tag        string `yaml:"tag"`
-	PullPolicy string `yaml:"pullPolicy"`
+	// PullPolicy string `yaml:"pullPolicy"`
 }
 
 type OperatorResources struct{}
@@ -129,10 +129,10 @@ type OperatorToleration struct{}
 type OperatorAffinity struct{}
 
 type Operator struct {
-	Image       OperatorImage        `yaml:"image"`
-	Resources   OperatorResources    `yaml:"resources"`
-	Tolerations []OperatorToleration `yaml:"tolerations"`
-	Affinity    OperatorAffinity     `yaml:"affinity"`
+	Image OperatorImage `yaml:"image"`
+	// Resources   OperatorResources    `yaml:"resources"`
+	// Tolerations []OperatorToleration `yaml:"tolerations"`
+	// Affinity    OperatorAffinity     `yaml:"affinity"`
 }
 
 func getOperatorDefault() Operator {
@@ -140,11 +140,11 @@ func getOperatorDefault() Operator {
 		Image: OperatorImage{
 			Repository: "quay.io/submariner/submariner-operator",
 			Tag:        "0.10.1",
-			PullPolicy: "IfNotPresent",
+			// PullPolicy: "IfNotPresent",
 		},
-		Resources:   OperatorResources{},
-		Tolerations: []OperatorToleration{},
-		Affinity:    OperatorAffinity{},
+		// Resources:   OperatorResources{},
+		// Tolerations: []OperatorToleration{},
+		// Affinity:    OperatorAffinity{},
 	}
 }
 
@@ -167,32 +167,32 @@ type ServiceAccount struct {
 }
 
 type ServiceAccounts struct {
-	Operator          ServiceAccount `yaml:"operator"`
-	Gateway           ServiceAccount `yaml:"gateway"`
-	RouteAgent        ServiceAccount `yaml:"routeAgent"`
-	GlobalNet         ServiceAccount `yaml:"globalnet"`
+	// Operator          ServiceAccount `yaml:"operator"`
+	// Gateway           ServiceAccount `yaml:"gateway"`
+	// RouteAgent        ServiceAccount `yaml:"routeAgent"`
+	// GlobalNet         ServiceAccount `yaml:"globalnet"`
 	LighthouseAgent   ServiceAccount `yaml:"lighthouseAgent"`
 	LighthouseCoreDNS ServiceAccount `yaml:"lighthouseCoreDns"`
 }
 
 func getServiceAccountsDefault() ServiceAccounts {
 	return ServiceAccounts{
-		Operator: ServiceAccount{
-			Create: true,
-			Name:   "",
-		},
-		Gateway: ServiceAccount{
-			Create: true,
-			Name:   "",
-		},
-		RouteAgent: ServiceAccount{
-			Create: true,
-			Name:   "",
-		},
-		GlobalNet: ServiceAccount{
-			Create: true,
-			Name:   "",
-		},
+		// Operator: ServiceAccount{
+		// 	Create: true,
+		// 	Name:   "",
+		// },
+		// Gateway: ServiceAccount{
+		// 	Create: true,
+		// 	Name:   "",
+		// },
+		// RouteAgent: ServiceAccount{
+		// 	Create: true,
+		// 	Name:   "",
+		// },
+		// GlobalNet: ServiceAccount{
+		// 	Create: true,
+		// 	Name:   "",
+		// },
 		LighthouseAgent: ServiceAccount{
 			Create: true,
 			Name:   "",
@@ -205,11 +205,11 @@ func getServiceAccountsDefault() ServiceAccounts {
 }
 
 type SubmarinerOperatorValues struct {
-	Submariner      Submariner      `yaml:"submariner"`
-	Broker          Broker          `yaml:"broker"`
-	RBAC            RBAC            `yaml:"rbac"`
-	IPSEC           IPSEC           `yaml:"ipsec"`
-	Leadership      Leadership      `yaml:"leadership"`
+	Submariner Submariner `yaml:"submariner"`
+	Broker     Broker     `yaml:"broker"`
+	// RBAC            RBAC            `yaml:"rbac"`
+	IPSEC IPSEC `yaml:"ipsec"`
+	// Leadership      Leadership      `yaml:"leadership"`
 	Operator        Operator        `yaml:"operator"`
 	Gateway         Gateway         `yaml:"gateway"`
 	ServiceAccounts ServiceAccounts `yaml:"serviceAccounts"`
@@ -217,11 +217,11 @@ type SubmarinerOperatorValues struct {
 
 func getSubmarinerOperatorValuesDefault() SubmarinerOperatorValues {
 	return SubmarinerOperatorValues{
-		Submariner:      getSubmarinerDefault(),
-		Broker:          getBrokerDefault(),
-		RBAC:            getRBACDefault(),
-		IPSEC:           getIPSECDefault(),
-		Leadership:      getLeadershipDefault(),
+		Submariner: getSubmarinerDefault(),
+		Broker:     getBrokerDefault(),
+		// RBAC:            getRBACDefault(),
+		IPSEC: getIPSECDefault(),
+		// Leadership:      getLeadershipDefault(),
 		Operator:        getOperatorDefault(),
 		Gateway:         getOperatorGatewayDefault(),
 		ServiceAccounts: getServiceAccountsDefault(),
@@ -243,7 +243,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Submariner.NatEnabled = true
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
 	valuesObj.ServiceAccounts.LighthouseCoreDNS.Create = true
-	valuesObj.Submariner.HealthCheckEnabled = false
+	valuesObj.Submariner.HealthCheckEnabled = true
 	valuesObj.IPSEC.NATPort = 4500
 	valuesObj.IPSEC.IKEPort = 500
 	valuesObj.IPSEC.PreferredServer = true

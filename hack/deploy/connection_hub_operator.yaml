@@ -94,6 +94,15 @@ spec:
   scope: Cluster
   versions:
     - additionalPrinterColumns:
+        - jsonPath: .status.gatewayConnection.gatewayResource
+          name: Gateway
+          type: string
+        - jsonPath: .status.gatewayConnection.hostname
+          name: Hostname
+          type: string
+        - jsonPath: .status.gatewayConnection.clusterID
+          name: Cluster ID
+          type: string
         - jsonPath: .status.phase
           name: Phase
           type: string
@@ -142,6 +151,17 @@ spec:
                     phase:
                       type: string
                   type: object
+                gatewayConnection:
+                  properties:
+                    clusterID:
+                      type: string
+                    connectionStatus:
+                      type: string
+                    gatewayResource:
+                      type: string
+                    hostname:
+                      type: string
+                  type: object
                 phase:
                   type: string
               type: object
@@ -168,6 +188,15 @@ spec:
   scope: Cluster
   versions:
     - additionalPrinterColumns:
+        - jsonPath: .status.gatewayConnection.gatewayResource
+          name: Gateway
+          type: string
+        - jsonPath: .status.gatewayConnection.hostname
+          name: Hostname
+          type: string
+        - jsonPath: .status.gatewayConnection.clusterID
+          name: Cluster ID
+          type: string
         - jsonPath: .status.phase
           name: Phase
           type: string
@@ -214,6 +243,17 @@ spec:
                     name:
                       type: string
                     phase:
+                      type: string
+                  type: object
+                gatewayConnection:
+                  properties:
+                    clusterID:
+                      type: string
+                    connectionStatus:
+                      type: string
+                    gatewayResource:
+                      type: string
+                    hostname:
                       type: string
                   type: object
                 phase:
@@ -2278,7 +2318,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.41
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.2.53
           livenessProbe:
             httpGet:
               path: /healthz

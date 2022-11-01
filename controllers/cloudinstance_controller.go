@@ -32,6 +32,8 @@ type CloudInstanceReconciler struct {
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=submariners,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=endpoints,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=submariner.io,resources=gateways,verbs=get;list;watch;create;update;patch;delete
 
 func (r *CloudInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
@@ -77,11 +79,24 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 			switch instance.Status.ConnectionResources.ClusterStatus.Exists && instance.Status.ConnectionResources.EndpointStatus.Exists {
 			case true:
 
-				instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnected
+				switch instance.Status.GatewayConnection.ConnectionStatus {
+				case brokerv1.Connected:
+
+					instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnected
+
+				case brokerv1.Connecting:
+
+					instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnecting
+
+				case brokerv1.ConnectionError:
+
+					instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseNotConnected
+
+				}
 
 			case false:
 
-				instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseTryingToConnect
+				instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseWaitingForResources
 
 			}
 
@@ -161,6 +176,34 @@ func (r *CloudInstanceReconciler) reconcileCheckResources(ctx context.Context, i
 
 	}
 
+	// check gateways.submariner.io
+
+	submarinerGateways := &brokerv1.GatewayList{}
+	err = r.List(ctx, submarinerGateways, &client.ListOptions{
+		Namespace: connectionhubv1alpha1.SubmarinerOperatorNamespace,
+	})
+	if err != nil {
+		return err
+	} else {
+
+		if len(submarinerGateways.Items) < 1 {
+			instance.Status.GatewayConnection = connectionhubv1alpha1.GatewayConnection{}
+		} else if len(submarinerGateways.Items) == 1 {
+			gw := submarinerGateways.Items[0]
+			instance.Status.GatewayConnection.GatewayResource = gw.Name
+			for _, connection := range gw.Status.Connections {
+				if instance.Name == connection.Endpoint.ClusterID {
+					instance.Status.GatewayConnection.ClusterID = connection.Endpoint.ClusterID
+					instance.Status.GatewayConnection.Hostname = connection.Endpoint.Hostname
+					instance.Status.GatewayConnection.ConnectionStatus = connection.Status
+				}
+			}
+		} else {
+			return basicErr.New("more than one gateways is listed")
+		}
+
+	}
+
 	return nil
 }
 
@@ -206,6 +249,9 @@ func (r *CloudInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Endpoint{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchEndpoints)).
+		Watches(
+			&source.Kind{Type: &brokerv1.Gateway{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
 		Complete(r)
 }
 
@@ -269,4 +315,36 @@ func (r *CloudInstanceReconciler) watchEndpoints(o client.Object) []reconcile.Re
 		},
 	}
 
+}
+
+func (r *CloudInstanceReconciler) watchGateways(o client.Object) []reconcile.Request {
+
+	gateway := o.(*brokerv1.Gateway)
+
+	cloudInstances := &connectionhubv1alpha1.CloudInstanceList{}
+	err := r.List(context.TODO(), cloudInstances)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(cloudInstances.Items))
+	for i, item := range cloudInstances.Items {
+
+		for _, conn := range gateway.Status.Connections {
+
+			if conn.Endpoint.ClusterID == item.Name {
+
+				requests[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name: item.Name,
+					},
+				}
+
+			}
+
+		}
+
+	}
+
+	return requests
 }
