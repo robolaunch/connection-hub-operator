@@ -49,6 +49,7 @@ type CloudInstanceStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // CloudInstance is the Schema for the cloudinstances API
 type CloudInstance struct {

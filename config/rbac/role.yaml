@@ -88,6 +88,32 @@ rules:
 - apiGroups:
   - connection-hub.roboscale.io
   resources:
+  - physicalinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
   - submarinerbrokers
   verbs:
   - create

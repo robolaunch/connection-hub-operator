@@ -33,10 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
+
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
-	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -149,6 +150,13 @@ func main() {
 	}
 	if err = (&connectionhubv1alpha1.CloudInstance{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "CloudInstance")
+		os.Exit(1)
+	}
+	if err = (&controllers.PhysicalInstanceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "PhysicalInstance")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

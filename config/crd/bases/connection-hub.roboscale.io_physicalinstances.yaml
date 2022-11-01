@@ -5,14 +5,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.2
   creationTimestamp: null
-  name: cloudinstances.connection-hub.roboscale.io
+  name: physicalinstances.connection-hub.roboscale.io
 spec:
   group: connection-hub.roboscale.io
   names:
-    kind: CloudInstance
-    listKind: CloudInstanceList
-    plural: cloudinstances
-    singular: cloudinstance
+    kind: PhysicalInstance
+    listKind: PhysicalInstanceList
+    plural: physicalinstances
+    singular: physicalinstance
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -22,7 +22,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CloudInstance is the Schema for the cloudinstances API
+        description: PhysicalInstance is the Schema for the physicalinstances API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -37,10 +37,10 @@ spec:
           metadata:
             type: object
           spec:
-            description: CloudInstanceSpec defines the desired state of CloudInstance
+            description: PhysicalInstanceSpec defines the desired state of PhysicalInstance
             type: object
           status:
-            description: CloudInstanceStatus defines the observed state of CloudInstance
+            description: PhysicalInstanceStatus defines the observed state of PhysicalInstance
             properties:
               connectionResources:
                 properties:
