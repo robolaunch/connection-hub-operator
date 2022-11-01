@@ -1,7 +1,6 @@
 name: Documentation Issue
 description: Describe the need for documentation change
-labels: 
-  - kind/documentation
+labels: ["documentation"]
 body:
   - type: textarea
     id: feature
