@@ -65,6 +65,36 @@ func (r *FederationOperatorReconciler) Reconcile(ctx context.Context, req ctrl.R
 
 func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
 
+	switch instance.Status.NamespaceStatus.Created {
+	case true:
+
+		switch instance.Status.ChartStatus.Deployed {
+		case true:
+
+			switch instance.Status.ChartResourceStatus.Deployed {
+			case true:
+
+				instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployed
+
+			case false:
+
+				logger.Info("STATUS: Checking for Federation Operator resources.")
+				instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseCheckingResources
+
+			}
+
+		case false:
+
+			// install chart
+
+		}
+
+	case false:
+
+		// create ns
+
+	}
+
 	return nil
 }
 
