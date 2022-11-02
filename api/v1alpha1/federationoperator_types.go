@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 const (
@@ -59,4 +60,37 @@ type FederationOperatorList struct {
 
 func init() {
 	SchemeBuilder.Register(&FederationOperator{}, &FederationOperatorList{})
+}
+
+func (fo *FederationOperator) GetNamespaceMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: FederationOperatorNamespace,
+	}
+}
+
+func (fo *FederationOperator) GetResourcesForCheck() []ResourceItem {
+	return []ResourceItem{
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: fo.GetNamespaceMetadata().Name,
+				Name:      "kubefed-controller-manager",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+		{
+			ObjectKey: types.NamespacedName{
+				Namespace: fo.GetNamespaceMetadata().Name,
+				Name:      "kubefed-admission-webhook",
+			},
+			GroupVersionKind: metav1.GroupVersionKind{
+				Group:   "apps",
+				Version: "v1",
+				Kind:    "Deployment",
+			},
+		},
+	}
 }
