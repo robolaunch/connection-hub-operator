@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"context"
+	basicErr "errors"
 
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -112,6 +114,45 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 }
 
 func (r *FederationOperatorReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	operatorNamespaceQuery := &corev1.Namespace{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name: instance.GetNamespaceMetadata().Name,
+	}, operatorNamespaceQuery)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.NamespaceStatus.Created = false
+	} else if err != nil {
+		return err
+	}
+
+	if ok, err := helmops.CheckIfFederationOperatorExists(*instance, r.RESTConfig); err != nil {
+		return err
+	} else {
+		if ok {
+			instance.Status.ChartStatus.Deployed = true
+		} else {
+			instance.Status.ChartStatus.Deployed = false
+		}
+	}
+
+	instance.Status.ChartResourceStatus.Deployed = true
+	resources := instance.GetResourcesForCheck()
+	for _, resource := range resources {
+		var obj client.Object
+
+		if resource.GroupVersionKind.Kind == "Deployment" {
+			obj = &appsv1.Deployment{}
+		} else {
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+		}
+
+		objKey := resource.ObjectKey
+		err := r.Get(ctx, objKey, obj)
+		if err != nil {
+			instance.Status.ChartResourceStatus.Deployed = false
+		}
+	}
+
 	return nil
 }
 
