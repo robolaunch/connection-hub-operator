@@ -24,8 +24,11 @@ const (
 	FederationOperatorPhaseDeployed          FederationOperatorPhase = "Deployed"
 	FederationOperatorPhaseMalfunctioned     FederationOperatorPhase = "Malfunctioned"
 
-	FederationOperatorPhaseUninstallingChart    FederationOperatorPhase = "UninstallingChart"
-	FederationOperatorPhaseTerminatingNamespace FederationOperatorPhase = "TerminatingNamespace"
+	FederationOperatorPhaseDeletingFederatedTypeCRDs    FederationOperatorPhase = "DeletingFederatedTypeCRDs"
+	FederationOperatorPhaseDeletingFederatedTypeConfigs FederationOperatorPhase = "DeletingFederatedTypeConfigs"
+	FederationOperatorPhaseUninstallingChart            FederationOperatorPhase = "UninstallingChart"
+	FederationOperatorPhaseDeletingFederatedCoreCRDs    FederationOperatorPhase = "DeletingFederatedCoreCRDs"
+	FederationOperatorPhaseTerminatingNamespace         FederationOperatorPhase = "TerminatingNamespace"
 )
 
 // FederationOperatorStatus defines the observed state of FederationOperator

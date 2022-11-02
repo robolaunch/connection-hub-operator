@@ -40,6 +40,7 @@ func InstallFederationOperatorChart(federationOperator connectionhubv1alpha1.Fed
 	_, err = cli.InstallChart(
 		context.Background(),
 		&helmclient.ChartSpec{
+			Namespace:   federationOperator.GetNamespaceMetadata().Name,
 			ReleaseName: federationOperator.Spec.Helm.ReleaseName,
 			ChartName:   federationOperator.Spec.Helm.ChartName,
 			Version:     federationOperator.Spec.Helm.Version,

@@ -37,6 +37,10 @@ type FederationOperatorReconciler struct {
 //+kubebuilder:rbac:groups=scheduling.kubefed.io,resources=*,verbs=*
 //+kubebuilder:rbac:groups=core.kubefed.io,resources=*,verbs=*
 //+kubebuilder:rbac:groups=types.kubefed.io,resources=*,verbs=*
+//+kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=*,verbs=*
+//+kubebuilder:rbac:groups=mutation.core.kubefed.io,resources=*,verbs=*
+//+kubebuilder:rbac:groups=validation.core.kubefed.io,resources=*,verbs=*
+//+kubebuilder:rbac:groups=batch,resources=*,verbs=*
 
 func (r *FederationOperatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger = log.FromContext(ctx)
@@ -46,6 +50,16 @@ func (r *FederationOperatorReconciler) Reconcile(ctx context.Context, req ctrl.R
 		if errors.IsNotFound(err) {
 			return ctrl.Result{}, nil
 		}
+		return ctrl.Result{}, err
+	}
+
+	err = r.reconcileCheckDeletion(ctx, instance)
+	if err != nil {
+
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
 		return ctrl.Result{}, err
 	}
 
