@@ -3,21 +3,28 @@ package controllers
 import (
 	"context"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
 )
 
 // FederationOperatorReconciler reconciles a FederationOperator object
 type FederationOperatorReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme        *runtime.Scheme
+	DynamicClient dynamic.Interface
+	RESTConfig    *rest.Config
 }
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=federationoperators,verbs=get;list;watch;create;update;patch;delete
@@ -85,13 +92,19 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 
 		case false:
 
-			// install chart
+			err := r.reconcileInstallChart(ctx, instance)
+			if err != nil {
+				return err
+			}
 
 		}
 
 	case false:
 
-		// create ns
+		err := r.reconcileCreateNamespace(ctx, instance)
+		if err != nil {
+			return err
+		}
 
 	}
 
@@ -99,6 +112,47 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 }
 
 func (r *FederationOperatorReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+	return nil
+}
+
+func (r *FederationOperatorReconciler) reconcileCreateNamespace(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseCreatingNamespace
+
+	operatorNamespace := &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: instance.GetNamespaceMetadata().Name,
+		},
+	}
+
+	err := ctrl.SetControllerReference(instance, operatorNamespace, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, operatorNamespace)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Federation Operator's namespace is created.")
+	instance.Status.NamespaceStatus.Created = true
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) reconcileInstallChart(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployingChart
+
+	err := helmops.InstallFederationOperatorChart(*instance, r.RESTConfig)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Federation Operator Helm chart is deployed.")
+	instance.Status.ChartStatus.Deployed = true
+
 	return nil
 }
 

@@ -160,8 +160,10 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.FederationOperatorReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:        mgr.GetClient(),
+		Scheme:        mgr.GetScheme(),
+		DynamicClient: dynamicClient,
+		RESTConfig:    mgr.GetConfig(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FederationOperator")
 		os.Exit(1)
