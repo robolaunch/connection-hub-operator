@@ -13,7 +13,7 @@ spec:
     listKind: FederationOperatorList
     plural: federationoperators
     singular: federationoperator
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:
@@ -36,13 +36,53 @@ spec:
           spec:
             description: FederationOperatorSpec defines the desired state of FederationOperator
             properties:
-              foo:
-                description: Foo is an example field of FederationOperator. Edit federationoperator_types.go
-                  to remove/update
-                type: string
+              helm:
+                properties:
+                  chartName:
+                    type: string
+                  releaseName:
+                    type: string
+                  repository:
+                    properties:
+                      name:
+                        type: string
+                      url:
+                        type: string
+                    required:
+                    - name
+                    - url
+                    type: object
+                  version:
+                    type: string
+                required:
+                - chartName
+                - releaseName
+                - repository
+                - version
+                type: object
+            required:
+            - helm
             type: object
           status:
             description: FederationOperatorStatus defines the observed state of FederationOperator
+            properties:
+              chartResourceStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              chartStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              namespaceStatus:
+                properties:
+                  created:
+                    type: boolean
+                type: object
+              phase:
+                type: string
             type: object
         type: object
     served: true
