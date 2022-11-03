@@ -34,6 +34,25 @@ spec:
             type: object
           spec:
             description: FederationMemberSpec defines the desired state of FederationMember
+            properties:
+              credentials:
+                properties:
+                  certificateAuthorityData:
+                    type: string
+                  clientCertificateData:
+                    type: string
+                  clientKey:
+                    type: string
+                required:
+                - certificateAuthorityData
+                - clientCertificateData
+                - clientKey
+                type: object
+              server:
+                type: string
+            required:
+            - credentials
+            - server
             type: object
           status:
             description: FederationMemberStatus defines the observed state of FederationMember
