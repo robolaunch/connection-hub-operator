@@ -548,7 +548,10 @@ func (r *FederationOperatorReconciler) waitForFederatedTypeCRDDeletion(ctx conte
 
 		for _, crd := range crdList.Items {
 			if crd.Spec.Group == apiGroup {
-				_ = r.Delete(ctx, &crd)
+				err := r.Delete(ctx, &crd)
+				if err != nil {
+					logger.Info(err.Error())
+				}
 			}
 		}
 
@@ -582,7 +585,10 @@ func (r *FederationOperatorReconciler) waitForFederatedTypeConfigsDeletion(ctx c
 	for doesItemExists() {
 		typeConfigList, _ := resourceInterface.List(ctx, metav1.ListOptions{})
 		for _, tc := range typeConfigList.Items {
-			_ = resourceInterface.Delete(ctx, tc.GetName(), metav1.DeleteOptions{})
+			err := resourceInterface.Namespace(connectionhubv1alpha1.FederationOperatorNamespace).Delete(ctx, tc.GetName(), metav1.DeleteOptions{})
+			if err != nil {
+				logger.Info(err.Error())
+			}
 		}
 
 		time.Sleep(2 * time.Second)
@@ -650,7 +656,10 @@ func (r *FederationOperatorReconciler) waitForFederatedCoreCRDDeletion(ctx conte
 		for _, crd := range crdList.Items {
 			for _, apiGroup := range apiGroups {
 				if crd.Spec.Group == apiGroup {
-					_ = r.Delete(ctx, &crd)
+					err := r.Delete(ctx, &crd)
+					if err != nil {
+						logger.Info(err.Error())
+					}
 				}
 			}
 		}
