@@ -2,13 +2,14 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type FederationMemberCredentials struct {
 	// +kubebuilder:validation:Required
-	CertificateAuthorityData string `json:"certificateAuthorityData"`
+	CertificateAuthority string `json:"certificateAuthority"`
 	// +kubebuilder:validation:Required
-	ClientCertificateData string `json:"clientCertificateData"`
+	ClientCertificate string `json:"clientCertificate"`
 	// +kubebuilder:validation:Required
 	ClientKey string `json:"clientKey"`
 }
@@ -23,6 +24,7 @@ type FederationMemberSpec struct {
 
 // FederationMemberStatus defines the observed state of FederationMember
 type FederationMemberStatus struct {
+	Joined bool `json:"joined,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -49,4 +51,10 @@ type FederationMemberList struct {
 
 func init() {
 	SchemeBuilder.Register(&FederationMember{}, &FederationMemberList{})
+}
+
+func (federationmember *FederationMember) GetOwnerMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: federationmember.OwnerReferences[0].Name,
+	}
 }

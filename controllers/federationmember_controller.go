@@ -6,25 +6,31 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	utils "github.com/robolaunch/connection-hub-operator/controllers/pkg/utils"
 )
 
 // FederationMemberReconciler reconciles a FederationMember object
 type FederationMemberReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme        *runtime.Scheme
+	DynamicClient dynamic.Interface
+	RESTConfig    *rest.Config
 }
 
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=federationmembers,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=federationmembers/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=connection-hub.roboscale.io,resources=federationmembers/finalizers,verbs=update
 
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
+//+kubebuilder:rbac:groups=*,resources=*,verbs=*
+
 func (r *FederationMemberReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger = log.FromContext(ctx)
 
@@ -60,11 +66,42 @@ func (r *FederationMemberReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *FederationMemberReconciler) reconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
+	switch instance.Status.Joined {
+	case true:
+
+	case false:
+
+		host, err := r.reconcileGetOwner(ctx, instance)
+		if err != nil {
+			return err
+		}
+
+		err = utils.Join(host, instance, r.RESTConfig)
+		if err != nil {
+			return err
+		}
+
+		instance.Status.Joined = true
+	}
+
 	return nil
 }
 
 func (r *FederationMemberReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
+
+	// check joined resources
+
 	return nil
+}
+
+func (r *FederationMemberReconciler) reconcileGetOwner(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) (*connectionhubv1alpha1.FederationHost, error) {
+	host := &connectionhubv1alpha1.FederationHost{}
+	err := r.Get(ctx, *instance.GetOwnerMetadata(), host)
+	if err != nil {
+		return nil, err
+	}
+
+	return host, nil
 }
 
 func (r *FederationMemberReconciler) reconcileGetInstance(ctx context.Context, meta types.NamespacedName) (*connectionhubv1alpha1.FederationMember, error) {
