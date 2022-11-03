@@ -2,11 +2,13 @@ package controllers
 
 import (
 	"context"
+	"time"
 
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -458,4 +460,267 @@ func (r *SubmarinerReconciler) waitForSubmarinerBrokerDeletion(ctx context.Conte
 	}
 	return nil
 
+}
+
+func (r *FederationOperatorReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	submarinerBrokerFinalizer := "federationoperator.connection-hub.roboscale.io/finalizer"
+
+	if instance.DeletionTimestamp.IsZero() {
+
+		if !controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
+			controllerutil.AddFinalizer(instance, submarinerBrokerFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+	} else {
+
+		if controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
+
+			err := r.waitForFederatedTypeCRDDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			err = r.waitForFederatedTypeConfigsDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			err = r.waitForChartDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			err = r.waitForFederatedCoreCRDDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			err = r.waitForNamespaceDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			controllerutil.RemoveFinalizer(instance, submarinerBrokerFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+		return errors.NewNotFound(schema.GroupResource{
+			Group:    instance.GetObjectKind().GroupVersionKind().Group,
+			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
+		}, instance.Name)
+	}
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) waitForFederatedTypeCRDDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	logger.Info("FINALIZER: Federated Type CRDs are being deleted.")
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeletingFederatedTypeCRDs
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	apiGroup := "types.kubefed.io"
+
+	doesItemExists := func() bool {
+		crds := &extensionsv1.CustomResourceDefinitionList{}
+		_ = r.List(ctx, crds)
+		for _, crd := range crds.Items {
+			if crd.Spec.Group == apiGroup {
+				return true
+			}
+		}
+		return false
+	}
+
+	for doesItemExists() {
+		crdList := &extensionsv1.CustomResourceDefinitionList{}
+		_ = r.List(ctx, crdList)
+
+		for _, crd := range crdList.Items {
+			if crd.Spec.Group == apiGroup {
+				err := r.Delete(ctx, &crd)
+				if err != nil {
+					logger.Info(err.Error())
+				}
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) waitForFederatedTypeConfigsDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	logger.Info("FINALIZER: FederatedTypeConfigs are being deleted.")
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeletingFederatedTypeConfigs
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	resourceInterface := r.DynamicClient.Resource(schema.GroupVersionResource{
+		Group:    "core.kubefed.io",
+		Version:  "v1beta1",
+		Resource: "federatedtypeconfigs",
+	})
+
+	doesItemExists := func() bool {
+		tcList, _ := resourceInterface.List(ctx, metav1.ListOptions{})
+		return len(tcList.Items) != 0
+	}
+
+	for doesItemExists() {
+		typeConfigList, _ := resourceInterface.List(ctx, metav1.ListOptions{})
+		for _, tc := range typeConfigList.Items {
+			err := resourceInterface.Namespace(connectionhubv1alpha1.FederationOperatorNamespace).Delete(ctx, tc.GetName(), metav1.DeleteOptions{})
+			if err != nil {
+				logger.Info(err.Error())
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+	}
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) waitForChartDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	logger.Info("FINALIZER: Federation Operator helm chart is being uninstalled.")
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseUninstallingChart
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	if ok, err := helmops.CheckIfFederationOperatorExists(*instance, r.RESTConfig); err != nil {
+		return err
+	} else {
+		if ok {
+
+			err = helmops.UninstallFederationOperatorChart(*instance, r.RESTConfig)
+			if err != nil {
+				return err
+			}
+
+			logger.Info("FINALIZER: Federation Operator chart is uninstalled.")
+		}
+	}
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) waitForFederatedCoreCRDDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	logger.Info("FINALIZER: Federated Core CRDs are being deleted.")
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeletingFederatedCoreCRDs
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	apiGroups := []string{"core.kubefed.io", "scheduling.kubefed.io"}
+
+	doesItemExists := func() bool {
+		crds := &extensionsv1.CustomResourceDefinitionList{}
+		_ = r.List(ctx, crds)
+		for _, crd := range crds.Items {
+			for _, ag := range apiGroups {
+				if crd.Spec.Group == ag {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	for doesItemExists() {
+		crdList := &extensionsv1.CustomResourceDefinitionList{}
+		_ = r.List(ctx, crdList)
+
+		for _, crd := range crdList.Items {
+			for _, apiGroup := range apiGroups {
+				if crd.Spec.Group == apiGroup {
+					err := r.Delete(ctx, &crd)
+					if err != nil {
+						logger.Info(err.Error())
+					}
+				}
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+
+	}
+
+	return nil
+
+}
+
+func (r *FederationOperatorReconciler) waitForNamespaceDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	federationOperatorNamespaceQuery := &corev1.Namespace{}
+	err := r.Get(ctx, *instance.GetNamespaceMetadata(), federationOperatorNamespaceQuery)
+	if err != nil && errors.IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return err
+	} else {
+		logger.Info("FINALIZER: Federation Operator namespace is being deleted.")
+		err := r.Delete(ctx, federationOperatorNamespaceQuery)
+		if err != nil {
+			return err
+		}
+
+		instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseTerminatingNamespace
+		err = r.reconcileUpdateInstanceStatus(ctx, instance)
+		if err != nil {
+			return err
+		}
+
+		resourceInterface := r.DynamicClient.Resource(schema.GroupVersionResource{
+			Group:    federationOperatorNamespaceQuery.GroupVersionKind().Group,
+			Version:  federationOperatorNamespaceQuery.GroupVersionKind().Version,
+			Resource: "namespaces",
+		})
+		federationOperatorNamespaceWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
+			FieldSelector: "metadata.name=" + instance.GetNamespaceMetadata().Name,
+		})
+
+		defer federationOperatorNamespaceWatcher.Stop()
+
+		federationOperatorNamespaceDeleted := false
+		for {
+			if !federationOperatorNamespaceDeleted {
+				select {
+				case event := <-federationOperatorNamespaceWatcher.ResultChan():
+
+					if event.Type == watch.Deleted {
+						logger.Info("FINALIZER: Federation Operator namespace is deleted gracefully.")
+						federationOperatorNamespaceDeleted = true
+					}
+				}
+			} else {
+				break
+			}
+
+		}
+	}
+
+	return nil
 }
