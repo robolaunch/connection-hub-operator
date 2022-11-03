@@ -4,8 +4,25 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type FederationMemberCredentials struct {
+	// +kubebuilder:validation:Required
+	CertificateAuthorityData string `json:"certificateAuthorityData"`
+	// +kubebuilder:validation:Required
+	ClientCertificateData string `json:"clientCertificateData"`
+	// +kubebuilder:validation:Required
+	ClientKey string `json:"clientKey"`
+}
+
+type FederationMemberInfo struct {
+	// +kubebuilder:validation:Required
+	Name        string                      `json:"name"`
+	Server      string                      `json:"server"`
+	Credentials FederationMemberCredentials `json:"credentials"`
+}
+
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
+	FederationMembers []FederationMemberInfo `json:"members,omitempty"`
 }
 
 // FederationHostStatus defines the observed state of FederationHost
