@@ -34,6 +34,33 @@ spec:
             type: object
           spec:
             description: FederationHostSpec defines the desired state of FederationHost
+            properties:
+              members:
+                items:
+                  properties:
+                    credentials:
+                      properties:
+                        certificateAuthorityData:
+                          type: string
+                        clientCertificateData:
+                          type: string
+                        clientKey:
+                          type: string
+                      required:
+                      - certificateAuthorityData
+                      - clientCertificateData
+                      - clientKey
+                      type: object
+                    name:
+                      type: string
+                    server:
+                      type: string
+                  required:
+                  - credentials
+                  - name
+                  - server
+                  type: object
+                type: array
             type: object
           status:
             description: FederationHostStatus defines the observed state of FederationHost
