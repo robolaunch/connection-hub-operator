@@ -4,20 +4,27 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type FederationMemberInfo struct {
+type MemberInfo struct {
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 	// +kubebuilder:validation:Required
 	MemberSpec FederationMemberSpec `json:"memberSpec"`
 }
 
+type MemberStatus struct {
+	Name    string `json:"name"`
+	Created bool   `json:"created,omitempty"`
+}
+
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
-	FederationMembers []FederationMemberInfo `json:"members,omitempty"`
+	FederationMembers []MemberInfo `json:"members,omitempty"`
 }
 
 // FederationHostStatus defines the observed state of FederationHost
 type FederationHostStatus struct {
+	SelfJoined     bool           `json:"selfJoined,omitempty"`
+	MemberStatuses []MemberStatus `json:"memberStatuses,omitempty"`
 }
 
 //+kubebuilder:object:root=true
