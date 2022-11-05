@@ -4,29 +4,42 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type FederationMemberCredentials struct {
+type MemberInfo struct {
 	// +kubebuilder:validation:Required
-	CertificateAuthorityData string `json:"certificateAuthorityData"`
-	// +kubebuilder:validation:Required
-	ClientCertificateData string `json:"clientCertificateData"`
-	// +kubebuilder:validation:Required
-	ClientKey string `json:"clientKey"`
+	MemberSpec FederationMemberSpec `json:"memberSpec"`
 }
 
-type FederationMemberInfo struct {
-	// +kubebuilder:validation:Required
-	Name        string                      `json:"name"`
-	Server      string                      `json:"server"`
-	Credentials FederationMemberCredentials `json:"credentials"`
+type MemberResourcePhase string
+
+const (
+	MemberResourcePhaseActive MemberResourcePhase = "Active"
+	MemberResourcePhaseIdle   MemberResourcePhase = "Idle"
+)
+
+type MemberStatus struct {
+	Created       bool                   `json:"created,omitempty"`
+	Status        FederationMemberStatus `json:"status,omitempty"`
+	ResourcePhase MemberResourcePhase    `json:"resourcePhase,omitempty"`
 }
 
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
-	FederationMembers []FederationMemberInfo `json:"members,omitempty"`
+	FederationMembers map[string]MemberInfo `json:"members,omitempty"`
 }
+
+type FederationHostPhase string
+
+const (
+	FederationHostPhaseJoiningSelf     FederationHostPhase = "JoiningSelf"
+	FederationHostPhaseReady           FederationHostPhase = "Ready"
+	FederationHostPhaseDeletingMembers FederationHostPhase = "DeletingMembers"
+)
 
 // FederationHostStatus defines the observed state of FederationHost
 type FederationHostStatus struct {
+	SelfJoined     bool                    `json:"selfJoined,omitempty"`
+	MemberStatuses map[string]MemberStatus `json:"memberStatuses,omitempty"`
+	Phase          FederationHostPhase     `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true

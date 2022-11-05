@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	kubefedv1beta1 "github.com/robolaunch/connection-hub-operator/api/external/kubefed/v1beta1"
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
@@ -12,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
@@ -464,12 +466,12 @@ func (r *SubmarinerReconciler) waitForSubmarinerBrokerDeletion(ctx context.Conte
 
 func (r *FederationOperatorReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
 
-	submarinerBrokerFinalizer := "federationoperator.connection-hub.roboscale.io/finalizer"
+	federationOperatorFinalizer := "federationoperator.connection-hub.roboscale.io/finalizer"
 
 	if instance.DeletionTimestamp.IsZero() {
 
-		if !controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
-			controllerutil.AddFinalizer(instance, submarinerBrokerFinalizer)
+		if !controllerutil.ContainsFinalizer(instance, federationOperatorFinalizer) {
+			controllerutil.AddFinalizer(instance, federationOperatorFinalizer)
 			if err := r.Update(ctx, instance); err != nil {
 				return err
 			}
@@ -477,7 +479,7 @@ func (r *FederationOperatorReconciler) reconcileCheckDeletion(ctx context.Contex
 
 	} else {
 
-		if controllerutil.ContainsFinalizer(instance, submarinerBrokerFinalizer) {
+		if controllerutil.ContainsFinalizer(instance, federationOperatorFinalizer) {
 
 			err := r.waitForFederatedTypeCRDDeletion(ctx, instance)
 			if err != nil {
@@ -494,17 +496,18 @@ func (r *FederationOperatorReconciler) reconcileCheckDeletion(ctx context.Contex
 				return err
 			}
 
-			err = r.waitForFederatedCoreCRDDeletion(ctx, instance)
-			if err != nil {
-				return err
-			}
+			// do not delete core crds
+			// err = r.waitForFederatedCoreCRDDeletion(ctx, instance)
+			// if err != nil {
+			// 	return err
+			// }
 
 			err = r.waitForNamespaceDeletion(ctx, instance)
 			if err != nil {
 				return err
 			}
 
-			controllerutil.RemoveFinalizer(instance, submarinerBrokerFinalizer)
+			controllerutil.RemoveFinalizer(instance, federationOperatorFinalizer)
 			if err := r.Update(ctx, instance); err != nil {
 				return err
 			}
@@ -720,6 +723,141 @@ func (r *FederationOperatorReconciler) waitForNamespaceDeletion(ctx context.Cont
 			}
 
 		}
+	}
+
+	return nil
+}
+
+func (r *FederationMemberReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
+
+	federationMemberFinalizer := "federationmember.connection-hub.roboscale.io/finalizer"
+
+	if instance.DeletionTimestamp.IsZero() {
+
+		if !controllerutil.ContainsFinalizer(instance, federationMemberFinalizer) {
+			controllerutil.AddFinalizer(instance, federationMemberFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+	} else {
+
+		if controllerutil.ContainsFinalizer(instance, federationMemberFinalizer) {
+
+			err := r.waitForUnjoinOperation(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			controllerutil.RemoveFinalizer(instance, federationMemberFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+		return errors.NewNotFound(schema.GroupResource{
+			Group:    instance.GetObjectKind().GroupVersionKind().Group,
+			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
+		}, instance.Name)
+	}
+
+	return nil
+}
+
+func (r *FederationMemberReconciler) waitForUnjoinOperation(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseUnjoiningFederation
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("FINALIZER: Unjoining clusters.")
+
+	kubefedCluster := &kubefedv1beta1.KubeFedCluster{}
+	err = r.Get(ctx, types.NamespacedName{Name: instance.Name, Namespace: connectionhubv1alpha1.FederationOperatorNamespace}, kubefedCluster)
+	if err != nil {
+		return nil
+	}
+
+	err = r.Delete(ctx, kubefedCluster)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *FederationHostReconciler) reconcileCheckDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
+
+	federationMemberFinalizer := "federationmember.connection-hub.roboscale.io/finalizer"
+
+	if instance.DeletionTimestamp.IsZero() {
+
+		if !controllerutil.ContainsFinalizer(instance, federationMemberFinalizer) {
+			controllerutil.AddFinalizer(instance, federationMemberFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+	} else {
+
+		if controllerutil.ContainsFinalizer(instance, federationMemberFinalizer) {
+
+			err := r.waitForMemberDeletion(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+			controllerutil.RemoveFinalizer(instance, federationMemberFinalizer)
+			if err := r.Update(ctx, instance); err != nil {
+				return err
+			}
+		}
+
+		return errors.NewNotFound(schema.GroupResource{
+			Group:    instance.GetObjectKind().GroupVersionKind().Group,
+			Resource: instance.GetObjectKind().GroupVersionKind().Kind,
+		}, instance.Name)
+	}
+
+	return nil
+}
+
+func (r *FederationHostReconciler) waitForMemberDeletion(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
+
+	logger.Info("FINALIZER: Federation members are being deleted.")
+
+	instance.Status.Phase = connectionhubv1alpha1.FederationHostPhaseDeletingMembers
+	err := r.reconcileUpdateInstanceStatus(ctx, instance)
+	if err != nil {
+		return err
+	}
+
+	doesItemExists := func() bool {
+		members := &connectionhubv1alpha1.FederationMemberList{}
+		_ = r.List(ctx, members)
+		if len(members.Items) > 0 {
+			return true
+		}
+		return false
+	}
+
+	for doesItemExists() {
+		members := &connectionhubv1alpha1.FederationMemberList{}
+		_ = r.List(ctx, members)
+
+		for _, member := range members.Items {
+			err := r.Delete(ctx, &member)
+			if err != nil {
+				logger.Info(err.Error())
+			}
+		}
+
+		time.Sleep(2 * time.Second)
+
 	}
 
 	return nil

@@ -35,6 +35,7 @@ import (
 
 	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 
+	kubefedv1beta1 "github.com/robolaunch/connection-hub-operator/api/external/kubefed/v1beta1"
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
@@ -53,6 +54,7 @@ func init() {
 	_ = submv1alpha1.AddToScheme(scheme)
 	_ = brokerv1.AddToScheme(scheme)
 	_ = extensionsv1.AddToScheme(scheme)
+	_ = kubefedv1beta1.AddToScheme(scheme)
 
 	//+kubebuilder:scaffold:scheme
 }
@@ -173,6 +175,19 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "FederationHost")
+		os.Exit(1)
+	}
+	if err = (&controllers.FederationMemberReconciler{
+		Client:        mgr.GetClient(),
+		Scheme:        mgr.GetScheme(),
+		DynamicClient: dynamicClient,
+		RESTConfig:    mgr.GetConfig(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "FederationMember")
+		os.Exit(1)
+	}
+	if err = (&connectionhubv1alpha1.FederationOperator{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FederationOperator")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
