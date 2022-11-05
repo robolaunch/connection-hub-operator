@@ -7,7 +7,7 @@ import (
 	"sigs.k8s.io/kubefed/pkg/kubefedctl"
 )
 
-func Join(host *connectionhubv1alpha1.FederationHost, member *connectionhubv1alpha1.FederationMember, hostConfig *rest.Config) error {
+func JoinMember(host *connectionhubv1alpha1.FederationHost, member *connectionhubv1alpha1.FederationMember, hostConfig *rest.Config) error {
 
 	var memberConfig *rest.Config
 	var err error

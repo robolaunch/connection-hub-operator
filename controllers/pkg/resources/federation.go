@@ -5,11 +5,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GetFederationMember(member connectionhubv1alpha1.MemberInfo) *connectionhubv1alpha1.FederationMember {
+func GetFederationMember(name string, member connectionhubv1alpha1.MemberInfo) *connectionhubv1alpha1.FederationMember {
 
 	memberObj := connectionhubv1alpha1.FederationMember{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: member.Name,
+			Name: name,
 		},
 		Spec: member.MemberSpec,
 	}
