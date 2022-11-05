@@ -165,12 +165,14 @@ func (r *FederationHostReconciler) reconcileUpdateMemberStatuses(ctx context.Con
 		if err != nil && errors.IsNotFound(err) {
 			status := instance.Status.MemberStatuses[name]
 			status.Created = false
+			status.Status = connectionhubv1alpha1.FederationMemberStatus{}
 			instance.Status.MemberStatuses[name] = status
 		} else if err != nil {
 			return err
 		} else {
 			status := instance.Status.MemberStatuses[name]
 			status.Created = true
+			status.Status = federationMember.Status
 			instance.Status.MemberStatuses[name] = status
 		}
 	}

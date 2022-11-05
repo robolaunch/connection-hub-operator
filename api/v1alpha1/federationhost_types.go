@@ -17,8 +17,9 @@ const (
 )
 
 type MemberStatus struct {
-	Created       bool                `json:"created,omitempty"`
-	ResourcePhase MemberResourcePhase `json:"resourcePhase,omitempty"`
+	Created       bool                   `json:"created,omitempty"`
+	Status        FederationMemberStatus `json:"status,omitempty"`
+	ResourcePhase MemberResourcePhase    `json:"resourcePhase,omitempty"`
 }
 
 // FederationHostSpec defines the desired state of FederationHost
