@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,6 +39,16 @@ func (r *FederationHostReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
+	err = r.reconcileCheckDeletion(ctx, instance)
+	if err != nil {
+
+		if errors.IsNotFound(err) {
+			return ctrl.Result{}, nil
+		}
+
+		return ctrl.Result{}, err
+	}
+
 	err = r.reconcileCheckStatus(ctx, instance)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -68,12 +77,16 @@ func (r *FederationHostReconciler) reconcileCheckStatus(ctx context.Context, ins
 	switch instance.Status.SelfJoined {
 	case true:
 
-		err := r.reconcileCreateMembers(ctx, instance)
+		instance.Status.Phase = connectionhubv1alpha1.FederationHostPhaseReady
+
+		err := r.reconcileUpdateMemberObjects(ctx, instance)
 		if err != nil {
 			return err
 		}
 
 	case false:
+
+		instance.Status.Phase = connectionhubv1alpha1.FederationHostPhaseJoiningSelf
 
 		err := r.reconcileCreateHostMember(ctx, instance)
 		if err != nil {
@@ -86,6 +99,12 @@ func (r *FederationHostReconciler) reconcileCheckStatus(ctx context.Context, ins
 }
 
 func (r *FederationHostReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
+
+	err := r.reconcileUpdateMemberStatuses(ctx, instance)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -120,34 +139,98 @@ func (r *FederationHostReconciler) reconcileCreateHostMember(ctx context.Context
 	return nil
 }
 
-func (r *FederationHostReconciler) reconcileCreateMembers(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
+func (r *FederationHostReconciler) reconcileUpdateMemberStatuses(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
 
-	for _, mStatus := range instance.Status.MemberStatuses {
-		if !mStatus.Created {
+	if instance.Status.MemberStatuses == nil {
+		instance.Status.MemberStatuses = make(map[string]connectionhubv1alpha1.MemberStatus)
+	}
 
-			memberInfo := connectionhubv1alpha1.MemberInfo{}
-			for _, member := range instance.Spec.FederationMembers {
-				if mStatus.Name == member.Name {
-					memberInfo = member
-					break
-				}
+	// update member statuses
+	for name := range instance.Spec.FederationMembers {
+		if status, ok := instance.Status.MemberStatuses[name]; ok {
+			// keep member active
+			status.ResourcePhase = connectionhubv1alpha1.MemberResourcePhaseActive
+			instance.Status.MemberStatuses[name] = status
+		} else {
+			// add member to status
+			instance.Status.MemberStatuses[name] = connectionhubv1alpha1.MemberStatus{
+				Created:       false,
+				ResourcePhase: connectionhubv1alpha1.MemberResourcePhaseActive,
 			}
+		}
 
-			if reflect.DeepEqual(memberInfo, connectionhubv1alpha1.MemberInfo{}) {
-				continue
-			}
+		// check member object
+		federationMember := connectionhubv1alpha1.FederationMember{}
+		err := r.Get(ctx, types.NamespacedName{Name: name}, &federationMember)
+		if err != nil && errors.IsNotFound(err) {
+			status := instance.Status.MemberStatuses[name]
+			status.Created = false
+			instance.Status.MemberStatuses[name] = status
+		} else if err != nil {
+			return err
+		} else {
+			status := instance.Status.MemberStatuses[name]
+			status.Created = true
+			instance.Status.MemberStatuses[name] = status
+		}
+	}
 
-			member := resources.GetFederationMember(memberInfo)
+	// make member idle
+	for name, status := range instance.Status.MemberStatuses {
+		if _, ok := instance.Spec.FederationMembers[name]; !ok {
+			status.ResourcePhase = connectionhubv1alpha1.MemberResourcePhaseIdle
+			instance.Status.MemberStatuses[name] = status
+		}
+	}
 
-			err := ctrl.SetControllerReference(instance, member, r.Scheme)
+	// delete idles and deleted ones from status
+	for name, status := range instance.Status.MemberStatuses {
+		if !status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseIdle {
+			delete(instance.Status.MemberStatuses, name)
+		}
+	}
+
+	return nil
+}
+
+func (r *FederationHostReconciler) reconcileUpdateMemberObjects(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
+
+	// check objects
+
+	// create members in spec
+	for name, member := range instance.Spec.FederationMembers {
+		if status, ok := instance.Status.MemberStatuses[name]; ok && !status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseActive {
+			federationMember := resources.GetFederationMember(name, member)
+			err := ctrl.SetControllerReference(instance, federationMember, r.Scheme)
 			if err != nil {
 				return err
 			}
 
-			err = r.Create(ctx, member)
+			err = r.Create(ctx, federationMember)
 			if err != nil {
 				return err
 			}
+
+			status.Created = true
+			instance.Status.MemberStatuses[name] = status
+		}
+	}
+
+	// delete idle member objects
+	for name, status := range instance.Status.MemberStatuses {
+		if status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseIdle {
+			idleFederationMember := &connectionhubv1alpha1.FederationMember{}
+			err := r.Get(ctx, types.NamespacedName{Name: name}, idleFederationMember)
+			if err != nil {
+				return err
+			}
+
+			err = r.Delete(ctx, idleFederationMember)
+			if err != nil {
+				return err
+			}
+
+			delete(instance.Status.MemberStatuses, name)
 		}
 	}
 
