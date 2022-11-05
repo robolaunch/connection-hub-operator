@@ -41,6 +41,10 @@ func (member *FederationMember) GetMemberClientset() (*kubernetes.Clientset, err
 	return kubernetes.NewForConfig(memberConfig)
 }
 
+func (member *FederationMember) GetHostClientset(config *rest.Config) (*kubernetes.Clientset, error) {
+	return kubernetes.NewForConfig(config)
+}
+
 func decode(data string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(data)
 }
