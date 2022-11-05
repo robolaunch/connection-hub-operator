@@ -26,7 +26,7 @@ patchesStrategicMerge:
 - patches/webhook_in_submarineroperators.yaml
 - patches/webhook_in_cloudinstances.yaml
 #- patches/webhook_in_physicalinstances.yaml
-#- patches/webhook_in_federationoperators.yaml
+- patches/webhook_in_federationoperators.yaml
 #- patches/webhook_in_federationhosts.yaml
 #- patches/webhook_in_federationmembers.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
@@ -38,7 +38,7 @@ patchesStrategicMerge:
 - patches/cainjection_in_submarineroperators.yaml
 - patches/cainjection_in_cloudinstances.yaml
 #- patches/cainjection_in_physicalinstances.yaml
-#- patches/cainjection_in_federationoperators.yaml
+- patches/cainjection_in_federationoperators.yaml
 #- patches/cainjection_in_federationhosts.yaml
 #- patches/cainjection_in_federationmembers.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch

@@ -186,6 +186,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "FederationMember")
 		os.Exit(1)
 	}
+	if err = (&connectionhubv1alpha1.FederationOperator{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "FederationOperator")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
