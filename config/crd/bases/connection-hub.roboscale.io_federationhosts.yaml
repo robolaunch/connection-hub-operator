@@ -36,7 +36,7 @@ spec:
             description: FederationHostSpec defines the desired state of FederationHost
             properties:
               members:
-                items:
+                additionalProperties:
                   properties:
                     memberSpec:
                       description: FederationMemberSpec defines the desired state
@@ -44,15 +44,15 @@ spec:
                       properties:
                         credentials:
                           properties:
-                            certificateAuthorityData:
+                            certificateAuthority:
                               type: string
-                            clientCertificateData:
+                            clientCertificate:
                               type: string
                             clientKey:
                               type: string
                           required:
-                          - certificateAuthorityData
-                          - clientCertificateData
+                          - certificateAuthority
+                          - clientCertificate
                           - clientKey
                           type: object
                         server:
@@ -61,16 +61,27 @@ spec:
                       - credentials
                       - server
                       type: object
-                    name:
-                      type: string
                   required:
                   - memberSpec
-                  - name
                   type: object
-                type: array
+                type: object
             type: object
           status:
             description: FederationHostStatus defines the observed state of FederationHost
+            properties:
+              memberStatuses:
+                additionalProperties:
+                  properties:
+                    created:
+                      type: boolean
+                    resourcePhase:
+                      type: string
+                  type: object
+                type: object
+              phase:
+                type: string
+              selfJoined:
+                type: boolean
             type: object
         type: object
     served: true
