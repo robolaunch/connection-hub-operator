@@ -6,25 +6,39 @@ import (
 
 type MemberInfo struct {
 	// +kubebuilder:validation:Required
-	Name string `json:"name"`
-	// +kubebuilder:validation:Required
 	MemberSpec FederationMemberSpec `json:"memberSpec"`
 }
 
+type MemberResourcePhase string
+
+const (
+	MemberResourcePhaseActive MemberResourcePhase = "Active"
+	MemberResourcePhaseIdle   MemberResourcePhase = "Idle"
+)
+
 type MemberStatus struct {
-	Name    string `json:"name"`
-	Created bool   `json:"created,omitempty"`
+	Created       bool                `json:"created,omitempty"`
+	ResourcePhase MemberResourcePhase `json:"resourcePhase,omitempty"`
 }
 
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
-	FederationMembers []MemberInfo `json:"members,omitempty"`
+	FederationMembers map[string]MemberInfo `json:"members,omitempty"`
 }
+
+type FederationHostPhase string
+
+const (
+	FederationHostPhaseJoiningSelf     FederationHostPhase = "JoiningSelf"
+	FederationHostPhaseReady           FederationHostPhase = "Ready"
+	FederationHostPhaseDeletingMembers FederationHostPhase = "DeletingMembers"
+)
 
 // FederationHostStatus defines the observed state of FederationHost
 type FederationHostStatus struct {
-	SelfJoined     bool           `json:"selfJoined,omitempty"`
-	MemberStatuses []MemberStatus `json:"memberStatuses,omitempty"`
+	SelfJoined     bool                    `json:"selfJoined,omitempty"`
+	MemberStatuses map[string]MemberStatus `json:"memberStatuses,omitempty"`
+	Phase          FederationHostPhase     `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
