@@ -37,6 +37,10 @@ const (
 type ConnectionHubSpec struct {
 	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
 	InstanceType `json:"instanceType,omitempty"`
+	// +kubebuilder:validation:Required
+	SubmarinerSpec SubmarinerSpec `json:"submarinerSpec"`
+	// +kubebuilder:validation:Required
+	FederationSpec FederationOperatorSpec `json:"federationSpec"`
 }
 
 // ConnectionHubStatus defines the observed state of ConnectionHub
