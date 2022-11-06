@@ -2,14 +2,48 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+)
+
+type InstanceType string
+
+const (
+	InstanceTypeCloud    InstanceType = "CloudInstance"
+	InstanceTypePhysical InstanceType = "PhysicalInstance"
+)
+
+type SubmarinerInstanceStatus struct {
+	Created bool            `json:"created,omitempty"`
+	Phase   SubmarinerPhase `json:"phase,omitempty"`
+}
+
+type FederationInstanceStatus struct {
+	Created bool                    `json:"created,omitempty"`
+	Phase   FederationOperatorPhase `json:"phase,omitempty"`
+}
+
+type ConnectionHubPhase string
+
+const (
+	ConnectionHubPhaseSubmarinerSettingUp ConnectionHubPhase = "SubmarinerSettingUp"
+	ConnectionHubPhaseFederationSettingUp ConnectionHubPhase = "FederationSettingUp"
+	ConnectionHubPhaseReadyForOperation   ConnectionHubPhase = "ReadyForOperation"
+
+	ConnectionHubPhaseLabelsNotMatched ConnectionHubPhase = "LabelsNotMatched"
+	ConnectionHubPhaseMalfunctioned    ConnectionHubPhase = "Malfunctioned"
 )
 
 // ConnectionHubSpec defines the desired state of ConnectionHub
 type ConnectionHubSpec struct {
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType `json:"instanceType,omitempty"`
 }
 
 // ConnectionHubStatus defines the observed state of ConnectionHub
 type ConnectionHubStatus struct {
+	Phase      ConnectionHubPhase       `json:"phase,omitempty"`
+	Submariner SubmarinerInstanceStatus `json:"submariner,omitempty"`
+	Federation FederationInstanceStatus `json:"federation,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -36,4 +70,16 @@ type ConnectionHubList struct {
 
 func init() {
 	SchemeBuilder.Register(&ConnectionHub{}, &ConnectionHubList{})
+}
+
+func (ch *ConnectionHub) GetSubmarinerMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: GlobalSubmarinerResourceName,
+	}
+}
+
+func (ch *ConnectionHub) GetFederationMetadata() *types.NamespacedName {
+	return &types.NamespacedName{
+		Name: GlobalFederationOperatorResourceName,
+	}
 }

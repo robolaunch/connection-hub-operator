@@ -9,13 +9,6 @@ const (
 	GlobalSubmarinerResourceName = "submariner"
 )
 
-type InstanceType string
-
-const (
-	InstanceTypeCloud    InstanceType = "CloudInstance"
-	InstanceTypePhysical InstanceType = "PhysicalInstance"
-)
-
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
 	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
