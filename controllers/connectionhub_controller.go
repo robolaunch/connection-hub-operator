@@ -58,10 +58,52 @@ func (r *ConnectionHubReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 }
 
 func (r *ConnectionHubReconciler) reconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) error {
+
+	switch instance.Status.Submariner.Created {
+	case true:
+
+		switch instance.Status.Submariner.Phase {
+		case connectionhubv1alpha1.SubmarinerPhaseReadyToConnect:
+
+			switch instance.Status.Federation.Created {
+			case true:
+
+				switch instance.Status.Federation.Phase {
+				case connectionhubv1alpha1.FederationOperatorPhaseDeployed:
+
+				default:
+
+					// wait for federation to be ready
+
+				}
+
+			case false:
+
+				// create federation
+
+			}
+
+		default:
+
+			// wait for submariner to be ready
+
+		}
+
+	case false:
+
+		// create submariner
+
+	}
+
 	return nil
 }
 
 func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) error {
+
+	// check submariner
+
+	// check federation
+
 	return nil
 }
 
