@@ -157,7 +157,7 @@ func (r *FederationOperatorReconciler) reconcileCheckResources(ctx context.Conte
 		if resource.GroupVersionKind.Kind == "Deployment" {
 			obj = &appsv1.Deployment{}
 		} else {
-			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected")
 		}
 
 		objKey := resource.ObjectKey

@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	FederationOperatorNamespace string = "kube-federation-system"
+	GlobalFederationOperatorResourceName string = "federation"
+	FederationOperatorNamespace          string = "kube-federation-system"
 )
 
 // FederationOperatorSpec defines the desired state of FederationOperator
