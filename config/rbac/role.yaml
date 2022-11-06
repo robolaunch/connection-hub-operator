@@ -106,6 +106,32 @@ rules:
 - apiGroups:
   - connection-hub.roboscale.io
   resources:
+  - connectionhubs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - connectionhubs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - connectionhubs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
   - federationhosts
   verbs:
   - create
