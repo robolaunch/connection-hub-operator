@@ -114,6 +114,9 @@ func (r *SubmarinerBrokerReconciler) waitForNamespaceDeletion(ctx context.Contex
 		submarinerBrokerNamespaceWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetNamespaceMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer submarinerBrokerNamespaceWatcher.Stop()
 
@@ -234,6 +237,9 @@ func (r *SubmarinerOperatorReconciler) waitForNamespaceDeletion(ctx context.Cont
 		submarinerOperatorNamespaceWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetNamespaceMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer submarinerOperatorNamespaceWatcher.Stop()
 
@@ -334,6 +340,9 @@ func (r *SubmarinerReconciler) waitForSubmarinerCRDeletion(ctx context.Context, 
 		submarinerWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetSubmarinerCustomResourceMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer submarinerWatcher.Stop()
 
@@ -387,6 +396,9 @@ func (r *SubmarinerReconciler) waitForSubmarinerOperatorDeletion(ctx context.Con
 		submarinerOperatorWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetSubmarinerOperatorMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer submarinerOperatorWatcher.Stop()
 
@@ -440,6 +452,9 @@ func (r *SubmarinerReconciler) waitForSubmarinerBrokerDeletion(ctx context.Conte
 		submarinerBrokerWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetSubmarinerBrokerMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer submarinerBrokerWatcher.Stop()
 
@@ -704,6 +719,9 @@ func (r *FederationOperatorReconciler) waitForNamespaceDeletion(ctx context.Cont
 		federationOperatorNamespaceWatcher, err := resourceInterface.Watch(ctx, metav1.ListOptions{
 			FieldSelector: "metadata.name=" + instance.GetNamespaceMetadata().Name,
 		})
+		if err != nil {
+			return err
+		}
 
 		defer federationOperatorNamespaceWatcher.Stop()
 
@@ -839,10 +857,7 @@ func (r *FederationHostReconciler) waitForMemberDeletion(ctx context.Context, in
 	doesItemExists := func() bool {
 		members := &connectionhubv1alpha1.FederationMemberList{}
 		_ = r.List(ctx, members)
-		if len(members.Items) > 0 {
-			return true
-		}
-		return false
+		return len(members.Items) > 0
 	}
 
 	for doesItemExists() {

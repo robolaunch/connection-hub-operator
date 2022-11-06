@@ -225,7 +225,7 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 		} else if resource.GroupVersionKind.Kind == "DaemonSet" {
 			obj = &appsv1.DaemonSet{}
 		} else {
-			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected.")
+			return basicErr.New("RESOURCE: Operator resource's kind cannot be detected")
 		}
 
 		objKey := resource.ObjectKey
@@ -238,15 +238,15 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 	return nil
 }
 
-func (r *SubmarinerReconciler) submarinerReconcileSetCredentials(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+// func (r *SubmarinerReconciler) submarinerReconcileSetCredentials(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 
-	switch instance.Spec.InstanceType {
-	case connectionhubv1alpha1.InstanceTypePhysical:
-		instance.Status.BrokerStatus.Status.BrokerCredentials = instance.Spec.BrokerCredentials
-	}
+// 	switch instance.Spec.InstanceType {
+// 	case connectionhubv1alpha1.InstanceTypePhysical:
+// 		instance.Status.BrokerStatus.Status.BrokerCredentials = instance.Spec.BrokerCredentials
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingBroker

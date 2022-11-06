@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/lucasjones/reggen"
-	_ "github.com/lucasjones/reggen"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
