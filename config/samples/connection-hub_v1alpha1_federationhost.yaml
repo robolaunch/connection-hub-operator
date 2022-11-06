@@ -1,0 +1,12 @@
+apiVersion: connection-hub.roboscale.io/v1alpha1
+kind: FederationHost
+metadata:
+  labels:
+    app.kubernetes.io/name: federationhost
+    app.kubernetes.io/instance: federationhost-sample
+    app.kubernetes.io/part-of: connection-hub-operator
+    app.kuberentes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: connection-hub-operator
+  name: federationhost-sample
+spec:
+  # TODO(user): Add fields here

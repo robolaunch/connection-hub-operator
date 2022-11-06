@@ -6,6 +6,12 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - admissionregistration.k8s.io
   resources:
   - '*'
@@ -93,6 +99,58 @@ rules:
   - connection-hub.roboscale.io
   resources:
   - cloudinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers/status
   verbs:
   - get
   - patch

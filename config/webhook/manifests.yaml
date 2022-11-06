@@ -31,6 +31,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-federationoperator
+  failurePolicy: Fail
+  name: mfederationoperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - federationoperators
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-connection-hub-roboscale-io-v1alpha1-submariner
   failurePolicy: Fail
   name: msubmariner.kb.io
@@ -111,6 +131,26 @@ webhooks:
     - UPDATE
     resources:
     - cloudinstances
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-federationoperator
+  failurePolicy: Fail
+  name: vfederationoperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - federationoperators
   sideEffects: None
 - admissionReviewVersions:
   - v1
