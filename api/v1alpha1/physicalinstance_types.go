@@ -9,6 +9,12 @@ import (
 type PhysicalInstanceSpec struct {
 }
 
+type SubmarinerResourceStates struct {
+	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
+	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
+	GatewayConnection   GatewayConnection          `json:"gatewayConnection,omitempty"`
+}
+
 type PhysicalInstancePhase string
 
 const (
@@ -22,10 +28,8 @@ const (
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
 type PhysicalInstanceStatus struct {
-	DeployerStatus      DeployerStatus             `json:"deployerStatus,omitempty"`
-	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
-	GatewayConnection   GatewayConnection          `json:"gatewayConnection,omitempty"`
-	Phase               PhysicalInstancePhase      `json:"phase,omitempty"`
+	Submariner SubmarinerResourceStates `json:"submariner,omitempty"`
+	Phase      PhysicalInstancePhase    `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
