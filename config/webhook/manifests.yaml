@@ -31,6 +31,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-connection-hub-roboscale-io-v1alpha1-connectionhub
+  failurePolicy: Fail
+  name: mconnectionhub.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - connectionhubs
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-connection-hub-roboscale-io-v1alpha1-federationoperator
   failurePolicy: Fail
   name: mfederationoperator.kb.io
@@ -131,6 +151,26 @@ webhooks:
     - UPDATE
     resources:
     - cloudinstances
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-connection-hub-roboscale-io-v1alpha1-connectionhub
+  failurePolicy: Fail
+  name: vconnectionhub.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - connectionhubs
   sideEffects: None
 - admissionReviewVersions:
   - v1
