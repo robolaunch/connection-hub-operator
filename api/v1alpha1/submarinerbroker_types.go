@@ -5,28 +5,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-type HelmRepository struct {
-	// +kubebuilder:validation:Required
-	Name string `json:"name"`
-	// +kubebuilder:validation:Required
-	URL string `json:"url"`
-}
-
-type HelmChartProperties struct {
-	// +kubebuilder:validation:Required
-	Repository HelmRepository `json:"repository"`
-	// +kubebuilder:validation:Required
-	ReleaseName string `json:"releaseName"`
-	// +kubebuilder:validation:Required
-	ChartName string `json:"chartName"`
-	// +kubebuilder:validation:Required
-	Version string `json:"version"`
-}
-
 // SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
 type SubmarinerBrokerSpec struct {
 	// +kubebuilder:validation:Required
-	Helm HelmChartProperties `json:"helm"`
+	HelmRepository HelmRepository `json:"helmRepository"`
+	HelmChart      HelmChart      `json:"helmChart"`
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
 }

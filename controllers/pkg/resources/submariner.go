@@ -10,8 +10,9 @@ import (
 func GetSubmarinerBroker(cr *connectionhubv1alpha1.Submariner) *connectionhubv1alpha1.SubmarinerBroker {
 
 	brokerSpec := connectionhubv1alpha1.SubmarinerBrokerSpec{
-		Helm:         cr.Spec.BrokerHelmChart,
-		APIServerURL: cr.Spec.APIServerURL,
+		HelmRepository: cr.Spec.HelmRepository,
+		HelmChart:      cr.Spec.BrokerHelmChart,
+		APIServerURL:   cr.Spec.APIServerURL,
 	}
 
 	broker := connectionhubv1alpha1.SubmarinerBroker{
@@ -51,9 +52,10 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 			Token: token,
 			CA:    ca,
 		},
-		ClusterID:    string(clusterID),
-		APIServerURL: cr.Spec.APIServerURL,
-		Helm:         cr.Spec.OperatorHelmChart,
+		ClusterID:      string(clusterID),
+		APIServerURL:   cr.Spec.APIServerURL,
+		HelmRepository: cr.Spec.HelmRepository,
+		HelmChart:      cr.Spec.OperatorHelmChart,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{

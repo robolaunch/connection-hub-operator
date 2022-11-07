@@ -30,7 +30,9 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
 	// +kubebuilder:validation:Required
-	Helm HelmChartProperties `json:"helm"`
+	HelmRepository HelmRepository `json:"helmRepository"`
+	// +kubebuilder:validation:Required
+	HelmChart HelmChart `json:"helmChart"`
 }
 
 type SubmarinerOperatorPhase string

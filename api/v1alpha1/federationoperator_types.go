@@ -13,7 +13,9 @@ const (
 // FederationOperatorSpec defines the desired state of FederationOperator
 type FederationOperatorSpec struct {
 	// +kubebuilder:validation:Required
-	Helm HelmChartProperties `json:"helm"`
+	HelmRepository HelmRepository `json:"helmRepository"`
+	// +kubebuilder:validation:Required
+	HelmChart HelmChart `json:"helmChart"`
 }
 
 type FederationOperatorPhase string

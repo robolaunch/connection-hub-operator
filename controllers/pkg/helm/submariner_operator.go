@@ -45,7 +45,7 @@ func CheckIfSubmarinerOperatorExists(submarinerOperator connectionhubv1alpha1.Su
 		return false, err
 	}
 
-	_, err = cli.GetRelease(submarinerOperator.Spec.Helm.ReleaseName)
+	_, err = cli.GetRelease(submarinerOperator.Spec.HelmChart.ReleaseName)
 	if err != nil {
 		return false, nil
 	}
@@ -59,8 +59,8 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 		return err
 	}
 
-	repoName := submarinerOperator.Spec.Helm.Repository.Name
-	repoURL := submarinerOperator.Spec.Helm.Repository.URL
+	repoName := submarinerOperator.Spec.HelmRepository.Name
+	repoURL := submarinerOperator.Spec.HelmRepository.URL
 
 	err = addRepository(config, submarinerOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -78,9 +78,9 @@ func InstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.Sub
 		context.Background(),
 		&helmclient.ChartSpec{
 			Namespace:   submarinerOperator.GetNamespaceMetadata().Name,
-			ReleaseName: submarinerOperator.Spec.Helm.ReleaseName,
-			ChartName:   submarinerOperator.Spec.Helm.ChartName,
-			Version:     submarinerOperator.Spec.Helm.Version,
+			ReleaseName: submarinerOperator.Spec.HelmChart.ReleaseName,
+			ChartName:   submarinerOperator.Spec.HelmChart.ChartName,
+			Version:     submarinerOperator.Spec.HelmChart.Version,
 			ValuesYaml:  string(valuesBytes),
 			Wait:        true,
 			Timeout:     time.Minute * 2,
@@ -97,8 +97,8 @@ func UninstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.S
 		return err
 	}
 
-	repoName := submarinerOperator.Spec.Helm.Repository.Name
-	repoURL := submarinerOperator.Spec.Helm.Repository.URL
+	repoName := submarinerOperator.Spec.HelmRepository.Name
+	repoURL := submarinerOperator.Spec.HelmRepository.URL
 
 	err = addRepository(config, submarinerOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -106,9 +106,9 @@ func UninstallSubmarinerOperatorChart(submarinerOperator connectionhubv1alpha1.S
 	}
 
 	err = cli.UninstallRelease(&helmclient.ChartSpec{
-		ReleaseName: submarinerOperator.Spec.Helm.ReleaseName,
-		ChartName:   submarinerOperator.Spec.Helm.ChartName,
-		Version:     submarinerOperator.Spec.Helm.Version,
+		ReleaseName: submarinerOperator.Spec.HelmChart.ReleaseName,
+		ChartName:   submarinerOperator.Spec.HelmChart.ChartName,
+		Version:     submarinerOperator.Spec.HelmChart.Version,
 		Wait:        true,
 		Timeout:     time.Minute * 2,
 	})

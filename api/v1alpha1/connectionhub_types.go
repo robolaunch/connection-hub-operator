@@ -12,6 +12,22 @@ const (
 	InstanceTypePhysical InstanceType = "PhysicalInstance"
 )
 
+type HelmRepository struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+	// +kubebuilder:validation:Required
+	URL string `json:"url"`
+}
+
+type HelmChart struct {
+	// +kubebuilder:validation:Required
+	ReleaseName string `json:"releaseName"`
+	// +kubebuilder:validation:Required
+	ChartName string `json:"chartName"`
+	// +kubebuilder:validation:Required
+	Version string `json:"version"`
+}
+
 type SubmarinerInstanceStatus struct {
 	Created bool            `json:"created,omitempty"`
 	Phase   SubmarinerPhase `json:"phase,omitempty"`

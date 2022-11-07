@@ -24,9 +24,11 @@ type SubmarinerSpec struct {
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
 	// +kubebuilder:validation:Required
-	BrokerHelmChart HelmChartProperties `json:"brokerHelmChart"`
+	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
-	OperatorHelmChart HelmChartProperties `json:"operatorHelmChart"`
+	BrokerHelmChart HelmChart `json:"brokerHelmChart"`
+	// +kubebuilder:validation:Required
+	OperatorHelmChart HelmChart `json:"operatorHelmChart"`
 }
 
 type BrokerStatus struct {

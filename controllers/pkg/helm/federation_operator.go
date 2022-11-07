@@ -15,7 +15,7 @@ func CheckIfFederationOperatorExists(federationOperator connectionhubv1alpha1.Fe
 		return false, err
 	}
 
-	_, err = cli.GetRelease(federationOperator.Spec.Helm.ReleaseName)
+	_, err = cli.GetRelease(federationOperator.Spec.HelmChart.ReleaseName)
 	if err != nil {
 		return false, nil
 	}
@@ -29,8 +29,8 @@ func InstallFederationOperatorChart(federationOperator connectionhubv1alpha1.Fed
 		return err
 	}
 
-	repoName := federationOperator.Spec.Helm.Repository.Name
-	repoURL := federationOperator.Spec.Helm.Repository.URL
+	repoName := federationOperator.Spec.HelmRepository.Name
+	repoURL := federationOperator.Spec.HelmRepository.URL
 
 	err = addRepository(config, federationOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -41,9 +41,9 @@ func InstallFederationOperatorChart(federationOperator connectionhubv1alpha1.Fed
 		context.Background(),
 		&helmclient.ChartSpec{
 			Namespace:   federationOperator.GetNamespaceMetadata().Name,
-			ReleaseName: federationOperator.Spec.Helm.ReleaseName,
-			ChartName:   federationOperator.Spec.Helm.ChartName,
-			Version:     federationOperator.Spec.Helm.Version,
+			ReleaseName: federationOperator.Spec.HelmChart.ReleaseName,
+			ChartName:   federationOperator.Spec.HelmChart.ChartName,
+			Version:     federationOperator.Spec.HelmChart.Version,
 			Wait:        true,
 			Timeout:     time.Minute * 2,
 		},
@@ -59,8 +59,8 @@ func UninstallFederationOperatorChart(federationOperator connectionhubv1alpha1.F
 		return err
 	}
 
-	repoName := federationOperator.Spec.Helm.Repository.Name
-	repoURL := federationOperator.Spec.Helm.Repository.URL
+	repoName := federationOperator.Spec.HelmRepository.Name
+	repoURL := federationOperator.Spec.HelmRepository.URL
 
 	err = addRepository(config, federationOperator.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -68,9 +68,9 @@ func UninstallFederationOperatorChart(federationOperator connectionhubv1alpha1.F
 	}
 
 	err = cli.UninstallRelease(&helmclient.ChartSpec{
-		ReleaseName: federationOperator.Spec.Helm.ReleaseName,
-		ChartName:   federationOperator.Spec.Helm.ChartName,
-		Version:     federationOperator.Spec.Helm.Version,
+		ReleaseName: federationOperator.Spec.HelmChart.ReleaseName,
+		ChartName:   federationOperator.Spec.HelmChart.ChartName,
+		Version:     federationOperator.Spec.HelmChart.Version,
 		Wait:        true,
 		Timeout:     time.Minute * 2,
 	})

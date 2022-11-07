@@ -15,7 +15,7 @@ func CheckIfSubmarinerBrokerExists(submarinerBroker connectionhubv1alpha1.Submar
 		return false, err
 	}
 
-	_, err = cli.GetRelease(submarinerBroker.Spec.Helm.ReleaseName)
+	_, err = cli.GetRelease(submarinerBroker.Spec.HelmChart.ReleaseName)
 	if err != nil {
 		return false, nil
 	}
@@ -29,8 +29,8 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 		return err
 	}
 
-	repoName := submarinerBroker.Spec.Helm.Repository.Name
-	repoURL := submarinerBroker.Spec.Helm.Repository.URL
+	repoName := submarinerBroker.Spec.HelmRepository.Name
+	repoURL := submarinerBroker.Spec.HelmRepository.URL
 
 	err = addRepository(config, submarinerBroker.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -40,9 +40,9 @@ func InstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Submari
 	_, err = cli.InstallChart(
 		context.Background(),
 		&helmclient.ChartSpec{
-			ReleaseName: submarinerBroker.Spec.Helm.ReleaseName,
-			ChartName:   submarinerBroker.Spec.Helm.ChartName,
-			Version:     submarinerBroker.Spec.Helm.Version,
+			ReleaseName: submarinerBroker.Spec.HelmChart.ReleaseName,
+			ChartName:   submarinerBroker.Spec.HelmChart.ChartName,
+			Version:     submarinerBroker.Spec.HelmChart.Version,
 			Wait:        true,
 			Timeout:     time.Minute * 2,
 		},
@@ -58,8 +58,8 @@ func UninstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Subma
 		return err
 	}
 
-	repoName := submarinerBroker.Spec.Helm.Repository.Name
-	repoURL := submarinerBroker.Spec.Helm.Repository.URL
+	repoName := submarinerBroker.Spec.HelmRepository.Name
+	repoURL := submarinerBroker.Spec.HelmRepository.URL
 
 	err = addRepository(config, submarinerBroker.GetNamespaceMetadata().Name, repoName, repoURL)
 	if err != nil {
@@ -67,9 +67,9 @@ func UninstallSubmarinerBrokerChart(submarinerBroker connectionhubv1alpha1.Subma
 	}
 
 	err = cli.UninstallRelease(&helmclient.ChartSpec{
-		ReleaseName: submarinerBroker.Spec.Helm.ReleaseName,
-		ChartName:   submarinerBroker.Spec.Helm.ChartName,
-		Version:     submarinerBroker.Spec.Helm.Version,
+		ReleaseName: submarinerBroker.Spec.HelmChart.ReleaseName,
+		ChartName:   submarinerBroker.Spec.HelmChart.ChartName,
+		Version:     submarinerBroker.Spec.HelmChart.Version,
 		Wait:        true,
 		Timeout:     time.Minute * 2,
 	})
