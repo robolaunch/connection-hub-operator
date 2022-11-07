@@ -7,21 +7,12 @@ import (
 	"sigs.k8s.io/kubefed/pkg/apis/core/common"
 )
 
-type FederationMemberCredentials struct {
-	// +kubebuilder:validation:Required
-	CertificateAuthority string `json:"certificateAuthority"`
-	// +kubebuilder:validation:Required
-	ClientCertificate string `json:"clientCertificate"`
-	// +kubebuilder:validation:Required
-	ClientKey string `json:"clientKey"`
-}
-
 // FederationMemberSpec defines the desired state of FederationMember
 type FederationMemberSpec struct {
 	// +kubebuilder:validation:Required
 	Server string `json:"server"`
 	// +kubebuilder:validation:Required
-	Credentials FederationMemberCredentials `json:"credentials"`
+	Credentials PhysicalInstanceCredentials `json:"credentials"`
 }
 
 type FederationMemberPhase string

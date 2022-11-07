@@ -5,6 +5,7 @@ import (
 	basicErr "errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
@@ -82,15 +83,33 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 				switch instance.Status.Submariner.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+					switch instance.Status.FederationMember.Created {
+					case true:
+
+						switch instance.Status.FederationMember.Status.Phase {
+						case connectionhubv1alpha1.FederationMemberPhaseReady:
+
+							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+						default:
+
+							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
+
+						}
+
+					case false:
+
+						// create federation member
+
+					}
 
 				case brokerv1.Connecting:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnecting
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverMulticast
 
 				case brokerv1.ConnectionError:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnected
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnectedOverMulticast
 
 				}
 
@@ -205,6 +224,50 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 	}
 
+	// check federation member
+
+	federationMember := &connectionhubv1alpha1.FederationMember{}
+	err = r.Get(ctx, types.NamespacedName{Name: instance.Name}, federationMember)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.FederationMember = connectionhubv1alpha1.FederationMemberInstanceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.FederationMember.Created = true
+		instance.Status.FederationMember.Status = federationMember.Status
+	}
+
+	return nil
+}
+
+func (r *PhysicalInstanceReconciler) reconcileCreateFederationMember(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
+
+	member := &connectionhubv1alpha1.FederationMember{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: instance.Name,
+		},
+		Spec: connectionhubv1alpha1.FederationMemberSpec{
+			Server: instance.Spec.Server,
+			Credentials: connectionhubv1alpha1.PhysicalInstanceCredentials{
+				CertificateAuthority: instance.Spec.Credentials.CertificateAuthority,
+				ClientKey:            instance.Spec.Credentials.ClientKey,
+				ClientCertificate:    instance.Spec.Credentials.ClientCertificate,
+			},
+		},
+	}
+
+	err := ctrl.SetControllerReference(instance, member, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, member)
+	if err != nil {
+		return err
+	}
+
+	instance.Status.FederationMember.Created = true
+
 	return nil
 }
 
@@ -252,6 +315,7 @@ func (r *PhysicalInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Gateway{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
+		Owns(&connectionhubv1alpha1.FederationMember{}).
 		Complete(r)
 }
 

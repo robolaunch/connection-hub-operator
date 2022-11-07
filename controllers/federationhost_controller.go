@@ -116,7 +116,7 @@ func (r *FederationHostReconciler) reconcileCreateHostMember(ctx context.Context
 		},
 		Spec: connectionhubv1alpha1.FederationMemberSpec{
 			Server: "",
-			Credentials: connectionhubv1alpha1.FederationMemberCredentials{
+			Credentials: connectionhubv1alpha1.PhysicalInstanceCredentials{
 				CertificateAuthority: "",
 				ClientKey:            "",
 				ClientCertificate:    "",
