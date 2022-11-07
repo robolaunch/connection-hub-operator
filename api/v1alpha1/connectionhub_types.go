@@ -55,6 +55,11 @@ type ConnectionHubSpec struct {
 	FederationSpec FederationOperatorSpec `json:"federationSpec"`
 }
 
+type ConnectionInterfaces struct {
+	ForPhysicalInstance ConnectionHubSpec               `json:"forPhysicalInstance,omitempty"`
+	ForCloudInstance    map[string]FederationMemberSpec `json:"forCloudInstance,omitempty"`
+}
+
 // ConnectionHubStatus defines the observed state of ConnectionHub
 type ConnectionHubStatus struct {
 	NodeInfo   K8sNodeInfo              `json:"nodeInfo,omitempty"`
@@ -64,6 +69,8 @@ type ConnectionHubStatus struct {
 
 	FederationHost FederationHostInstanceStatus `json:"federationHost,omitempty"`
 	CloudInstance  CloudInstanceInstanceStatus  `json:"cloudInstance,omitempty"`
+
+	ConnectionInterfaces ConnectionInterfaces `json:"connectionInterfaces,omitempty"`
 }
 
 //+kubebuilder:object:root=true

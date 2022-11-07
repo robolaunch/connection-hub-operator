@@ -173,6 +173,16 @@ func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, i
 	} else {
 		instance.Status.Submariner.Created = true
 		instance.Status.Submariner.Phase = submariner.Status.Phase
+
+		// mirror credentials if cloud instance
+		if instance.Spec.InstanceType == connectionhubv1alpha1.InstanceTypeCloud {
+			r.reconcilePrepareConnectionInterfaceForPhysical(ctx, instance)
+			brokerCredentials := submariner.Status.BrokerStatus.Status.BrokerCredentials
+			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.BrokerCredentials.CA = brokerCredentials.CA
+			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.BrokerCredentials.Token = brokerCredentials.Token
+			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.PresharedKey = submariner.Spec.PresharedKey
+		}
+
 	}
 
 	// check federation
@@ -214,6 +224,19 @@ func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, i
 		} else {
 			instance.Status.CloudInstance.Created = true
 			instance.Status.CloudInstance.Phase = cloudInstance.Status.Phase
+		}
+
+		tenancy := instance.GetTenancySelectors()
+
+		instance.Status.ConnectionInterfaces.ForCloudInstance = map[string]connectionhubv1alpha1.FederationMemberSpec{
+			tenancy.RobolaunchPhysicalInstance: connectionhubv1alpha1.FederationMemberSpec{
+				Server: "<PHYSICAL-INSTANCE-API-SERVER>",
+				Credentials: connectionhubv1alpha1.FederationMemberCredentials{
+					CertificateAuthority: "<PHYSICAL-INSTANCE-CA-DATA>",
+					ClientCertificate:    "<PHYSICAL-INSTANCE-CLIENT-CERT-DATA>",
+					ClientKey:            "<PHYSICAL-INSTANCE-CLIENT-KEY-DATA>",
+				},
+			},
 		}
 
 	}
@@ -264,6 +287,15 @@ func (r *ConnectionHubReconciler) reconcileCheckNode(ctx context.Context, instan
 	instance.Status.NodeInfo.Name = node.Name
 
 	return nil
+}
+
+func (r *ConnectionHubReconciler) reconcilePrepareConnectionInterfaceForPhysical(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) {
+
+	instance.Status.ConnectionInterfaces.ForPhysicalInstance = instance.Spec
+	instance.Status.ConnectionInterfaces.ForPhysicalInstance.InstanceType = connectionhubv1alpha1.InstanceTypePhysical
+	instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.ClusterCIDR = "<PHYSICAL-INSTANCE-CLUSTER-CIDR>"
+	instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.ServiceCIDR = "<PHYSICAL-INSTANCE-SERVICE-CIDR>"
+
 }
 
 func (r *ConnectionHubReconciler) reconcileCreateSubmariner(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) error {
