@@ -119,3 +119,21 @@ func (ch *ConnectionHub) GetFederationMetadata() *types.NamespacedName {
 		Name: GlobalFederationOperatorResourceName,
 	}
 }
+
+func (ch *ConnectionHub) GetFederationHostMetadata() *types.NamespacedName {
+
+	tenancy := ch.GetTenancySelectors()
+
+	return &types.NamespacedName{
+		Name: tenancy.RobolaunchCloudInstance,
+	}
+}
+
+func (ch *ConnectionHub) GetCloudInstanceMetadata() *types.NamespacedName {
+
+	tenancy := ch.GetTenancySelectors()
+
+	return &types.NamespacedName{
+		Name: tenancy.RobolaunchCloudInstance,
+	}
+}

@@ -86,11 +86,45 @@ func (r *ConnectionHubReconciler) reconcileCheckStatus(ctx context.Context, inst
 					switch instance.Spec.InstanceType {
 					case connectionhubv1alpha1.InstanceTypeCloud:
 
-						// create federation host if cloud instance
+						switch instance.Status.FederationHost.Created {
+						case true:
+
+							switch instance.Status.FederationHost.Phase {
+							case connectionhubv1alpha1.FederationHostPhaseReady:
+
+								instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseReadyForOperation
+
+							}
+
+						case false:
+
+							err := r.reconcileCreateFederationHost(ctx, instance)
+							if err != nil {
+								return err
+							}
+
+						}
 
 					case connectionhubv1alpha1.InstanceTypePhysical:
 
-						// create cloud instance if physical instance
+						switch instance.Status.CloudInstance.Created {
+						case true:
+
+							switch instance.Status.CloudInstance.Phase {
+							case connectionhubv1alpha1.CloudInstancePhaseConnected:
+
+								instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseReadyForOperation
+
+							}
+
+						case false:
+
+							err := r.reconcileCreateCloudInstance(ctx, instance)
+							if err != nil {
+								return err
+							}
+
+						}
 
 					}
 
@@ -151,6 +185,37 @@ func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, i
 	} else {
 		instance.Status.Federation.Created = true
 		instance.Status.Federation.Phase = federation.Status.Phase
+	}
+
+	switch instance.Spec.InstanceType {
+	case connectionhubv1alpha1.InstanceTypeCloud:
+
+		// check federation host
+		federationHost := &connectionhubv1alpha1.FederationHost{}
+		err := r.Get(ctx, types.NamespacedName{Name: instance.GetFederationHostMetadata().Name}, federationHost)
+		if err != nil && errors.IsNotFound(err) {
+			instance.Status.FederationHost = connectionhubv1alpha1.FederationHostInstanceStatus{}
+		} else if err != nil {
+			return err
+		} else {
+			instance.Status.FederationHost.Created = true
+			instance.Status.FederationHost.Phase = federationHost.Status.Phase
+		}
+
+	case connectionhubv1alpha1.InstanceTypePhysical:
+
+		// check cloud instance
+		cloudInstance := &connectionhubv1alpha1.CloudInstance{}
+		err := r.Get(ctx, types.NamespacedName{Name: instance.GetCloudInstanceMetadata().Name}, cloudInstance)
+		if err != nil && errors.IsNotFound(err) {
+			instance.Status.CloudInstance = connectionhubv1alpha1.CloudInstanceInstanceStatus{}
+		} else if err != nil {
+			return err
+		} else {
+			instance.Status.CloudInstance.Created = true
+			instance.Status.CloudInstance.Phase = cloudInstance.Status.Phase
+		}
+
 	}
 
 	return nil
