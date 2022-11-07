@@ -36,32 +36,32 @@ spec:
           spec:
             description: FederationOperatorSpec defines the desired state of FederationOperator
             properties:
-              helm:
+              helmChart:
                 properties:
                   chartName:
                     type: string
                   releaseName:
                     type: string
-                  repository:
-                    properties:
-                      name:
-                        type: string
-                      url:
-                        type: string
-                    required:
-                    - name
-                    - url
-                    type: object
                   version:
                     type: string
                 required:
                 - chartName
                 - releaseName
-                - repository
                 - version
                 type: object
+              helmRepository:
+                properties:
+                  name:
+                    type: string
+                  url:
+                    type: string
+                required:
+                - name
+                - url
+                type: object
             required:
-            - helm
+            - helmChart
+            - helmRepository
             type: object
           status:
             description: FederationOperatorStatus defines the observed state of FederationOperator

@@ -54,26 +54,25 @@ spec:
                     type: string
                   releaseName:
                     type: string
-                  repository:
-                    properties:
-                      name:
-                        type: string
-                      url:
-                        type: string
-                    required:
-                    - name
-                    - url
-                    type: object
                   version:
                     type: string
                 required:
                 - chartName
                 - releaseName
-                - repository
                 - version
                 type: object
               clusterCIDR:
                 type: string
+              helmRepository:
+                properties:
+                  name:
+                    type: string
+                  url:
+                    type: string
+                required:
+                - name
+                - url
+                type: object
               instanceType:
                 enum:
                 - CloudInstance
@@ -85,22 +84,11 @@ spec:
                     type: string
                   releaseName:
                     type: string
-                  repository:
-                    properties:
-                      name:
-                        type: string
-                      url:
-                        type: string
-                    required:
-                    - name
-                    - url
-                    type: object
                   version:
                     type: string
                 required:
                 - chartName
                 - releaseName
-                - repository
                 - version
                 type: object
               presharedKey:
@@ -112,6 +100,7 @@ spec:
             - apiServerURL
             - brokerHelmChart
             - clusterCIDR
+            - helmRepository
             - operatorHelmChart
             type: object
           status:

@@ -7,33 +7,30 @@ metadata:
   name: connection-hub
 spec:
   federationSpec:
-    helm:
+    helmRepository:
+      name: robolaunch
+      url: <HELM-REPO-URL>
+    helmChart:
       chartName: robolaunch/kubefed
       releaseName: kubefed
-      repository:
-        name: robolaunch
-        url: <HELM-REPO-URL>
       version: 0.9.2
   instanceType: PhysicalInstance
   submarinerSpec:
+    helmRepository:
+      name: robolaunch
+      url: <HELM-REPO-URL>
+    brokerHelmChart:
+      chartName: robolaunch/submariner-k8s-broker
+      releaseName: submariner-k8s-broker
+      version: 0.6.0
+    operatorHelmChart:
+      chartName: robolaunch/submariner-operator
+      releaseName: submariner-operator
+      version: 0.10.1
     apiServerURL: <CLOUD-INSTANCE-API-SERVER-URL>
     broker:
       ca: <SUBMARINER-BROKER-CA>
       token: <SUBMARINER-BROKER-TOKEN>
-    brokerHelmChart:
-      chartName: robolaunch/submariner-k8s-broker
-      releaseName: submariner-k8s-broker
-      repository:
-        name: robolaunch
-        url: <HELM-REPO-URL>
-      version: 0.6.0
-    clusterCIDR: <PHYSICAL-INSTANCE-CLUSTER-CIDR>
-    operatorHelmChart:
-      chartName: robolaunch/submariner-operator
-      releaseName: submariner-operator
-      repository:
-        name: robolaunch
-        url: <HELM-REPO-URL>
-      version: 0.10.1
     presharedKey: <PRESHARED-KEY>
+    clusterCIDR: <PHYSICAL-INSTANCE-CLUSTER-CIDR>
     serviceCIDR: <PHYSICAL-INSTANCE-SERVICE-CIDR>

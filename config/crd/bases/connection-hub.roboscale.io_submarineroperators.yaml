@@ -49,29 +49,28 @@ spec:
                 type: string
               clusterID:
                 type: string
-              helm:
+              helmChart:
                 properties:
                   chartName:
                     type: string
                   releaseName:
                     type: string
-                  repository:
-                    properties:
-                      name:
-                        type: string
-                      url:
-                        type: string
-                    required:
-                    - name
-                    - url
-                    type: object
                   version:
                     type: string
                 required:
                 - chartName
                 - releaseName
-                - repository
                 - version
+                type: object
+              helmRepository:
+                properties:
+                  name:
+                    type: string
+                  url:
+                    type: string
+                required:
+                - name
+                - url
                 type: object
               presharedKey:
                 type: string
@@ -82,7 +81,8 @@ spec:
             - broker
             - clusterCIDR
             - clusterID
-            - helm
+            - helmChart
+            - helmRepository
             - presharedKey
             - serviceCIDR
             type: object

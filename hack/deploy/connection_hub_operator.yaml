@@ -216,32 +216,32 @@ spec:
                 federationSpec:
                   description: FederationOperatorSpec defines the desired state of FederationOperator
                   properties:
-                    helm:
+                    helmChart:
                       properties:
                         chartName:
                           type: string
                         releaseName:
                           type: string
-                        repository:
-                          properties:
-                            name:
-                              type: string
-                            url:
-                              type: string
-                          required:
-                            - name
-                            - url
-                          type: object
                         version:
                           type: string
                       required:
                         - chartName
                         - releaseName
-                        - repository
                         - version
                       type: object
+                    helmRepository:
+                      properties:
+                        name:
+                          type: string
+                        url:
+                          type: string
+                      required:
+                        - name
+                        - url
+                      type: object
                   required:
-                    - helm
+                    - helmChart
+                    - helmRepository
                   type: object
                 instanceType:
                   enum:
@@ -266,26 +266,25 @@ spec:
                           type: string
                         releaseName:
                           type: string
-                        repository:
-                          properties:
-                            name:
-                              type: string
-                            url:
-                              type: string
-                          required:
-                            - name
-                            - url
-                          type: object
                         version:
                           type: string
                       required:
                         - chartName
                         - releaseName
-                        - repository
                         - version
                       type: object
                     clusterCIDR:
                       type: string
+                    helmRepository:
+                      properties:
+                        name:
+                          type: string
+                        url:
+                          type: string
+                      required:
+                        - name
+                        - url
+                      type: object
                     instanceType:
                       enum:
                         - CloudInstance
@@ -297,22 +296,11 @@ spec:
                           type: string
                         releaseName:
                           type: string
-                        repository:
-                          properties:
-                            name:
-                              type: string
-                            url:
-                              type: string
-                          required:
-                            - name
-                            - url
-                          type: object
                         version:
                           type: string
                       required:
                         - chartName
                         - releaseName
-                        - repository
                         - version
                       type: object
                     presharedKey:
@@ -324,6 +312,7 @@ spec:
                     - apiServerURL
                     - brokerHelmChart
                     - clusterCIDR
+                    - helmRepository
                     - operatorHelmChart
                   type: object
               required:
@@ -372,32 +361,32 @@ spec:
                         federationSpec:
                           description: FederationOperatorSpec defines the desired state of FederationOperator
                           properties:
-                            helm:
+                            helmChart:
                               properties:
                                 chartName:
                                   type: string
                                 releaseName:
                                   type: string
-                                repository:
-                                  properties:
-                                    name:
-                                      type: string
-                                    url:
-                                      type: string
-                                  required:
-                                    - name
-                                    - url
-                                  type: object
                                 version:
                                   type: string
                               required:
                                 - chartName
                                 - releaseName
-                                - repository
                                 - version
                               type: object
+                            helmRepository:
+                              properties:
+                                name:
+                                  type: string
+                                url:
+                                  type: string
+                              required:
+                                - name
+                                - url
+                              type: object
                           required:
-                            - helm
+                            - helmChart
+                            - helmRepository
                           type: object
                         instanceType:
                           enum:
@@ -422,26 +411,25 @@ spec:
                                   type: string
                                 releaseName:
                                   type: string
-                                repository:
-                                  properties:
-                                    name:
-                                      type: string
-                                    url:
-                                      type: string
-                                  required:
-                                    - name
-                                    - url
-                                  type: object
                                 version:
                                   type: string
                               required:
                                 - chartName
                                 - releaseName
-                                - repository
                                 - version
                               type: object
                             clusterCIDR:
                               type: string
+                            helmRepository:
+                              properties:
+                                name:
+                                  type: string
+                                url:
+                                  type: string
+                              required:
+                                - name
+                                - url
+                              type: object
                             instanceType:
                               enum:
                                 - CloudInstance
@@ -453,22 +441,11 @@ spec:
                                   type: string
                                 releaseName:
                                   type: string
-                                repository:
-                                  properties:
-                                    name:
-                                      type: string
-                                    url:
-                                      type: string
-                                  required:
-                                    - name
-                                    - url
-                                  type: object
                                 version:
                                   type: string
                               required:
                                 - chartName
                                 - releaseName
-                                - repository
                                 - version
                               type: object
                             presharedKey:
@@ -480,6 +457,7 @@ spec:
                             - apiServerURL
                             - brokerHelmChart
                             - clusterCIDR
+                            - helmRepository
                             - operatorHelmChart
                           type: object
                       required:
@@ -881,32 +859,32 @@ spec:
             spec:
               description: FederationOperatorSpec defines the desired state of FederationOperator
               properties:
-                helm:
+                helmChart:
                   properties:
                     chartName:
                       type: string
                     releaseName:
                       type: string
-                    repository:
-                      properties:
-                        name:
-                          type: string
-                        url:
-                          type: string
-                      required:
-                        - name
-                        - url
-                      type: object
                     version:
                       type: string
                   required:
                     - chartName
                     - releaseName
-                    - repository
                     - version
                   type: object
+                helmRepository:
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                  required:
+                    - name
+                    - url
+                  type: object
               required:
-                - helm
+                - helmChart
+                - helmRepository
               type: object
             status:
               description: FederationOperatorStatus defines the observed state of FederationOperator
@@ -1417,33 +1395,33 @@ spec:
               properties:
                 apiServerURL:
                   type: string
-                helm:
+                helmChart:
                   properties:
                     chartName:
                       type: string
                     releaseName:
                       type: string
-                    repository:
-                      properties:
-                        name:
-                          type: string
-                        url:
-                          type: string
-                      required:
-                        - name
-                        - url
-                      type: object
                     version:
                       type: string
                   required:
                     - chartName
                     - releaseName
-                    - repository
                     - version
+                  type: object
+                helmRepository:
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                  required:
+                    - name
+                    - url
                   type: object
               required:
                 - apiServerURL
-                - helm
+                - helmChart
+                - helmRepository
               type: object
             status:
               description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
@@ -1543,29 +1521,28 @@ spec:
                   type: string
                 clusterID:
                   type: string
-                helm:
+                helmChart:
                   properties:
                     chartName:
                       type: string
                     releaseName:
                       type: string
-                    repository:
-                      properties:
-                        name:
-                          type: string
-                        url:
-                          type: string
-                      required:
-                        - name
-                        - url
-                      type: object
                     version:
                       type: string
                   required:
                     - chartName
                     - releaseName
-                    - repository
                     - version
+                  type: object
+                helmRepository:
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                  required:
+                    - name
+                    - url
                   type: object
                 presharedKey:
                   type: string
@@ -1576,7 +1553,8 @@ spec:
                 - broker
                 - clusterCIDR
                 - clusterID
-                - helm
+                - helmChart
+                - helmRepository
                 - presharedKey
                 - serviceCIDR
               type: object
@@ -1677,26 +1655,25 @@ spec:
                       type: string
                     releaseName:
                       type: string
-                    repository:
-                      properties:
-                        name:
-                          type: string
-                        url:
-                          type: string
-                      required:
-                        - name
-                        - url
-                      type: object
                     version:
                       type: string
                   required:
                     - chartName
                     - releaseName
-                    - repository
                     - version
                   type: object
                 clusterCIDR:
                   type: string
+                helmRepository:
+                  properties:
+                    name:
+                      type: string
+                    url:
+                      type: string
+                  required:
+                    - name
+                    - url
+                  type: object
                 instanceType:
                   enum:
                     - CloudInstance
@@ -1708,22 +1685,11 @@ spec:
                       type: string
                     releaseName:
                       type: string
-                    repository:
-                      properties:
-                        name:
-                          type: string
-                        url:
-                          type: string
-                      required:
-                        - name
-                        - url
-                      type: object
                     version:
                       type: string
                   required:
                     - chartName
                     - releaseName
-                    - repository
                     - version
                   type: object
                 presharedKey:
@@ -1735,6 +1701,7 @@ spec:
                 - apiServerURL
                 - brokerHelmChart
                 - clusterCIDR
+                - helmRepository
                 - operatorHelmChart
               type: object
             status:
@@ -3484,7 +3451,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.3.11
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.3.13
           livenessProbe:
             httpGet:
               path: /healthz
