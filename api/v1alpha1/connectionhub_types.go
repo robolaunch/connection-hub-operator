@@ -45,6 +45,7 @@ type ConnectionHubSpec struct {
 
 // ConnectionHubStatus defines the observed state of ConnectionHub
 type ConnectionHubStatus struct {
+	NodeInfo   K8sNodeInfo              `json:"nodeInfo,omitempty"`
 	Phase      ConnectionHubPhase       `json:"phase,omitempty"`
 	Submariner SubmarinerInstanceStatus `json:"submariner,omitempty"`
 	Federation FederationInstanceStatus `json:"federation,omitempty"`
@@ -74,6 +75,22 @@ type ConnectionHubList struct {
 
 func init() {
 	SchemeBuilder.Register(&ConnectionHub{}, &ConnectionHubList{})
+}
+
+func (ch *ConnectionHub) GetTenancySelectors() *Tenancy {
+
+	tenancy := &Tenancy{}
+	labels := ch.GetLabels()
+
+	if cloudInstance, ok := labels[RobolaunchCloudInstanceLabelKey]; ok {
+		tenancy.RobolaunchCloudInstance = cloudInstance
+	}
+
+	if physicalInstance, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
+		tenancy.RobolaunchPhysicalInstance = physicalInstance
+	}
+
+	return tenancy
 }
 
 func (ch *ConnectionHub) GetSubmarinerMetadata() *types.NamespacedName {
