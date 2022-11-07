@@ -4,19 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type MemberResourcePhase string
-
-const (
-	MemberResourcePhaseActive MemberResourcePhase = "Active"
-	MemberResourcePhaseIdle   MemberResourcePhase = "Idle"
-)
-
-type MemberStatus struct {
-	Created       bool                   `json:"created,omitempty"`
-	Status        FederationMemberStatus `json:"status,omitempty"`
-	ResourcePhase MemberResourcePhase    `json:"resourcePhase,omitempty"`
-}
-
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
 	FederationMembers map[string]FederationMemberSpec `json:"members,omitempty"`
@@ -32,9 +19,9 @@ const (
 
 // FederationHostStatus defines the observed state of FederationHost
 type FederationHostStatus struct {
-	SelfJoined     bool                    `json:"selfJoined,omitempty"`
-	MemberStatuses map[string]MemberStatus `json:"memberStatuses,omitempty"`
-	Phase          FederationHostPhase     `json:"phase,omitempty"`
+	SelfJoined bool                              `json:"selfJoined,omitempty"`
+	Members    map[string]FederationMemberStatus `json:"memberStatuses,omitempty"`
+	Phase      FederationHostPhase               `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
