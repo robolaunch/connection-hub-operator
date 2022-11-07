@@ -83,9 +83,16 @@ func (r *ConnectionHubReconciler) reconcileCheckStatus(ctx context.Context, inst
 
 					instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseReadyForOperation
 
-					// create federation host if cloud instance
+					switch instance.Spec.InstanceType {
+					case connectionhubv1alpha1.InstanceTypeCloud:
 
-					// create cloud instance if physical instance
+						// create federation host if cloud instance
+
+					case connectionhubv1alpha1.InstanceTypePhysical:
+
+						// create cloud instance if physical instance
+
+					}
 
 				default:
 
@@ -221,7 +228,7 @@ func (r *ConnectionHubReconciler) reconcileCreateFederation(ctx context.Context,
 
 	instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseFederationSettingUp
 
-	federation := resources.GetSubmariner(instance)
+	federation := resources.GetFederation(instance)
 
 	err := ctrl.SetControllerReference(instance, federation, r.Scheme)
 	if err != nil {
@@ -236,6 +243,52 @@ func (r *ConnectionHubReconciler) reconcileCreateFederation(ctx context.Context,
 	logger.Info("STATUS: Federation is created.")
 
 	instance.Status.Federation.Created = true
+
+	return nil
+}
+
+func (r *ConnectionHubReconciler) reconcileCreateFederationHost(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseCreatingFederationHost
+
+	federation := resources.GetFederationHost(instance)
+
+	err := ctrl.SetControllerReference(instance, federation, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, federation)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Federation host is created.")
+
+	instance.Status.FederationHost.Created = true
+
+	return nil
+}
+
+func (r *ConnectionHubReconciler) reconcileCreateCloudInstance(ctx context.Context, instance *connectionhubv1alpha1.ConnectionHub) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.ConnectionHubPhaseCreatingCloudInstance
+
+	federation := resources.GetCloudInstance(instance)
+
+	err := ctrl.SetControllerReference(instance, federation, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, federation)
+	if err != nil {
+		return err
+	}
+
+	logger.Info("STATUS: Cloud instance is created.")
+
+	instance.Status.CloudInstance.Created = true
 
 	return nil
 }
@@ -271,5 +324,7 @@ func (r *ConnectionHubReconciler) reconcileUpdateInstanceStatus(ctx context.Cont
 func (r *ConnectionHubReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&connectionhubv1alpha1.ConnectionHub{}).
+		Owns(&connectionhubv1alpha1.Submariner{}).
+		Owns(&connectionhubv1alpha1.FederationOperator{}).
 		Complete(r)
 }

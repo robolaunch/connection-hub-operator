@@ -34,3 +34,31 @@ func GetFederation(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1alph
 
 	return federation
 }
+
+// for cloud instance
+func GetFederationHost(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1alpha1.FederationHost {
+
+	tenancy := cr.GetTenancySelectors()
+
+	federationHost := &connectionhubv1alpha1.FederationHost{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: tenancy.RobolaunchCloudInstance,
+		},
+	}
+
+	return federationHost
+}
+
+// for physical instances
+func GetCloudInstance(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1alpha1.CloudInstance {
+
+	tenancy := cr.GetTenancySelectors()
+
+	cloudInstance := &connectionhubv1alpha1.CloudInstance{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: tenancy.RobolaunchCloudInstance,
+		},
+	}
+
+	return cloudInstance
+}

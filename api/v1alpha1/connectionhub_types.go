@@ -22,12 +22,24 @@ type FederationInstanceStatus struct {
 	Phase   FederationOperatorPhase `json:"phase,omitempty"`
 }
 
+type FederationHostInstanceStatus struct {
+	Created bool                `json:"created,omitempty"`
+	Phase   FederationHostPhase `json:"phase,omitempty"`
+}
+
+type CloudInstanceInstanceStatus struct {
+	Created bool               `json:"created,omitempty"`
+	Phase   CloudInstancePhase `json:"phase,omitempty"`
+}
+
 type ConnectionHubPhase string
 
 const (
-	ConnectionHubPhaseSubmarinerSettingUp ConnectionHubPhase = "SubmarinerSettingUp"
-	ConnectionHubPhaseFederationSettingUp ConnectionHubPhase = "FederationSettingUp"
-	ConnectionHubPhaseReadyForOperation   ConnectionHubPhase = "ReadyForOperation"
+	ConnectionHubPhaseSubmarinerSettingUp    ConnectionHubPhase = "SubmarinerSettingUp"
+	ConnectionHubPhaseFederationSettingUp    ConnectionHubPhase = "FederationSettingUp"
+	ConnectionHubPhaseCreatingFederationHost ConnectionHubPhase = "CreatingFederationHost"
+	ConnectionHubPhaseCreatingCloudInstance  ConnectionHubPhase = "CreatingCloudInstance"
+	ConnectionHubPhaseReadyForOperation      ConnectionHubPhase = "ReadyForOperation"
 
 	ConnectionHubPhaseLabelsNotMatched ConnectionHubPhase = "LabelsNotMatched"
 	ConnectionHubPhaseMalfunctioned    ConnectionHubPhase = "Malfunctioned"
@@ -49,6 +61,9 @@ type ConnectionHubStatus struct {
 	Phase      ConnectionHubPhase       `json:"phase,omitempty"`
 	Submariner SubmarinerInstanceStatus `json:"submariner,omitempty"`
 	Federation FederationInstanceStatus `json:"federation,omitempty"`
+
+	FederationHost FederationHostInstanceStatus `json:"federationHost,omitempty"`
+	CloudInstance  CloudInstanceInstanceStatus  `json:"cloudInstance,omitempty"`
 }
 
 //+kubebuilder:object:root=true
