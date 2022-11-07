@@ -1,0 +1,351 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: connectionhubs.connection-hub.roboscale.io
+spec:
+  group: connection-hub.roboscale.io
+  names:
+    kind: ConnectionHub
+    listKind: ConnectionHubList
+    plural: connectionhubs
+    singular: connectionhub
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ConnectionHub is the Schema for the connectionhubs API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ConnectionHubSpec defines the desired state of ConnectionHub
+            properties:
+              federationSpec:
+                description: FederationOperatorSpec defines the desired state of FederationOperator
+                properties:
+                  helm:
+                    properties:
+                      chartName:
+                        type: string
+                      releaseName:
+                        type: string
+                      repository:
+                        properties:
+                          name:
+                            type: string
+                          url:
+                            type: string
+                        required:
+                        - name
+                        - url
+                        type: object
+                      version:
+                        type: string
+                    required:
+                    - chartName
+                    - releaseName
+                    - repository
+                    - version
+                    type: object
+                required:
+                - helm
+                type: object
+              instanceType:
+                enum:
+                - CloudInstance
+                - PhysicalInstance
+                type: string
+              submarinerSpec:
+                description: SubmarinerSpec defines the desired state of Submariner
+                properties:
+                  apiServerURL:
+                    type: string
+                  broker:
+                    properties:
+                      ca:
+                        type: string
+                      token:
+                        type: string
+                    type: object
+                  brokerHelmChart:
+                    properties:
+                      chartName:
+                        type: string
+                      releaseName:
+                        type: string
+                      repository:
+                        properties:
+                          name:
+                            type: string
+                          url:
+                            type: string
+                        required:
+                        - name
+                        - url
+                        type: object
+                      version:
+                        type: string
+                    required:
+                    - chartName
+                    - releaseName
+                    - repository
+                    - version
+                    type: object
+                  clusterCIDR:
+                    type: string
+                  instanceType:
+                    enum:
+                    - CloudInstance
+                    - PhysicalInstance
+                    type: string
+                  operatorHelmChart:
+                    properties:
+                      chartName:
+                        type: string
+                      releaseName:
+                        type: string
+                      repository:
+                        properties:
+                          name:
+                            type: string
+                          url:
+                            type: string
+                        required:
+                        - name
+                        - url
+                        type: object
+                      version:
+                        type: string
+                    required:
+                    - chartName
+                    - releaseName
+                    - repository
+                    - version
+                    type: object
+                  presharedKey:
+                    type: string
+                  serviceCIDR:
+                    default: 10.32.0.0/16
+                    type: string
+                required:
+                - apiServerURL
+                - brokerHelmChart
+                - clusterCIDR
+                - operatorHelmChart
+                type: object
+            required:
+            - federationSpec
+            - submarinerSpec
+            type: object
+          status:
+            description: ConnectionHubStatus defines the observed state of ConnectionHub
+            properties:
+              cloudInstance:
+                properties:
+                  created:
+                    type: boolean
+                  phase:
+                    type: string
+                type: object
+              connectionInterfaces:
+                properties:
+                  forCloudInstance:
+                    additionalProperties:
+                      description: FederationMemberSpec defines the desired state
+                        of FederationMember
+                      properties:
+                        credentials:
+                          properties:
+                            certificateAuthority:
+                              type: string
+                            clientCertificate:
+                              type: string
+                            clientKey:
+                              type: string
+                          required:
+                          - certificateAuthority
+                          - clientCertificate
+                          - clientKey
+                          type: object
+                        server:
+                          type: string
+                      required:
+                      - credentials
+                      - server
+                      type: object
+                    type: object
+                  forPhysicalInstance:
+                    description: ConnectionHubSpec defines the desired state of ConnectionHub
+                    properties:
+                      federationSpec:
+                        description: FederationOperatorSpec defines the desired state
+                          of FederationOperator
+                        properties:
+                          helm:
+                            properties:
+                              chartName:
+                                type: string
+                              releaseName:
+                                type: string
+                              repository:
+                                properties:
+                                  name:
+                                    type: string
+                                  url:
+                                    type: string
+                                required:
+                                - name
+                                - url
+                                type: object
+                              version:
+                                type: string
+                            required:
+                            - chartName
+                            - releaseName
+                            - repository
+                            - version
+                            type: object
+                        required:
+                        - helm
+                        type: object
+                      instanceType:
+                        enum:
+                        - CloudInstance
+                        - PhysicalInstance
+                        type: string
+                      submarinerSpec:
+                        description: SubmarinerSpec defines the desired state of Submariner
+                        properties:
+                          apiServerURL:
+                            type: string
+                          broker:
+                            properties:
+                              ca:
+                                type: string
+                              token:
+                                type: string
+                            type: object
+                          brokerHelmChart:
+                            properties:
+                              chartName:
+                                type: string
+                              releaseName:
+                                type: string
+                              repository:
+                                properties:
+                                  name:
+                                    type: string
+                                  url:
+                                    type: string
+                                required:
+                                - name
+                                - url
+                                type: object
+                              version:
+                                type: string
+                            required:
+                            - chartName
+                            - releaseName
+                            - repository
+                            - version
+                            type: object
+                          clusterCIDR:
+                            type: string
+                          instanceType:
+                            enum:
+                            - CloudInstance
+                            - PhysicalInstance
+                            type: string
+                          operatorHelmChart:
+                            properties:
+                              chartName:
+                                type: string
+                              releaseName:
+                                type: string
+                              repository:
+                                properties:
+                                  name:
+                                    type: string
+                                  url:
+                                    type: string
+                                required:
+                                - name
+                                - url
+                                type: object
+                              version:
+                                type: string
+                            required:
+                            - chartName
+                            - releaseName
+                            - repository
+                            - version
+                            type: object
+                          presharedKey:
+                            type: string
+                          serviceCIDR:
+                            default: 10.32.0.0/16
+                            type: string
+                        required:
+                        - apiServerURL
+                        - brokerHelmChart
+                        - clusterCIDR
+                        - operatorHelmChart
+                        type: object
+                    required:
+                    - federationSpec
+                    - submarinerSpec
+                    type: object
+                type: object
+              federation:
+                properties:
+                  created:
+                    type: boolean
+                  phase:
+                    type: string
+                type: object
+              federationHost:
+                properties:
+                  created:
+                    type: boolean
+                  phase:
+                    type: string
+                type: object
+              nodeInfo:
+                properties:
+                  name:
+                    type: string
+                  selectors:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
+              phase:
+                type: string
+              submariner:
+                properties:
+                  created:
+                    type: boolean
+                  phase:
+                    type: string
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

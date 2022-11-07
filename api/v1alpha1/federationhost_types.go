@@ -4,11 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type MemberInfo struct {
-	// +kubebuilder:validation:Required
-	MemberSpec FederationMemberSpec `json:"memberSpec"`
-}
-
 type MemberResourcePhase string
 
 const (
@@ -24,7 +19,7 @@ type MemberStatus struct {
 
 // FederationHostSpec defines the desired state of FederationHost
 type FederationHostSpec struct {
-	FederationMembers map[string]MemberInfo `json:"members,omitempty"`
+	FederationMembers map[string]FederationMemberSpec `json:"members,omitempty"`
 }
 
 type FederationHostPhase string

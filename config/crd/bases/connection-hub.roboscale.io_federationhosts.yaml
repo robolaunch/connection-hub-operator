@@ -37,32 +37,26 @@ spec:
             properties:
               members:
                 additionalProperties:
+                  description: FederationMemberSpec defines the desired state of FederationMember
                   properties:
-                    memberSpec:
-                      description: FederationMemberSpec defines the desired state
-                        of FederationMember
+                    credentials:
                       properties:
-                        credentials:
-                          properties:
-                            certificateAuthority:
-                              type: string
-                            clientCertificate:
-                              type: string
-                            clientKey:
-                              type: string
-                          required:
-                          - certificateAuthority
-                          - clientCertificate
-                          - clientKey
-                          type: object
-                        server:
+                        certificateAuthority:
+                          type: string
+                        clientCertificate:
+                          type: string
+                        clientKey:
                           type: string
                       required:
-                      - credentials
-                      - server
+                      - certificateAuthority
+                      - clientCertificate
+                      - clientKey
                       type: object
+                    server:
+                      type: string
                   required:
-                  - memberSpec
+                  - credentials
+                  - server
                   type: object
                 type: object
             type: object
