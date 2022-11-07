@@ -65,29 +65,22 @@ spec:
             properties:
               memberStatuses:
                 additionalProperties:
+                  description: FederationMemberStatus defines the observed state of
+                    FederationMember
                   properties:
-                    created:
+                    joinAttempted:
                       type: boolean
-                    resourcePhase:
-                      type: string
-                    status:
-                      description: FederationMemberStatus defines the observed state
-                        of FederationMember
+                    kubefedClusterStatus:
                       properties:
-                        joinAttempted:
+                        conditionType:
+                          type: string
+                        created:
                           type: boolean
-                        kubefedClusterStatus:
-                          properties:
-                            conditionType:
-                              type: string
-                            created:
-                              type: boolean
-                            reason:
-                              type: string
-                          type: object
-                        phase:
+                        reason:
                           type: string
                       type: object
+                    phase:
+                      type: string
                   type: object
                 type: object
               phase:
