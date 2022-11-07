@@ -1,0 +1,33 @@
+apiVersion: connection-hub.roboscale.io/v1alpha1
+kind: ConnectionHub
+metadata:
+  labels:
+    robolaunch.io/cloud-instance: <CLOUD-INSTANCE>
+  name: connection-hub
+spec:
+  federationSpec:
+    helm:
+      chartName: robolaunch/kubefed
+      releaseName: kubefed
+      repository:
+        name: robolaunch
+        url: <HELM-REPO-URL>
+      version: 0.9.2
+  instanceType: PhysicalInstance
+  submarinerSpec:
+    brokerHelmChart:
+      chartName: robolaunch/submariner-k8s-broker
+      releaseName: submariner-k8s-broker
+      repository:
+        name: robolaunch
+        url: <HELM-REPO-URL>
+      version: 0.6.0
+    operatorHelmChart:
+      chartName: robolaunch/submariner-operator
+      releaseName: submariner-operator
+      repository:
+        name: robolaunch
+        url: <HELM-REPO-URL>
+      version: 0.10.1
+    apiServerURL: <CLOUD-INSTANCE-API-SERVER-URL>
+    clusterCIDR: <CLOUD-INSTANCE-CLUSTER-CIDR
