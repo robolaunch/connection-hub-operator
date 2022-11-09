@@ -7,12 +7,12 @@ import (
 	"sigs.k8s.io/kubefed/pkg/kubefedctl"
 )
 
-func JoinMember(host *connectionhubv1alpha1.FederationHost, member *connectionhubv1alpha1.FederationMember, hostConfig *rest.Config) error {
+func JoinMember(member *connectionhubv1alpha1.FederationMember, hostConfig *rest.Config) error {
 
 	var memberConfig *rest.Config
 	var err error
 
-	if host.Name == member.Name {
+	if member.Status.Host.Name == member.Name {
 		memberConfig = hostConfig
 	} else {
 		memberConfig, err = member.GetMemberConfig()
@@ -25,7 +25,7 @@ func JoinMember(host *connectionhubv1alpha1.FederationHost, member *connectionhu
 		hostConfig,
 		memberConfig,
 		connectionhubv1alpha1.FederationOperatorNamespace,
-		host.Name,
+		member.Status.Host.Name,
 		member.Name,
 		"",
 		v1.ClusterScoped,

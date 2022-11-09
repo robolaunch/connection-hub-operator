@@ -55,9 +55,9 @@ type PhysicalInstanceStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
-//+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.gatewayConnection.gatewayResource`
-//+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.gatewayConnection.hostname`
-//+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.gatewayConnection.clusterID`
+//+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.submariner.gatewayConnection.gatewayResource`
+//+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.submariner.gatewayConnection.hostname`
+//+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.submariner.gatewayConnection.clusterID`
 //+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // PhysicalInstance is the Schema for the physicalinstances API

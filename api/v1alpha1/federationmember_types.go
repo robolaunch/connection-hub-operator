@@ -18,6 +18,7 @@ type FederationMemberSpec struct {
 type FederationMemberPhase string
 
 const (
+	FederationMemberPhaseSearchingForHost  FederationMemberPhase = "SearchingForHost"
 	FederationMemberPhaseJoiningFederation FederationMemberPhase = "JoiningFederation"
 	FederationMemberPhaseOffline           FederationMemberPhase = "Offline"
 	FederationMemberPhaseReady             FederationMemberPhase = "Ready"
@@ -33,8 +34,14 @@ type KubeFedClusterStatus struct {
 	Reason        string                      `json:"reason,omitempty"`
 }
 
+type HostInstanceStatus struct {
+	Exists bool   `json:"exists,omitempty"`
+	Name   string `json:"name,omitempty"`
+}
+
 // FederationMemberStatus defines the observed state of FederationMember
 type FederationMemberStatus struct {
+	Host                 HostInstanceStatus    `json:"host,omitempty"`
 	JoinAttempted        bool                  `json:"joinAttempted,omitempty"`
 	KubeFedClusterStatus KubeFedClusterStatus  `json:"kubefedClusterStatus,omitempty"`
 	Phase                FederationMemberPhase `json:"phase,omitempty"`

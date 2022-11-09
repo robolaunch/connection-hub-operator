@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	basicErr "errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -10,9 +11,12 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"sigs.k8s.io/kubefed/pkg/apis/core/common"
@@ -81,54 +85,59 @@ func (r *FederationMemberReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *FederationMemberReconciler) reconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
-	switch instance.Status.JoinAttempted {
+	switch instance.Status.Host.Exists {
 	case true:
 
-		switch instance.Status.KubeFedClusterStatus.Created {
+		switch instance.Status.JoinAttempted {
 		case true:
 
-			switch instance.Status.KubeFedClusterStatus.ConditionType {
+			switch instance.Status.KubeFedClusterStatus.Created {
+			case true:
 
-			case common.ClusterReady:
+				switch instance.Status.KubeFedClusterStatus.ConditionType {
 
-				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseReady
+				case common.ClusterReady:
 
-			case common.ClusterOffline:
+					instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseReady
 
-				logger.Info("STATUS: Federation member is offline.")
-				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseOffline
+				case common.ClusterOffline:
 
-			case common.ClusterConfigMalformed:
+					logger.Info("STATUS: Federation member is offline.")
+					instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseOffline
 
-				logger.Info("STATUS: Federation member config is malfunctioned.")
-				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseMalfunctioned
+				case common.ClusterConfigMalformed:
+
+					logger.Info("STATUS: Federation member config is malfunctioned.")
+					instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseMalfunctioned
+
+				}
+
+			case false:
+
+				logger.Info("STATUS: Cluster " + instance.Name + " cannot join the federation.")
+				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseCannotJoinFederation
 
 			}
 
 		case false:
 
-			logger.Info("STATUS: Cluster " + instance.Name + " cannot join the federation.")
-			instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseCannotJoinFederation
+			logger.Info("STATUS: Cluster " + instance.Name + " is joining the federation.")
 
+			instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseJoiningFederation
+
+			err := utils.JoinMember(instance, r.RESTConfig)
+			if err != nil {
+				return err
+			}
+
+			instance.Status.JoinAttempted = true
 		}
 
 	case false:
 
-		logger.Info("STATUS: Cluster " + instance.Name + " is joining the federation.")
+		logger.Info("STATUS: Searching for federation host.")
+		instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseSearchingForHost
 
-		instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseJoiningFederation
-
-		host, err := r.reconcileGetOwner(ctx, instance)
-		if err != nil {
-			return err
-		}
-
-		err = utils.JoinMember(host, instance, r.RESTConfig)
-		if err != nil {
-			return err
-		}
-
-		instance.Status.JoinAttempted = true
 	}
 
 	return nil
@@ -146,8 +155,25 @@ func (r *FederationMemberReconciler) reconcileCheckResources(ctx context.Context
 
 func (r *FederationMemberReconciler) reconcileCheckKubeFedClusterInstance(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) error {
 
+	federationHostList := &connectionhubv1alpha1.FederationHostList{}
+	err := r.List(ctx, federationHostList)
+	if err != nil {
+		return err
+	} else {
+
+		if len(federationHostList.Items) == 0 {
+			instance.Status.Host = connectionhubv1alpha1.HostInstanceStatus{}
+		} else if len(federationHostList.Items) > 1 {
+			return basicErr.New("more than one federation hosts are listed")
+		} else {
+			federationHost := federationHostList.Items[0]
+			instance.Status.Host.Exists = true
+			instance.Status.Host.Name = federationHost.Name
+		}
+	}
+
 	kubefedCluster := kubefedv1beta1.KubeFedCluster{}
-	err := r.Get(ctx, types.NamespacedName{Name: instance.Name, Namespace: connectionhubv1alpha1.FederationOperatorNamespace}, &kubefedCluster)
+	err = r.Get(ctx, types.NamespacedName{Name: instance.Name, Namespace: connectionhubv1alpha1.FederationOperatorNamespace}, &kubefedCluster)
 	if err != nil && errors.IsNotFound(err) {
 		instance.Status.KubeFedClusterStatus = connectionhubv1alpha1.KubeFedClusterStatus{}
 	} else if err != nil {
@@ -166,16 +192,6 @@ func (r *FederationMemberReconciler) reconcileCheckKubeFedClusterInstance(ctx co
 	}
 
 	return nil
-}
-
-func (r *FederationMemberReconciler) reconcileGetOwner(ctx context.Context, instance *connectionhubv1alpha1.FederationMember) (*connectionhubv1alpha1.FederationHost, error) {
-	host := &connectionhubv1alpha1.FederationHost{}
-	err := r.Get(ctx, *instance.GetOwnerMetadata(), host)
-	if err != nil {
-		return nil, err
-	}
-
-	return host, nil
 }
 
 func (r *FederationMemberReconciler) reconcileGetInstance(ctx context.Context, meta types.NamespacedName) (*connectionhubv1alpha1.FederationMember, error) {
@@ -212,6 +228,17 @@ func (r *FederationMemberReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &kubefedv1beta1.KubeFedCluster{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchKubeFedClusters)).
+		Watches(
+			&source.Kind{Type: &connectionhubv1alpha1.FederationHost{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchFederationHost),
+			builder.WithPredicates(predicate.Funcs{
+				CreateFunc: func(ce event.CreateEvent) bool {
+					return true
+				},
+				DeleteFunc: func(de event.DeleteEvent) bool {
+					return true
+				},
+			})).
 		Complete(r)
 }
 
@@ -234,4 +261,26 @@ func (r *FederationMemberReconciler) watchKubeFedClusters(o client.Object) []rec
 			},
 		},
 	}
+}
+
+func (r *FederationMemberReconciler) watchFederationHost(o client.Object) []reconcile.Request {
+
+	federationMembers := &connectionhubv1alpha1.FederationMemberList{}
+	err := r.List(context.TODO(), federationMembers)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(federationMembers.Items))
+	for i, item := range federationMembers.Items {
+
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name: item.Name,
+			},
+		}
+
+	}
+
+	return requests
 }

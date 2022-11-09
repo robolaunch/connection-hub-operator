@@ -99,7 +99,10 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 					case false:
 
-						// create federation member
+						err := r.reconcileCreateFederationMember(ctx, instance)
+						if err != nil {
+							return err
+						}
 
 					}
 
@@ -241,6 +244,8 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 }
 
 func (r *PhysicalInstanceReconciler) reconcileCreateFederationMember(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
 
 	member := &connectionhubv1alpha1.FederationMember{
 		ObjectMeta: metav1.ObjectMeta{

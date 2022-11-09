@@ -4,11 +4,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// FederationHostSpec defines the desired state of FederationHost
-type FederationHostSpec struct {
-	FederationMembers map[string]FederationMemberSpec `json:"members,omitempty"`
-}
-
 type FederationHostPhase string
 
 const (
@@ -33,7 +28,6 @@ type FederationHost struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   FederationHostSpec   `json:"spec,omitempty"`
 	Status FederationHostStatus `json:"status,omitempty"`
 }
 
