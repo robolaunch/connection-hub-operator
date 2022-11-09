@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: robolaunchio/connection-hub-controller-manager-dev
-  newTag: platform-v0.3.04
+  newTag: v0.3.14

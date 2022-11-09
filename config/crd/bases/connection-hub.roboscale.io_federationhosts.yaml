@@ -32,34 +32,6 @@ spec:
             type: string
           metadata:
             type: object
-          spec:
-            description: FederationHostSpec defines the desired state of FederationHost
-            properties:
-              members:
-                additionalProperties:
-                  description: FederationMemberSpec defines the desired state of FederationMember
-                  properties:
-                    credentials:
-                      properties:
-                        certificateAuthority:
-                          type: string
-                        clientCertificate:
-                          type: string
-                        clientKey:
-                          type: string
-                      required:
-                      - certificateAuthority
-                      - clientCertificate
-                      - clientKey
-                      type: object
-                    server:
-                      type: string
-                  required:
-                  - credentials
-                  - server
-                  type: object
-                type: object
-            type: object
           status:
             description: FederationHostStatus defines the observed state of FederationHost
             properties:
@@ -68,6 +40,13 @@ spec:
                   description: FederationMemberStatus defines the observed state of
                     FederationMember
                   properties:
+                    host:
+                      properties:
+                        exists:
+                          type: boolean
+                        name:
+                          type: string
+                      type: object
                     joinAttempted:
                       type: boolean
                     kubefedClusterStatus:
