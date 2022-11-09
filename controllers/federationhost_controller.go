@@ -10,10 +10,12 @@ import (
 	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
-	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
 )
 
 // FederationHostReconciler reconciles a FederationHost object
@@ -79,11 +81,6 @@ func (r *FederationHostReconciler) reconcileCheckStatus(ctx context.Context, ins
 
 		instance.Status.Phase = connectionhubv1alpha1.FederationHostPhaseReady
 
-		err := r.reconcileUpdateMemberObjects(ctx, instance)
-		if err != nil {
-			return err
-		}
-
 	case false:
 
 		instance.Status.Phase = connectionhubv1alpha1.FederationHostPhaseJoiningSelf
@@ -100,9 +97,16 @@ func (r *FederationHostReconciler) reconcileCheckStatus(ctx context.Context, ins
 
 func (r *FederationHostReconciler) reconcileCheckResources(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
 
-	err := r.reconcileUpdateMemberStatuses(ctx, instance)
+	instance.Status.Members = make(map[string]connectionhubv1alpha1.FederationMemberStatus)
+
+	federationMemberList := &connectionhubv1alpha1.FederationMemberList{}
+	err := r.List(ctx, federationMemberList)
 	if err != nil {
 		return err
+	} else {
+		for _, member := range federationMemberList.Items {
+			instance.Status.Members[member.Name] = member.Status
+		}
 	}
 
 	return nil
@@ -116,7 +120,7 @@ func (r *FederationHostReconciler) reconcileCreateHostMember(ctx context.Context
 		},
 		Spec: connectionhubv1alpha1.FederationMemberSpec{
 			Server: "",
-			Credentials: connectionhubv1alpha1.FederationMemberCredentials{
+			Credentials: connectionhubv1alpha1.PhysicalInstanceCredentials{
 				CertificateAuthority: "",
 				ClientKey:            "",
 				ClientCertificate:    "",
@@ -135,106 +139,6 @@ func (r *FederationHostReconciler) reconcileCreateHostMember(ctx context.Context
 	}
 
 	instance.Status.SelfJoined = true
-
-	return nil
-}
-
-func (r *FederationHostReconciler) reconcileUpdateMemberStatuses(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
-
-	if instance.Status.MemberStatuses == nil {
-		instance.Status.MemberStatuses = make(map[string]connectionhubv1alpha1.MemberStatus)
-	}
-
-	// update member statuses
-	for name := range instance.Spec.FederationMembers {
-		if status, ok := instance.Status.MemberStatuses[name]; ok {
-			// keep member active
-			status.ResourcePhase = connectionhubv1alpha1.MemberResourcePhaseActive
-			instance.Status.MemberStatuses[name] = status
-		} else {
-			// add member to status
-			instance.Status.MemberStatuses[name] = connectionhubv1alpha1.MemberStatus{
-				Created:       false,
-				ResourcePhase: connectionhubv1alpha1.MemberResourcePhaseActive,
-			}
-		}
-
-		// check member object
-		federationMember := connectionhubv1alpha1.FederationMember{}
-		err := r.Get(ctx, types.NamespacedName{Name: name}, &federationMember)
-		if err != nil && errors.IsNotFound(err) {
-			status := instance.Status.MemberStatuses[name]
-			status.Created = false
-			status.Status = connectionhubv1alpha1.FederationMemberStatus{}
-			instance.Status.MemberStatuses[name] = status
-		} else if err != nil {
-			return err
-		} else {
-			status := instance.Status.MemberStatuses[name]
-			status.Created = true
-			status.Status = federationMember.Status
-			instance.Status.MemberStatuses[name] = status
-		}
-	}
-
-	// make member idle
-	for name, status := range instance.Status.MemberStatuses {
-		if _, ok := instance.Spec.FederationMembers[name]; !ok {
-			status.ResourcePhase = connectionhubv1alpha1.MemberResourcePhaseIdle
-			instance.Status.MemberStatuses[name] = status
-		}
-	}
-
-	// delete idles and deleted ones from status
-	for name, status := range instance.Status.MemberStatuses {
-		if !status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseIdle {
-			delete(instance.Status.MemberStatuses, name)
-		}
-	}
-
-	return nil
-}
-
-func (r *FederationHostReconciler) reconcileUpdateMemberObjects(ctx context.Context, instance *connectionhubv1alpha1.FederationHost) error {
-
-	// check objects
-
-	// create members in spec
-	for name, member := range instance.Spec.FederationMembers {
-		if status, ok := instance.Status.MemberStatuses[name]; ok && !status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseActive {
-			federationMember := resources.GetFederationMember(name, member)
-			err := ctrl.SetControllerReference(instance, federationMember, r.Scheme)
-			if err != nil {
-				return err
-			}
-
-			err = r.Create(ctx, federationMember)
-			if err != nil {
-				return err
-			}
-
-			status.Created = true
-			instance.Status.MemberStatuses[name] = status
-		}
-	}
-
-	// delete idle member objects
-	for name, status := range instance.Status.MemberStatuses {
-		if status.Created && status.ResourcePhase == connectionhubv1alpha1.MemberResourcePhaseIdle {
-			idleFederationMember := &connectionhubv1alpha1.FederationMember{}
-			err := r.Get(ctx, types.NamespacedName{Name: name}, idleFederationMember)
-			if err != nil {
-				return err
-			}
-
-			err = r.Delete(ctx, idleFederationMember)
-			if err != nil {
-				return err
-			}
-
-			delete(instance.Status.MemberStatuses, name)
-		}
-	}
 
 	return nil
 }
@@ -270,6 +174,30 @@ func (r *FederationHostReconciler) reconcileUpdateInstanceStatus(ctx context.Con
 func (r *FederationHostReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&connectionhubv1alpha1.FederationHost{}).
-		Owns(&connectionhubv1alpha1.FederationMember{}).
+		Watches(
+			&source.Kind{Type: &connectionhubv1alpha1.FederationMember{}},
+			handler.EnqueueRequestsFromMapFunc(r.watchMembers)).
 		Complete(r)
+}
+
+func (r *FederationHostReconciler) watchMembers(o client.Object) []reconcile.Request {
+
+	federationHosts := &connectionhubv1alpha1.FederationHostList{}
+	err := r.List(context.TODO(), federationHosts)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(federationHosts.Items))
+	for i, item := range federationHosts.Items {
+
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name: item.Name,
+			},
+		}
+
+	}
+
+	return requests
 }

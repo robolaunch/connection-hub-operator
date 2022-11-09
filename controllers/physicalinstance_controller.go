@@ -5,6 +5,7 @@ import (
 	basicErr "errors"
 
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
@@ -70,27 +71,48 @@ func (r *PhysicalInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 
 func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
 
-	switch instance.Status.DeployerStatus.Exists {
+	switch instance.Status.Submariner.DeployerStatus.Exists {
 	case true:
 
-		switch instance.Status.DeployerStatus.Phase {
+		switch instance.Status.Submariner.DeployerStatus.Phase {
 		case connectionhubv1alpha1.SubmarinerPhaseReadyToConnect:
 
-			switch instance.Status.ConnectionResources.ClusterStatus.Exists && instance.Status.ConnectionResources.EndpointStatus.Exists {
+			switch instance.Status.Submariner.ConnectionResources.ClusterStatus.Exists && instance.Status.Submariner.ConnectionResources.EndpointStatus.Exists {
 			case true:
 
-				switch instance.Status.GatewayConnection.ConnectionStatus {
+				switch instance.Status.Submariner.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+					switch instance.Status.FederationMember.Created {
+					case true:
+
+						switch instance.Status.FederationMember.Status.Phase {
+						case connectionhubv1alpha1.FederationMemberPhaseReady:
+
+							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+						default:
+
+							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
+
+						}
+
+					case false:
+
+						err := r.reconcileCreateFederationMember(ctx, instance)
+						if err != nil {
+							return err
+						}
+
+					}
 
 				case brokerv1.Connecting:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnecting
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverMulticast
 
 				case brokerv1.ConnectionError:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnected
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnectedOverMulticast
 
 				}
 
@@ -117,34 +139,34 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 	// check submariners.connection-hub.roboscale.io
 
-	instance.Status.DeployerStatus.Name = instance.GetSubmarinerDeployerMetadata().Name
+	instance.Status.Submariner.DeployerStatus.Name = instance.GetSubmarinerDeployerMetadata().Name
 
 	submarinerDeployer := &connectionhubv1alpha1.Submariner{}
 	err := r.Get(ctx, instance.GetSubmarinerDeployerMetadata(), submarinerDeployer)
 	if err != nil && errors.IsNotFound(err) {
-		instance.Status.DeployerStatus = connectionhubv1alpha1.DeployerStatus{}
+		instance.Status.Submariner.DeployerStatus = connectionhubv1alpha1.DeployerStatus{}
 	} else if err != nil {
 		return err
 	} else {
 
-		instance.Status.DeployerStatus.Exists = true
-		instance.Status.DeployerStatus.Phase = submarinerDeployer.Status.Phase
+		instance.Status.Submariner.DeployerStatus.Exists = true
+		instance.Status.Submariner.DeployerStatus.Phase = submarinerDeployer.Status.Phase
 
 	}
 
 	// check clusters.submariner.io
 
-	instance.Status.ConnectionResources.ClusterStatus.Name = instance.GetSubmarinerClusterMetadata().Name
+	instance.Status.Submariner.ConnectionResources.ClusterStatus.Name = instance.GetSubmarinerClusterMetadata().Name
 
 	submarinerCluster := &brokerv1.Cluster{}
 	err = r.Get(ctx, instance.GetSubmarinerClusterMetadata(), submarinerCluster)
 	if err != nil && errors.IsNotFound(err) {
-		instance.Status.ConnectionResources.ClusterStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
+		instance.Status.Submariner.ConnectionResources.ClusterStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
 	} else if err != nil {
 		return err
 	} else {
 
-		instance.Status.ConnectionResources.ClusterStatus.Exists = true
+		instance.Status.Submariner.ConnectionResources.ClusterStatus.Exists = true
 
 	}
 
@@ -167,10 +189,10 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 	} else {
 
 		if len(submarinerEndpoints.Items) < 1 {
-			instance.Status.ConnectionResources.EndpointStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
+			instance.Status.Submariner.ConnectionResources.EndpointStatus = connectionhubv1alpha1.ConnectionResourceStatus{}
 		} else if len(submarinerEndpoints.Items) == 1 {
-			instance.Status.ConnectionResources.EndpointStatus.Name = submarinerEndpoints.Items[0].Name
-			instance.Status.ConnectionResources.EndpointStatus.Exists = true
+			instance.Status.Submariner.ConnectionResources.EndpointStatus.Name = submarinerEndpoints.Items[0].Name
+			instance.Status.Submariner.ConnectionResources.EndpointStatus.Exists = true
 		} else {
 			return basicErr.New("more than one endpoints is listed with same clusterID")
 		}
@@ -188,15 +210,15 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 	} else {
 
 		if len(submarinerGateways.Items) < 1 {
-			instance.Status.GatewayConnection = connectionhubv1alpha1.GatewayConnection{}
+			instance.Status.Submariner.GatewayConnection = connectionhubv1alpha1.GatewayConnection{}
 		} else if len(submarinerGateways.Items) == 1 {
 			gw := submarinerGateways.Items[0]
-			instance.Status.GatewayConnection.GatewayResource = gw.Name
+			instance.Status.Submariner.GatewayConnection.GatewayResource = gw.Name
 			for _, connection := range gw.Status.Connections {
 				if instance.Name == connection.Endpoint.ClusterID {
-					instance.Status.GatewayConnection.ClusterID = connection.Endpoint.ClusterID
-					instance.Status.GatewayConnection.Hostname = connection.Endpoint.Hostname
-					instance.Status.GatewayConnection.ConnectionStatus = connection.Status
+					instance.Status.Submariner.GatewayConnection.ClusterID = connection.Endpoint.ClusterID
+					instance.Status.Submariner.GatewayConnection.Hostname = connection.Endpoint.Hostname
+					instance.Status.Submariner.GatewayConnection.ConnectionStatus = connection.Status
 				}
 			}
 		} else {
@@ -204,6 +226,52 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 		}
 
 	}
+
+	// check federation member
+
+	federationMember := &connectionhubv1alpha1.FederationMember{}
+	err = r.Get(ctx, types.NamespacedName{Name: instance.Name}, federationMember)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.FederationMember = connectionhubv1alpha1.FederationMemberInstanceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.FederationMember.Created = true
+		instance.Status.FederationMember.Status = federationMember.Status
+	}
+
+	return nil
+}
+
+func (r *PhysicalInstanceReconciler) reconcileCreateFederationMember(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
+
+	instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
+
+	member := &connectionhubv1alpha1.FederationMember{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: instance.Name,
+		},
+		Spec: connectionhubv1alpha1.FederationMemberSpec{
+			Server: instance.Spec.Server,
+			Credentials: connectionhubv1alpha1.PhysicalInstanceCredentials{
+				CertificateAuthority: instance.Spec.Credentials.CertificateAuthority,
+				ClientKey:            instance.Spec.Credentials.ClientKey,
+				ClientCertificate:    instance.Spec.Credentials.ClientCertificate,
+			},
+		},
+	}
+
+	err := ctrl.SetControllerReference(instance, member, r.Scheme)
+	if err != nil {
+		return err
+	}
+
+	err = r.Create(ctx, member)
+	if err != nil {
+		return err
+	}
+
+	instance.Status.FederationMember.Created = true
 
 	return nil
 }
@@ -252,6 +320,7 @@ func (r *PhysicalInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Gateway{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
+		Owns(&connectionhubv1alpha1.FederationMember{}).
 		Complete(r)
 }
 

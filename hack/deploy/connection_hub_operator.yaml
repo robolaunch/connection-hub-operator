@@ -675,61 +675,33 @@ spec:
               type: string
             metadata:
               type: object
-            spec:
-              description: FederationHostSpec defines the desired state of FederationHost
-              properties:
-                members:
-                  additionalProperties:
-                    description: FederationMemberSpec defines the desired state of FederationMember
-                    properties:
-                      credentials:
-                        properties:
-                          certificateAuthority:
-                            type: string
-                          clientCertificate:
-                            type: string
-                          clientKey:
-                            type: string
-                        required:
-                          - certificateAuthority
-                          - clientCertificate
-                          - clientKey
-                        type: object
-                      server:
-                        type: string
-                    required:
-                      - credentials
-                      - server
-                    type: object
-                  type: object
-              type: object
             status:
               description: FederationHostStatus defines the observed state of FederationHost
               properties:
                 memberStatuses:
                   additionalProperties:
+                    description: FederationMemberStatus defines the observed state of FederationMember
                     properties:
-                      created:
-                        type: boolean
-                      resourcePhase:
-                        type: string
-                      status:
-                        description: FederationMemberStatus defines the observed state of FederationMember
+                      host:
                         properties:
-                          joinAttempted:
+                          exists:
                             type: boolean
-                          kubefedClusterStatus:
-                            properties:
-                              conditionType:
-                                type: string
-                              created:
-                                type: boolean
-                              reason:
-                                type: string
-                            type: object
-                          phase:
+                          name:
                             type: string
                         type: object
+                      joinAttempted:
+                        type: boolean
+                      kubefedClusterStatus:
+                        properties:
+                          conditionType:
+                            type: string
+                          created:
+                            type: boolean
+                          reason:
+                            type: string
+                        type: object
+                      phase:
+                        type: string
                     type: object
                   type: object
                 phase:
@@ -797,6 +769,13 @@ spec:
             status:
               description: FederationMemberStatus defines the observed state of FederationMember
               properties:
+                host:
+                  properties:
+                    exists:
+                      type: boolean
+                    name:
+                      type: string
+                  type: object
                 joinAttempted:
                   type: boolean
                 kubefedClusterStatus:
@@ -1174,13 +1153,13 @@ spec:
   scope: Cluster
   versions:
     - additionalPrinterColumns:
-        - jsonPath: .status.gatewayConnection.gatewayResource
+        - jsonPath: .status.submariner.gatewayConnection.gatewayResource
           name: Gateway
           type: string
-        - jsonPath: .status.gatewayConnection.hostname
+        - jsonPath: .status.submariner.gatewayConnection.hostname
           name: Hostname
           type: string
-        - jsonPath: .status.gatewayConnection.clusterID
+        - jsonPath: .status.submariner.gatewayConnection.clusterID
           name: Cluster ID
           type: string
         - jsonPath: .status.phase
@@ -1201,49 +1180,100 @@ spec:
               type: object
             spec:
               description: PhysicalInstanceSpec defines the desired state of PhysicalInstance
+              properties:
+                credentials:
+                  properties:
+                    certificateAuthority:
+                      type: string
+                    clientCertificate:
+                      type: string
+                    clientKey:
+                      type: string
+                  required:
+                    - certificateAuthority
+                    - clientCertificate
+                    - clientKey
+                  type: object
+                server:
+                  type: string
+              required:
+                - credentials
+                - server
               type: object
             status:
               description: PhysicalInstanceStatus defines the observed state of PhysicalInstance
               properties:
-                connectionResources:
+                federation:
                   properties:
-                    clusterStatus:
-                      properties:
-                        exists:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
-                    endpointStatus:
-                      properties:
-                        exists:
-                          type: boolean
-                        name:
-                          type: string
-                      type: object
-                  type: object
-                deployerStatus:
-                  properties:
-                    exists:
+                    created:
                       type: boolean
-                    name:
-                      type: string
-                    phase:
-                      type: string
-                  type: object
-                gatewayConnection:
-                  properties:
-                    clusterID:
-                      type: string
-                    connectionStatus:
-                      type: string
-                    gatewayResource:
-                      type: string
-                    hostname:
-                      type: string
+                    status:
+                      description: FederationMemberStatus defines the observed state of FederationMember
+                      properties:
+                        host:
+                          properties:
+                            exists:
+                              type: boolean
+                            name:
+                              type: string
+                          type: object
+                        joinAttempted:
+                          type: boolean
+                        kubefedClusterStatus:
+                          properties:
+                            conditionType:
+                              type: string
+                            created:
+                              type: boolean
+                            reason:
+                              type: string
+                          type: object
+                        phase:
+                          type: string
+                      type: object
                   type: object
                 phase:
                   type: string
+                submariner:
+                  properties:
+                    connectionResources:
+                      properties:
+                        clusterStatus:
+                          properties:
+                            exists:
+                              type: boolean
+                            name:
+                              type: string
+                          type: object
+                        endpointStatus:
+                          properties:
+                            exists:
+                              type: boolean
+                            name:
+                              type: string
+                          type: object
+                      type: object
+                    deployerStatus:
+                      properties:
+                        exists:
+                          type: boolean
+                        name:
+                          type: string
+                        phase:
+                          type: string
+                      type: object
+                    gatewayConnection:
+                      properties:
+                        clusterID:
+                          type: string
+                        connectionStatus:
+                          type: string
+                        gatewayResource:
+                          type: string
+                        hostname:
+                          type: string
+                      type: object
+                  type: object
               type: object
           type: object
       served: true
@@ -3451,7 +3481,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager-dev:v0.3.13
+          image: robolaunchio/connection-hub-controller-manager-dev:v0.3.14
           livenessProbe:
             httpGet:
               path: /healthz

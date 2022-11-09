@@ -32,62 +32,34 @@ spec:
             type: string
           metadata:
             type: object
-          spec:
-            description: FederationHostSpec defines the desired state of FederationHost
-            properties:
-              members:
-                additionalProperties:
-                  description: FederationMemberSpec defines the desired state of FederationMember
-                  properties:
-                    credentials:
-                      properties:
-                        certificateAuthority:
-                          type: string
-                        clientCertificate:
-                          type: string
-                        clientKey:
-                          type: string
-                      required:
-                      - certificateAuthority
-                      - clientCertificate
-                      - clientKey
-                      type: object
-                    server:
-                      type: string
-                  required:
-                  - credentials
-                  - server
-                  type: object
-                type: object
-            type: object
           status:
             description: FederationHostStatus defines the observed state of FederationHost
             properties:
               memberStatuses:
                 additionalProperties:
+                  description: FederationMemberStatus defines the observed state of
+                    FederationMember
                   properties:
-                    created:
-                      type: boolean
-                    resourcePhase:
-                      type: string
-                    status:
-                      description: FederationMemberStatus defines the observed state
-                        of FederationMember
+                    host:
                       properties:
-                        joinAttempted:
+                        exists:
                           type: boolean
-                        kubefedClusterStatus:
-                          properties:
-                            conditionType:
-                              type: string
-                            created:
-                              type: boolean
-                            reason:
-                              type: string
-                          type: object
-                        phase:
+                        name:
                           type: string
                       type: object
+                    joinAttempted:
+                      type: boolean
+                    kubefedClusterStatus:
+                      properties:
+                        conditionType:
+                          type: string
+                        created:
+                          type: boolean
+                        reason:
+                          type: string
+                      type: object
+                    phase:
+                      type: string
                   type: object
                 type: object
               phase:

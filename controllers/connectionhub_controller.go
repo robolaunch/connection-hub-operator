@@ -229,9 +229,9 @@ func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, i
 		tenancy := instance.GetTenancySelectors()
 
 		instance.Status.ConnectionInterfaces.ForCloudInstance = map[string]connectionhubv1alpha1.FederationMemberSpec{
-			tenancy.RobolaunchPhysicalInstance: connectionhubv1alpha1.FederationMemberSpec{
+			tenancy.RobolaunchPhysicalInstance: {
 				Server: "<PHYSICAL-INSTANCE-API-SERVER>",
-				Credentials: connectionhubv1alpha1.FederationMemberCredentials{
+				Credentials: connectionhubv1alpha1.PhysicalInstanceCredentials{
 					CertificateAuthority: "<PHYSICAL-INSTANCE-CA-DATA>",
 					ClientCertificate:    "<PHYSICAL-INSTANCE-CLIENT-CERT-DATA>",
 					ClientKey:            "<PHYSICAL-INSTANCE-CLIENT-KEY-DATA>",
