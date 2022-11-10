@@ -21,7 +21,7 @@ package v1alpha1
 import (
 	"encoding/json"
 
-	submv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
+	submv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
