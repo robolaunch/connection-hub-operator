@@ -5,6 +5,12 @@ resources:
 - bases/submariner.io_submariners.yaml
 - bases/submariner.io_brokers.yaml
 - bases/submariner.io_servicediscoveries.yaml
+- bases/submariner.io_clusterglobalegressips.yaml
+- bases/submariner.io_clusters.yaml
+- bases/submariner.io_endpoints.yaml
+- bases/submariner.io_gateways.yaml
+- bases/submariner.io_globalegressips.yaml
+- bases/submariner.io_globalingressips.yaml
 - bases/core.kubefed.io_federatedtypeconfigs.yaml
 - bases/core.kubefed.io_kubefedclusters.yaml
 - bases/core.kubefed.io_kubefedconfigs.yaml

@@ -16,8 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
-	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
 )
 
 // CloudInstanceReconciler reconciles a CloudInstance object
