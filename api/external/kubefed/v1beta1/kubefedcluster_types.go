@@ -87,7 +87,7 @@ type KubeFedClusterStatus struct {
 // +kubebuilder:printcolumn:name=kubernetes-version,type=string,JSONPath=.status.kubernetesVersion
 // +kubebuilder:resource:path=kubefedclusters,shortName=kfc
 // +kubebuilder:subresource:status
-//+kubebuilder:storageversion
+// +kubebuilder:storageversion
 
 // KubeFedCluster configures KubeFed to be aware of a Kubernetes
 // cluster and encapsulates the details necessary to communicate with

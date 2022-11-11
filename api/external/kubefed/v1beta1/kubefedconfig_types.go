@@ -136,7 +136,7 @@ type StatusControllerConfig struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=kubefedconfigs
-//+kubebuilder:storageversion
+// +kubebuilder:storageversion
 
 type KubeFedConfig struct {
 	metav1.TypeMeta   `json:",inline"`

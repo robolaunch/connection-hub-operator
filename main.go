@@ -33,7 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
+	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 
 	kubefedv1beta1 "github.com/robolaunch/connection-hub-operator/api/external/kubefed/v1beta1"
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"

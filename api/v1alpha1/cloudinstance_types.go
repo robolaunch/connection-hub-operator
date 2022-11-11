@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	brokerv1 "github.com/submariner-io/submariner/pkg/apis/submariner.io/v1"
+	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
