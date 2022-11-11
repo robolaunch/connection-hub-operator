@@ -4165,10 +4165,10 @@ spec:
             defaultMode: 420
             secretName: webhook-server-cert
       nodeSelector:
-        robolaunch.io/organization: arcelik
+        robolaunch.io/organization: robot-operator
         robolaunch.io/department: robotics
-        robolaunch.io/super-cluster: karadeniz
-        robolaunch.io/cloud-instance: factory
+        robolaunch.io/super-cluster: aws-helsinki-1
+        robolaunch.io/cloud-instance: instance1
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
