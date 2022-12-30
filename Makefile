@@ -136,18 +136,14 @@ apply:
 
 # Production
 
-.PHONY: extract
-extract: manifests kustomize ## Extract controller YAMLs, not deploy
+.PHONY: gh-extract
+gh-extract: manifests kustomize ## Extract controller YAMLs, not deploy
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > hack/deploy/connection_hub_operator.yaml
 
-.PHONY: select-node
-select-node: 
+.PHONY: gh-select-node
+gh-select-node: 
 	yq -i e '(select(.kind == "Deployment") | .spec.template.spec.nodeSelector."${LABEL_KEY}") = "${LABEL_VAL}"' hack/deploy/connection_hub_operator.yaml
-
-.PHONY: apply
-apply: 
-	kubectl apply -f hack/deploy/connection_hub_operator.yaml
 
 ##@ Build Dependencies
 
