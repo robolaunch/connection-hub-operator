@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/robolaunch/trademark/main/logos/svg/rocket.svg" width="40" height="40" align="top"> robolaunch Project Template
+# <img src="https://raw.githubusercontent.com/robolaunch/trademark/main/logos/svg/rocket.svg" width="40" height="40" align="top"> robolaunch Connection Hub Operator
 
 <div align="center">
   <p align="center">
@@ -22,7 +22,7 @@
 
 robolaunch Connection Hub Operator manages lifecycle of connection between robolaunch Cloud Instance and physical instances on the mission field. 
 
-## Table of Contents
+<!-- ## Table of Contents
 
 - [Overview](#overview)
 - [Quick Start](#quick-start)
@@ -30,7 +30,7 @@ robolaunch Connection Hub Operator manages lifecycle of connection between robol
   - [Usage](#usage)
 - [Aims & Roadmap](#aims--roadmap)
 - [Contributing](#contributing)
-
+ -->
 
 ## Overview
 
