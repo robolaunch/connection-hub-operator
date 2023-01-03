@@ -6,6 +6,7 @@ import (
 
 	helmclient "github.com/mittwald/go-helm-client"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	"gopkg.in/yaml.v3"
 	"k8s.io/client-go/rest"
 )
 
@@ -37,6 +38,13 @@ func InstallFederationOperatorChart(federationOperator connectionhubv1alpha1.Fed
 		return err
 	}
 
+	valuesObj := GetFederationOperatorValues(federationOperator)
+
+	valuesBytes, err := yaml.Marshal(&valuesObj)
+	if err != nil {
+		return err
+	}
+
 	_, err = cli.InstallChart(
 		context.Background(),
 		&helmclient.ChartSpec{
@@ -44,6 +52,7 @@ func InstallFederationOperatorChart(federationOperator connectionhubv1alpha1.Fed
 			ReleaseName: federationOperator.Spec.HelmChart.ReleaseName,
 			ChartName:   federationOperator.Spec.HelmChart.ChartName,
 			Version:     federationOperator.Spec.HelmChart.Version,
+			ValuesYaml:  string(valuesBytes),
 			Wait:        true,
 			Timeout:     time.Minute * 2,
 		},
