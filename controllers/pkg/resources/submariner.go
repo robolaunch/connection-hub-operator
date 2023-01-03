@@ -78,6 +78,7 @@ func GetSubmarinerCustomResource(cr *connectionhubv1alpha1.Submariner) *submv1al
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.GetSubmarinerCustomResourceMetadata().Name,
 			Namespace: cr.GetSubmarinerCustomResourceMetadata().Namespace,
+			Labels:    cr.Labels,
 		},
 		Spec: submv1alpha1.SubmarinerSpec{
 			Broker:                   "k8s",
