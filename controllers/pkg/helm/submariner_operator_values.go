@@ -210,9 +210,10 @@ type SubmarinerOperatorValues struct {
 	// RBAC            RBAC            `yaml:"rbac"`
 	IPSEC IPSEC `yaml:"ipsec"`
 	// Leadership      Leadership      `yaml:"leadership"`
-	Operator        Operator        `yaml:"operator"`
-	Gateway         Gateway         `yaml:"gateway"`
-	ServiceAccounts ServiceAccounts `yaml:"serviceAccounts"`
+	Operator        Operator          `yaml:"operator"`
+	Gateway         Gateway           `yaml:"gateway"`
+	ServiceAccounts ServiceAccounts   `yaml:"serviceAccounts"`
+	NodeSelector    map[string]string `yaml:"nodeSelector"`
 }
 
 func getSubmarinerOperatorValuesDefault() SubmarinerOperatorValues {
@@ -254,6 +255,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Operator.Image.Tag = "dev-v14"
 	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
 	valuesObj.Submariner.Images.Tag = "dev-v11"
+	valuesObj.NodeSelector = submarinerOperator.Status.NodeInfo.Selectors
 
 	return valuesObj
 }
