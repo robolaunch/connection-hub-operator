@@ -27,4 +27,4 @@ Dockerfile.cross
 
 # local yamls
 *.yaml.local
-*.local.yaml
+*.local*
