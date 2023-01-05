@@ -46,9 +46,10 @@ const (
 )
 
 const (
-	PhysicalInstanceMulticastConnectionPhaseConnecting PhysicalInstanceMulticastConnectionPhase = "Connecting"
-	PhysicalInstanceMulticastConnectionPhaseConnected  PhysicalInstanceMulticastConnectionPhase = "Connected"
-	PhysicalInstanceMulticastConnectionPhaseFailed     PhysicalInstanceMulticastConnectionPhase = "Failed"
+	PhysicalInstanceMulticastConnectionPhaseWaitingForConnection PhysicalInstanceMulticastConnectionPhase = "WaitingForConnection"
+	PhysicalInstanceMulticastConnectionPhaseConnecting           PhysicalInstanceMulticastConnectionPhase = "Connecting"
+	PhysicalInstanceMulticastConnectionPhaseConnected            PhysicalInstanceMulticastConnectionPhase = "Connected"
+	PhysicalInstanceMulticastConnectionPhaseFailed               PhysicalInstanceMulticastConnectionPhase = "Failed"
 )
 
 const (
