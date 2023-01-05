@@ -222,6 +222,10 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 		} else if len(submarinerEndpoints.Items) == 1 {
 			instance.Status.Submariner.ConnectionResources.EndpointStatus.Name = submarinerEndpoints.Items[0].Name
 			instance.Status.Submariner.ConnectionResources.EndpointStatus.Exists = true
+			instance.Status.Subnets.List = submarinerEndpoints.Items[0].Spec.Subnets
+			for _, sn := range instance.Status.Subnets.List {
+				instance.Status.Subnets.ListInStr = sn + "\n"
+			}
 		} else {
 			return basicErr.New("more than one endpoints is listed with same clusterID")
 		}
