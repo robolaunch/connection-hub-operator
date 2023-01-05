@@ -25,6 +25,12 @@ spec:
     - jsonPath: .status.submariner.gatewayConnection.clusterID
       name: Cluster ID
       type: string
+    - jsonPath: .status.multicastPhase
+      name: Multicast
+      type: string
+    - jsonPath: .status.federationPhase
+      name: Federation
+      type: string
     - jsonPath: .status.phase
       name: Phase
       type: string
@@ -100,6 +106,10 @@ spec:
                         type: string
                     type: object
                 type: object
+              federationPhase:
+                type: string
+              multicastPhase:
+                type: string
               phase:
                 type: string
               submariner:

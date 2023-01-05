@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,42 +84,22 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 				switch instance.Status.Submariner.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
 
-					switch instance.Status.FederationMember.Created {
-					case true:
-
-						switch instance.Status.FederationMember.Status.Phase {
-						case connectionhubv1alpha1.FederationMemberPhaseReady:
-
-							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
-
-						default:
-
-							instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
-
-						}
-
-					case false:
-
-						err := r.reconcileCreateFederationMember(ctx, instance)
-						if err != nil {
-							return err
-						}
-
-					}
+					instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected
 
 				case brokerv1.Connecting:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverMulticast
+					instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnecting
 
 				case brokerv1.ConnectionError:
 
-					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotConnectedOverMulticast
+					instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseFailed
 
 				}
 
 			case false:
 
 				instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseRegistered
+				instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseWaitingForConnection
 
 			}
 
@@ -130,6 +111,54 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 	case false:
 		instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseLookingForDeployer
+	}
+
+	switch instance.Status.MulticastConnectionPhase {
+	case connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected:
+
+		switch instance.Status.FederationMember.Created {
+		case true:
+
+			switch instance.Status.FederationMember.Status.Phase {
+			case connectionhubv1alpha1.FederationMemberPhaseReady:
+
+				instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnected
+
+			case connectionhubv1alpha1.FederationMemberPhaseWaitingForCredentials:
+
+				instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseWaitingForCredentials
+
+			default:
+
+				instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnecting
+
+			}
+
+		case false:
+
+			instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnecting
+
+			err := r.reconcileCreateFederationMember(ctx, instance)
+			if err != nil {
+				return err
+			}
+
+		}
+
+	default:
+
+		instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseWaitingForMulticast
+
+	}
+
+	if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected &&
+		instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnected {
+		instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+	} else {
+		if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseFailed ||
+			instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseFailed {
+			instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseNotReady
+		}
 	}
 
 	return nil
@@ -236,8 +265,20 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 	} else if err != nil {
 		return err
 	} else {
+
+		if !reflect.DeepEqual(instance.Spec.Server, federationMember.Spec.Server) || !reflect.DeepEqual(instance.Spec.Credentials, federationMember.Spec.Credentials) {
+			federationMember.Spec.Server = instance.Spec.Server
+			federationMember.Spec.Credentials = instance.Spec.Credentials
+
+			err := r.Update(ctx, federationMember)
+			if err != nil {
+				return err
+			}
+		}
+
 		instance.Status.FederationMember.Created = true
 		instance.Status.FederationMember.Status = federationMember.Status
+
 	}
 
 	return nil
@@ -245,7 +286,7 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 func (r *PhysicalInstanceReconciler) reconcileCreateFederationMember(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
 
-	instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnectingOverKubernetes
+	instance.Status.FederationConnectionPhase = connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnecting
 
 	member := &connectionhubv1alpha1.FederationMember{
 		ObjectMeta: metav1.ObjectMeta{
