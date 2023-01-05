@@ -34,22 +34,38 @@ type FederationMemberInstanceStatus struct {
 }
 
 type PhysicalInstancePhase string
+type PhysicalInstanceMulticastConnectionPhase string
+type PhysicalInstanceFederationConnectionPhase string
 
 const (
-	PhysicalInstancePhaseLookingForDeployer        PhysicalInstancePhase = "LookingForDeployer"
-	PhysicalInstancePhaseWaitingForDeployer        PhysicalInstancePhase = "WaitingForDeployer"
-	PhysicalInstancePhaseRegistered                PhysicalInstancePhase = "Registered"
-	PhysicalInstancePhaseConnectingOverMulticast   PhysicalInstancePhase = "ConnectingOverMulticast"
-	PhysicalInstancePhaseConnectingOverKubernetes  PhysicalInstancePhase = "ConnectingOverKubernetes"
-	PhysicalInstancePhaseConnected                 PhysicalInstancePhase = "Connected"
-	PhysicalInstancePhaseNotConnectedOverMulticast PhysicalInstancePhase = "NotConnectedOverMulticast"
+	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
+	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseNotReady           PhysicalInstancePhase = "NotReady"
+)
+
+const (
+	PhysicalInstanceMulticastConnectionPhaseConnecting PhysicalInstanceMulticastConnectionPhase = "Connecting"
+	PhysicalInstanceMulticastConnectionPhaseConnected  PhysicalInstanceMulticastConnectionPhase = "Connected"
+	PhysicalInstanceMulticastConnectionPhaseFailed     PhysicalInstanceMulticastConnectionPhase = "Failed"
+)
+
+const (
+	PhysicalInstanceFederationConnectionPhaseWaitingForMulticast   PhysicalInstanceFederationConnectionPhase = "WaitingForMulticast"
+	PhysicalInstanceFederationConnectionPhaseWaitingForCredentials PhysicalInstanceFederationConnectionPhase = "WaitingForCredentials"
+	PhysicalInstanceFederationConnectionPhaseConnecting            PhysicalInstanceFederationConnectionPhase = "Connecting"
+	PhysicalInstanceFederationConnectionPhaseConnected             PhysicalInstanceFederationConnectionPhase = "Connected"
+	PhysicalInstanceFederationConnectionPhaseFailed                PhysicalInstanceFederationConnectionPhase = "Failed"
 )
 
 // PhysicalInstanceStatus defines the observed state of PhysicalInstance
 type PhysicalInstanceStatus struct {
-	Submariner       SubmarinerResourceStates       `json:"submariner,omitempty"`
-	FederationMember FederationMemberInstanceStatus `json:"federation,omitempty"`
-	Phase            PhysicalInstancePhase          `json:"phase,omitempty"`
+	Submariner                SubmarinerResourceStates                  `json:"submariner,omitempty"`
+	FederationMember          FederationMemberInstanceStatus            `json:"federation,omitempty"`
+	Phase                     PhysicalInstancePhase                     `json:"phase,omitempty"`
+	MulticastConnectionPhase  PhysicalInstanceMulticastConnectionPhase  `json:"multicastPhase,omitempty"`
+	FederationConnectionPhase PhysicalInstanceFederationConnectionPhase `json:"federationPhase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -58,6 +74,8 @@ type PhysicalInstanceStatus struct {
 //+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.submariner.gatewayConnection.gatewayResource`
 //+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.submariner.gatewayConnection.hostname`
 //+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.submariner.gatewayConnection.clusterID`
+//+kubebuilder:printcolumn:name="Multicast",type=string,JSONPath=`.status.multicastPhase`
+//+kubebuilder:printcolumn:name="Federation",type=string,JSONPath=`.status.federationPhase`
 //+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // PhysicalInstance is the Schema for the physicalinstances API
