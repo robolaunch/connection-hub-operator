@@ -252,7 +252,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Gateway.Image.Repository = "docker.io/robolaunchio/submariner-gateway"
 	valuesObj.Gateway.Image.Tag = "dev-v11"
 	valuesObj.Operator.Image.Repository = "docker.io/robolaunchio/submariner-operator"
-	valuesObj.Operator.Image.Tag = "dev-v16"
+	valuesObj.Operator.Image.Tag = "dev-v20"
 	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
 	valuesObj.Submariner.Images.Tag = "dev-v11"
 	valuesObj.NodeSelector = submarinerOperator.Status.NodeInfo.Selectors
