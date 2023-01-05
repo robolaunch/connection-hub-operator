@@ -25,6 +25,9 @@ spec:
     - jsonPath: .status.submariner.gatewayConnection.clusterID
       name: Cluster ID
       type: string
+    - jsonPath: .status.subnets.list
+      name: Subnets
+      type: string
     - jsonPath: .status.multicastPhase
       name: Multicast
       type: string
@@ -151,6 +154,15 @@ spec:
                       hostname:
                         type: string
                     type: object
+                type: object
+              subnets:
+                properties:
+                  list:
+                    items:
+                      type: string
+                    type: array
+                  listInStr:
+                    type: string
                 type: object
             type: object
         type: object
