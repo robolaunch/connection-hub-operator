@@ -33,6 +33,11 @@ type FederationMemberInstanceStatus struct {
 	Status  FederationMemberStatus `json:"status,omitempty"`
 }
 
+type SubnetsInformation struct {
+	List      []string `json:"list,omitempty"`
+	ListInStr string   `json:"listInStr,omitempty"`
+}
+
 type PhysicalInstancePhase string
 type PhysicalInstanceMulticastConnectionPhase string
 type PhysicalInstanceFederationConnectionPhase string
@@ -67,6 +72,7 @@ type PhysicalInstanceStatus struct {
 	Phase                     PhysicalInstancePhase                     `json:"phase,omitempty"`
 	MulticastConnectionPhase  PhysicalInstanceMulticastConnectionPhase  `json:"multicastPhase,omitempty"`
 	FederationConnectionPhase PhysicalInstanceFederationConnectionPhase `json:"federationPhase,omitempty"`
+	Subnets                   SubnetsInformation                        `json:"subnets,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -75,6 +81,7 @@ type PhysicalInstanceStatus struct {
 //+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.submariner.gatewayConnection.gatewayResource`
 //+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.submariner.gatewayConnection.hostname`
 //+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.submariner.gatewayConnection.clusterID`
+//+kubebuilder:printcolumn:name="Subnets",type=string,JSONPath=`.status.subnets.list`
 //+kubebuilder:printcolumn:name="Multicast",type=string,JSONPath=`.status.multicastPhase`
 //+kubebuilder:printcolumn:name="Federation",type=string,JSONPath=`.status.federationPhase`
 //+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
