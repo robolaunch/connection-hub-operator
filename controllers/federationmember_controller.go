@@ -121,16 +121,26 @@ func (r *FederationMemberReconciler) reconcileCheckStatus(ctx context.Context, i
 
 		case false:
 
-			logger.Info("STATUS: Cluster " + instance.Name + " is joining the federation.")
+			switch instance.Spec.Server == "" {
+			case true:
 
-			instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseJoiningFederation
+				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseWaitingForCredentials
 
-			err := utils.JoinMember(instance, r.RESTConfig)
-			if err != nil {
-				return err
+			case false:
+
+				logger.Info("STATUS: Cluster " + instance.Name + " is joining the federation.")
+
+				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseJoiningFederation
+
+				err := utils.JoinMember(instance, r.RESTConfig)
+				if err != nil {
+					return err
+				}
+
+				instance.Status.JoinAttempted = true
+
 			}
 
-			instance.Status.JoinAttempted = true
 		}
 
 	case false:

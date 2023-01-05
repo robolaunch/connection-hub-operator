@@ -18,11 +18,12 @@ type FederationMemberSpec struct {
 type FederationMemberPhase string
 
 const (
-	FederationMemberPhaseSearchingForHost  FederationMemberPhase = "SearchingForHost"
-	FederationMemberPhaseJoiningFederation FederationMemberPhase = "JoiningFederation"
-	FederationMemberPhaseOffline           FederationMemberPhase = "Offline"
-	FederationMemberPhaseReady             FederationMemberPhase = "Ready"
-	FederationMemberPhaseMalfunctioned     FederationMemberPhase = "Malfunctioned"
+	FederationMemberPhaseSearchingForHost      FederationMemberPhase = "SearchingForHost"
+	FederationMemberPhaseWaitingForCredentials FederationMemberPhase = "WaitingForCredentials"
+	FederationMemberPhaseJoiningFederation     FederationMemberPhase = "JoiningFederation"
+	FederationMemberPhaseOffline               FederationMemberPhase = "Offline"
+	FederationMemberPhaseReady                 FederationMemberPhase = "Ready"
+	FederationMemberPhaseMalfunctioned         FederationMemberPhase = "Malfunctioned"
 
 	FederationMemberPhaseCannotJoinFederation FederationMemberPhase = "CannotJoinFederation"
 	FederationMemberPhaseUnjoiningFederation  FederationMemberPhase = "UnjoiningFederation"
