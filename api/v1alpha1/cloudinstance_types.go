@@ -63,7 +63,7 @@ type CloudInstanceStatus struct {
 //+kubebuilder:printcolumn:name="Gateway",type=string,JSONPath=`.status.gatewayConnection.gatewayResource`
 //+kubebuilder:printcolumn:name="Hostname",type=string,JSONPath=`.status.gatewayConnection.hostname`
 //+kubebuilder:printcolumn:name="Cluster ID",type=string,JSONPath=`.status.gatewayConnection.clusterID`
-//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
+//+kubebuilder:printcolumn:name="Multicast",type=string,JSONPath=`.status.phase`
 
 // CloudInstance is the Schema for the cloudinstances API
 type CloudInstance struct {
