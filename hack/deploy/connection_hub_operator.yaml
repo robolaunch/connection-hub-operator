@@ -104,7 +104,7 @@ spec:
           name: Cluster ID
           type: string
         - jsonPath: .status.phase
-          name: Phase
+          name: Multicast
           type: string
       name: v1alpha1
       schema:
@@ -357,7 +357,11 @@ spec:
     singular: connectionhub
   scope: Cluster
   versions:
-    - name: v1alpha1
+    - additionalPrinterColumns:
+        - jsonPath: .status.phase
+          name: Phase
+          type: string
+      name: v1alpha1
       schema:
         openAPIV3Schema:
           description: ConnectionHub is the Schema for the connectionhubs API
@@ -1802,6 +1806,15 @@ spec:
         - jsonPath: .status.submariner.gatewayConnection.clusterID
           name: Cluster ID
           type: string
+        - jsonPath: .status.subnets.list
+          name: Subnets
+          type: string
+        - jsonPath: .status.multicastPhase
+          name: Multicast
+          type: string
+        - jsonPath: .status.federationPhase
+          name: Federation
+          type: string
         - jsonPath: .status.phase
           name: Phase
           type: string
@@ -1872,6 +1885,10 @@ spec:
                           type: string
                       type: object
                   type: object
+                federationPhase:
+                  type: string
+                multicastPhase:
+                  type: string
                 phase:
                   type: string
                 submariner:
@@ -1913,6 +1930,15 @@ spec:
                         hostname:
                           type: string
                       type: object
+                  type: object
+                subnets:
+                  properties:
+                    list:
+                      items:
+                        type: string
+                      type: array
+                    listInStr:
+                      type: string
                   type: object
               type: object
           type: object
@@ -4121,7 +4147,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.2
+          image: robolaunchio/connection-hub-controller-manager:v0.1.3
           livenessProbe:
             httpGet:
               path: /healthz

@@ -92,6 +92,7 @@ type ConnectionHubStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
+//+kubebuilder:printcolumn:name="Phase",type=string,JSONPath=`.status.phase`
 
 // ConnectionHub is the Schema for the connectionhubs API
 type ConnectionHub struct {
