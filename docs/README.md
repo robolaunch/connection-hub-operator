@@ -3,8 +3,8 @@
 This documentation aims to cover
 
 - [Tutorial for Physical Instance-Cloud Instance Connection](./tutorial/README.md)
-- [Design of Connection Hub](/design/README.md)
-- [Use Cases](/use-cases/README.md)
+- [Design of Connection Hub](./design/README.md)
+- [Use Cases](./use-cases/README.md)
 
 for this repository.
 
