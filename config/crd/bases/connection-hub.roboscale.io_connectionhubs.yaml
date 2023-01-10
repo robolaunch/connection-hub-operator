@@ -175,6 +175,8 @@ spec:
                           - clientCertificate
                           - clientKey
                           type: object
+                        isHost:
+                          type: boolean
                         server:
                           type: string
                       required:
