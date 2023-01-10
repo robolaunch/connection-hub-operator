@@ -121,7 +121,7 @@ func (r *FederationMemberReconciler) reconcileCheckStatus(ctx context.Context, i
 
 		case false:
 
-			switch instance.Spec.Server == "" {
+			switch instance.Spec.Server == "" && !instance.Spec.IsHost {
 			case true:
 
 				instance.Status.Phase = connectionhubv1alpha1.FederationMemberPhaseWaitingForCredentials

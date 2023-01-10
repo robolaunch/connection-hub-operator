@@ -125,6 +125,7 @@ func (r *FederationHostReconciler) reconcileCreateHostMember(ctx context.Context
 				ClientKey:            "",
 				ClientCertificate:    "",
 			},
+			IsHost: true,
 		},
 	}
 

@@ -13,6 +13,8 @@ type FederationMemberSpec struct {
 	Server string `json:"server"`
 	// +kubebuilder:validation:Required
 	Credentials PhysicalInstanceCredentials `json:"credentials"`
+
+	IsHost bool `json:"isHost,omitempty"`
 }
 
 type FederationMemberPhase string
