@@ -380,6 +380,10 @@ spec:
                 federationSpec:
                   description: FederationOperatorSpec defines the desired state of FederationOperator
                   properties:
+                    federatedTypes:
+                      items:
+                        type: string
+                      type: array
                     helmChart:
                       properties:
                         chartName:
@@ -512,6 +516,8 @@ spec:
                               - clientCertificate
                               - clientKey
                             type: object
+                          isHost:
+                            type: boolean
                           server:
                             type: string
                         required:
@@ -525,6 +531,10 @@ spec:
                         federationSpec:
                           description: FederationOperatorSpec defines the desired state of FederationOperator
                           properties:
+                            federatedTypes:
+                              items:
+                                type: string
+                              type: array
                             helmChart:
                               properties:
                                 chartName:
@@ -996,6 +1006,8 @@ spec:
                     - clientCertificate
                     - clientKey
                   type: object
+                isHost:
+                  type: boolean
                 server:
                   type: string
               required:
@@ -1074,6 +1086,10 @@ spec:
             spec:
               description: FederationOperatorSpec defines the desired state of FederationOperator
               properties:
+                federatedTypes:
+                  items:
+                    type: string
+                  type: array
                 helmChart:
                   properties:
                     chartName:
@@ -1114,6 +1130,12 @@ spec:
                     deployed:
                       type: boolean
                   type: object
+                federationTypeStatuses:
+                  additionalProperties:
+                    type: boolean
+                  type: object
+                federationTypesEnabled:
+                  type: boolean
                 namespaceStatus:
                   properties:
                     created:
@@ -1121,6 +1143,8 @@ spec:
                   type: object
                 phase:
                   type: string
+                typesInitiallyDisabled:
+                  type: boolean
               type: object
           type: object
       served: true
@@ -4147,7 +4171,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.3
+          image: robolaunchio/connection-hub-controller-manager:v0.1.4
           livenessProbe:
             httpGet:
               path: /healthz
