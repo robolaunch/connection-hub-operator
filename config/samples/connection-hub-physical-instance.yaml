@@ -3,6 +3,7 @@ kind: ConnectionHub
 metadata:
   labels:
     robolaunch.io/cloud-instance: <CLOUD-INSTANCE>
+    robolaunch.io/cloud-instance-alias: <CLOUD-INSTANCE-ALIAS>
     robolaunch.io/physical-instance: <PHYSICAL-INSTANCE>
   name: connection-hub
 spec:
