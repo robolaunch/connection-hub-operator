@@ -24,6 +24,17 @@ func GetFederation(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1alph
 
 	labels := cr.GetLabels()
 
+	// TODO: Get federated type information directly from connection hub
+	cr.Spec.FederationSpec.FederatedTypes = []string{
+		"namespaces",
+		"robots",
+		"buildmanagers",
+		"launchmanagers",
+		"robotartifacts",
+		"metricscollectors",
+		"fleet",
+	}
+
 	federation := &connectionhubv1alpha1.FederationOperator{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   connectionhubv1alpha1.GlobalFederationOperatorResourceName,
