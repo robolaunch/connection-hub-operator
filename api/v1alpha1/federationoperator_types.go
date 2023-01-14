@@ -22,12 +22,13 @@ type FederationOperatorSpec struct {
 type FederationOperatorPhase string
 
 const (
-	FederationOperatorPhaseCreatingNamespace FederationOperatorPhase = "CreatingNamespace"
-	FederationOperatorPhaseDeployingChart    FederationOperatorPhase = "DeployingChart"
-	FederationOperatorPhaseCheckingResources FederationOperatorPhase = "CheckingResources"
-	FederationOperatorPhaseFederatingObjects FederationOperatorPhase = "FederatingObjects"
-	FederationOperatorPhaseDeployed          FederationOperatorPhase = "Deployed"
-	FederationOperatorPhaseMalfunctioned     FederationOperatorPhase = "Malfunctioned"
+	FederationOperatorPhaseCreatingNamespace        FederationOperatorPhase = "CreatingNamespace"
+	FederationOperatorPhaseDeployingChart           FederationOperatorPhase = "DeployingChart"
+	FederationOperatorPhaseCheckingResources        FederationOperatorPhase = "CheckingResources"
+	FederationOperatorPhaseDisablingFederationTypes FederationOperatorPhase = "DisablingFederationTypes"
+	FederationOperatorPhaseFederatingObjects        FederationOperatorPhase = "FederatingObjects"
+	FederationOperatorPhaseDeployed                 FederationOperatorPhase = "Deployed"
+	FederationOperatorPhaseMalfunctioned            FederationOperatorPhase = "Malfunctioned"
 
 	FederationOperatorPhaseDeletingFederatedTypeCRDs    FederationOperatorPhase = "DeletingFederatedTypeCRDs"
 	FederationOperatorPhaseDeletingFederatedTypeConfigs FederationOperatorPhase = "DeletingFederatedTypeConfigs"
@@ -43,6 +44,7 @@ type FederationOperatorStatus struct {
 	ChartResourceStatus    ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
 	FederationTypeStatuses map[string]bool         `json:"federationTypeStatuses,omitempty"`
 	FederationTypesEnabled bool                    `json:"federationTypesEnabled,omitempty"`
+	TypesInitiallyDisabled bool                    `json:"typesInitiallyDisabled,omitempty"`
 	Phase                  FederationOperatorPhase `json:"phase,omitempty"`
 }
 

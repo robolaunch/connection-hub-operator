@@ -93,6 +93,8 @@ spec:
                 type: object
               phase:
                 type: string
+              typesInitiallyDisabled:
+                type: boolean
             type: object
         type: object
     served: true
