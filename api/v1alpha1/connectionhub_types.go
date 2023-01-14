@@ -125,6 +125,10 @@ func (ch *ConnectionHub) GetTenancySelectors() *Tenancy {
 		tenancy.RobolaunchCloudInstance = cloudInstance
 	}
 
+	if cloudInstanceAlias, ok := labels[tenancy.RobolaunchCloudInstanceAlias]; ok {
+		tenancy.RobolaunchCloudInstanceAlias = cloudInstanceAlias
+	}
+
 	if physicalInstance, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
 		tenancy.RobolaunchPhysicalInstance = physicalInstance
 	}

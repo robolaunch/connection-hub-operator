@@ -86,6 +86,10 @@ func (smb *SubmarinerBroker) GetTenancySelectors() *Tenancy {
 		tenancy.RobolaunchCloudInstance = cloudInstance
 	}
 
+	if cloudInstanceAlias, ok := labels[tenancy.RobolaunchCloudInstanceAlias]; ok {
+		tenancy.RobolaunchCloudInstanceAlias = cloudInstanceAlias
+	}
+
 	return tenancy
 }
 
