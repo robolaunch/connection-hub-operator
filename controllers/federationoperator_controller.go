@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"os"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,8 +18,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	kubefedv1beta1 "github.com/robolaunch/connection-hub-operator/api/external/kubefed/v1beta1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
+	disable "github.com/robolaunch/connection-hub-operator/controllers/pkg/utils/disable"
+	enable "github.com/robolaunch/connection-hub-operator/controllers/pkg/utils/enable"
 )
 
 // FederationOperatorReconciler reconciles a FederationOperator object
@@ -97,7 +101,38 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 			switch instance.Status.ChartResourceStatus.Deployed {
 			case true:
 
-				instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployed
+				switch instance.Status.TypesInitiallyDisabled {
+				case true:
+
+					switch instance.Status.FederationTypesEnabled {
+					case true:
+
+						instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployed
+
+					case false:
+
+						instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseFederatingObjects
+
+						err := r.reconcileEnableAllTypes(ctx, instance)
+						if err != nil {
+							return err
+						}
+
+						instance.Status.FederationTypesEnabled = true
+					}
+
+				case false:
+
+					instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDisablingFederationTypes
+
+					err := r.reconcileDisableAllTypes(ctx, instance)
+					if err != nil {
+						return err
+					}
+
+					instance.Status.TypesInitiallyDisabled = true
+
+				}
 
 			case false:
 
@@ -207,6 +242,43 @@ func (r *FederationOperatorReconciler) reconcileInstallChart(ctx context.Context
 
 	logger.Info("STATUS: Federation Operator Helm chart is deployed.")
 	instance.Status.ChartStatus.Deployed = true
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) reconcileEnableAllTypes(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	instance.Status.FederationTypeStatuses = make(map[string]bool)
+
+	for _, fedType := range instance.Spec.FederatedTypes {
+
+		err := enable.EnableKindInFederation(instance, []string{fedType}, os.Stdout, r.RESTConfig)
+		if err != nil {
+			instance.Status.FederationTypeStatuses[fedType] = false
+			continue
+		}
+
+		instance.Status.FederationTypeStatuses[fedType] = true
+
+	}
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) reconcileDisableAllTypes(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	ftcList := &kubefedv1beta1.FederatedTypeConfigList{}
+	err := r.List(ctx, ftcList, &client.ListOptions{Namespace: instance.GetNamespaceMetadata().Name})
+	if err != nil {
+		return err
+	}
+
+	for _, ftc := range ftcList.Items {
+		err := disable.DisableKindInFederation(instance, []string{ftc.Name}, os.Stdout, r.RESTConfig)
+		if err != nil {
+			logger.Info(err.Error())
+		}
+	}
 
 	return nil
 }
