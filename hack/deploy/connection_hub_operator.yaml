@@ -4171,7 +4171,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.4
+          image: robolaunchio/connection-hub-controller-manager:v0.1.5
           livenessProbe:
             httpGet:
               path: /healthz
@@ -4218,8 +4218,8 @@ spec:
         robolaunch.io/organization: robolaunch
         robolaunch.io/team: robotics
         robolaunch.io/region: europe-east
-        robolaunch.io/buffer-instance: buffer
         robolaunch.io/cloud-instance: cluster
+        robolaunch.io/cloud-instance-alias: cluster-alias
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate

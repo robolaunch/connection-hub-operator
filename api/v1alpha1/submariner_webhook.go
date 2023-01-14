@@ -125,6 +125,10 @@ func (r *Submariner) checkTenancyLabelsForSubmariner() error {
 		return errors.New("cloud instance label should be added with key " + RobolaunchCloudInstanceLabelKey)
 	}
 
+	if _, ok := labels[RobolaunchCloudInstanceAliasLabelKey]; !ok {
+		return errors.New("cloud instance alias label should be added with key " + RobolaunchCloudInstanceAliasLabelKey)
+	}
+
 	return nil
 }
 

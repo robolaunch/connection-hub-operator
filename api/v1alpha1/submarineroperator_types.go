@@ -104,6 +104,10 @@ func (so *SubmarinerOperator) GetTenancySelectors() *Tenancy {
 		tenancy.RobolaunchCloudInstance = cloudInstance
 	}
 
+	if cloudInstanceAlias, ok := labels[RobolaunchCloudInstanceAliasLabelKey]; ok {
+		tenancy.RobolaunchCloudInstanceAlias = cloudInstanceAlias
+	}
+
 	if physicalInstance, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
 		tenancy.RobolaunchPhysicalInstance = physicalInstance
 	}

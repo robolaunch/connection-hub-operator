@@ -69,6 +69,10 @@ func (r *SubmarinerBroker) checkTenancyLabelsForSMB() error {
 		return errors.New("cloud instance label should be added with key " + RobolaunchCloudInstanceLabelKey)
 	}
 
+	if _, ok := labels[RobolaunchCloudInstanceAliasLabelKey]; !ok {
+		return errors.New("cloud instance alias label should be added with key " + RobolaunchCloudInstanceLabelKey)
+	}
+
 	if _, ok := labels[RobolaunchPhysicalInstanceLabelKey]; ok {
 		return errors.New("cloud instance label should be empty for submariner broker")
 	}
