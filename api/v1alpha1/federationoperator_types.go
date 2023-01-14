@@ -15,9 +15,8 @@ type FederationOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
-	HelmChart HelmChart `json:"helmChart"`
-	// // +kubebuilder:validation:Required
-	FederatedTypes []string `json:"federatedTypes"`
+	HelmChart      HelmChart `json:"helmChart"`
+	FederatedTypes []string  `json:"federatedTypes,omitempty"`
 }
 
 type FederationOperatorPhase string
