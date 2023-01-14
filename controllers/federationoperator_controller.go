@@ -112,17 +112,10 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 					case false:
 
 						instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseFederatingObjects
-						instance.Status.FederationTypeStatuses = make(map[string]bool)
 
-						for _, fedType := range instance.Spec.FederatedTypes {
-
-							err := enable.EnableKindInFederation(instance, []string{fedType}, os.Stdout, r.RESTConfig)
-							if err != nil {
-								instance.Status.FederationTypeStatuses[fedType] = false
-							}
-
-							instance.Status.FederationTypeStatuses[fedType] = true
-
+						err := r.reconcileEnableAllTypes(ctx, instance)
+						if err != nil {
+							return err
 						}
 
 						instance.Status.FederationTypesEnabled = true
@@ -249,6 +242,25 @@ func (r *FederationOperatorReconciler) reconcileInstallChart(ctx context.Context
 
 	logger.Info("STATUS: Federation Operator Helm chart is deployed.")
 	instance.Status.ChartStatus.Deployed = true
+
+	return nil
+}
+
+func (r *FederationOperatorReconciler) reconcileEnableAllTypes(ctx context.Context, instance *connectionhubv1alpha1.FederationOperator) error {
+
+	instance.Status.FederationTypeStatuses = make(map[string]bool)
+
+	for _, fedType := range instance.Spec.FederatedTypes {
+
+		err := enable.EnableKindInFederation(instance, []string{fedType}, os.Stdout, r.RESTConfig)
+		if err != nil {
+			instance.Status.FederationTypeStatuses[fedType] = false
+			continue
+		}
+
+		instance.Status.FederationTypeStatuses[fedType] = true
+
+	}
 
 	return nil
 }
