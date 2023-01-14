@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	basicErr "errors"
+	"os"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,6 +20,7 @@ import (
 
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	helmops "github.com/robolaunch/connection-hub-operator/controllers/pkg/helm"
+	enable "github.com/robolaunch/connection-hub-operator/controllers/pkg/utils/enable"
 )
 
 // FederationOperatorReconciler reconciles a FederationOperator object
@@ -97,7 +99,29 @@ func (r *FederationOperatorReconciler) reconcileCheckStatus(ctx context.Context,
 			switch instance.Status.ChartResourceStatus.Deployed {
 			case true:
 
-				instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployed
+				switch instance.Status.FederationTypesEnabled {
+				case true:
+
+					instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseDeployed
+
+				case false:
+
+					instance.Status.Phase = connectionhubv1alpha1.FederationOperatorPhaseFederatingObjects
+					instance.Status.FederationTypeStatuses = make(map[string]bool)
+
+					for _, fedType := range instance.Spec.FederatedTypes {
+
+						err := enable.EnableKindInFederation(instance, []string{fedType}, os.Stdout, r.RESTConfig)
+						if err != nil {
+							instance.Status.FederationTypeStatuses[fedType] = false
+						}
+
+						instance.Status.FederationTypeStatuses[fedType] = true
+
+					}
+
+					instance.Status.FederationTypesEnabled = true
+				}
 
 			case false:
 
