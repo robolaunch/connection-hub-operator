@@ -15,17 +15,20 @@ type FederationOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
-	HelmChart HelmChart `json:"helmChart"`
+	HelmChart      HelmChart `json:"helmChart"`
+	FederatedTypes []string  `json:"federatedTypes,omitempty"`
 }
 
 type FederationOperatorPhase string
 
 const (
-	FederationOperatorPhaseCreatingNamespace FederationOperatorPhase = "CreatingNamespace"
-	FederationOperatorPhaseDeployingChart    FederationOperatorPhase = "DeployingChart"
-	FederationOperatorPhaseCheckingResources FederationOperatorPhase = "CheckingResources"
-	FederationOperatorPhaseDeployed          FederationOperatorPhase = "Deployed"
-	FederationOperatorPhaseMalfunctioned     FederationOperatorPhase = "Malfunctioned"
+	FederationOperatorPhaseCreatingNamespace        FederationOperatorPhase = "CreatingNamespace"
+	FederationOperatorPhaseDeployingChart           FederationOperatorPhase = "DeployingChart"
+	FederationOperatorPhaseCheckingResources        FederationOperatorPhase = "CheckingResources"
+	FederationOperatorPhaseDisablingFederationTypes FederationOperatorPhase = "DisablingFederationTypes"
+	FederationOperatorPhaseFederatingObjects        FederationOperatorPhase = "FederatingObjects"
+	FederationOperatorPhaseDeployed                 FederationOperatorPhase = "Deployed"
+	FederationOperatorPhaseMalfunctioned            FederationOperatorPhase = "Malfunctioned"
 
 	FederationOperatorPhaseDeletingFederatedTypeCRDs    FederationOperatorPhase = "DeletingFederatedTypeCRDs"
 	FederationOperatorPhaseDeletingFederatedTypeConfigs FederationOperatorPhase = "DeletingFederatedTypeConfigs"
@@ -36,10 +39,13 @@ const (
 
 // FederationOperatorStatus defines the observed state of FederationOperator
 type FederationOperatorStatus struct {
-	NamespaceStatus     NamespaceStatus         `json:"namespaceStatus,omitempty"`
-	ChartStatus         ChartStatus             `json:"chartStatus,omitempty"`
-	ChartResourceStatus ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
-	Phase               FederationOperatorPhase `json:"phase,omitempty"`
+	NamespaceStatus        NamespaceStatus         `json:"namespaceStatus,omitempty"`
+	ChartStatus            ChartStatus             `json:"chartStatus,omitempty"`
+	ChartResourceStatus    ChartResourceStatus     `json:"chartResourceStatus,omitempty"`
+	FederationTypeStatuses map[string]bool         `json:"federationTypeStatuses,omitempty"`
+	FederationTypesEnabled bool                    `json:"federationTypesEnabled,omitempty"`
+	TypesInitiallyDisabled bool                    `json:"typesInitiallyDisabled,omitempty"`
+	Phase                  FederationOperatorPhase `json:"phase,omitempty"`
 }
 
 //+kubebuilder:object:root=true

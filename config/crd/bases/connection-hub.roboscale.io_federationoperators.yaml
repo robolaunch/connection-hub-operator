@@ -36,6 +36,10 @@ spec:
           spec:
             description: FederationOperatorSpec defines the desired state of FederationOperator
             properties:
+              federatedTypes:
+                items:
+                  type: string
+                type: array
               helmChart:
                 properties:
                   chartName:
@@ -76,6 +80,12 @@ spec:
                   deployed:
                     type: boolean
                 type: object
+              federationTypeStatuses:
+                additionalProperties:
+                  type: boolean
+                type: object
+              federationTypesEnabled:
+                type: boolean
               namespaceStatus:
                 properties:
                   created:
@@ -83,6 +93,8 @@ spec:
                 type: object
               phase:
                 type: string
+              typesInitiallyDisabled:
+                type: boolean
             type: object
         type: object
     served: true

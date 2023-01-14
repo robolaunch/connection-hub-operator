@@ -42,6 +42,10 @@ spec:
               federationSpec:
                 description: FederationOperatorSpec defines the desired state of FederationOperator
                 properties:
+                  federatedTypes:
+                    items:
+                      type: string
+                    type: array
                   helmChart:
                     properties:
                       chartName:
@@ -191,6 +195,10 @@ spec:
                         description: FederationOperatorSpec defines the desired state
                           of FederationOperator
                         properties:
+                          federatedTypes:
+                            items:
+                              type: string
+                            type: array
                           helmChart:
                             properties:
                               chartName:
