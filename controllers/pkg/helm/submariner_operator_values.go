@@ -249,12 +249,18 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.IPSEC.IKEPort = 500
 	valuesObj.IPSEC.PreferredServer = true
 	valuesObj.IPSEC.NATDiscovery = 4490
-	valuesObj.Gateway.Image.Repository = "docker.io/robolaunchio/submariner-gateway"
-	valuesObj.Gateway.Image.Tag = "dev-v11"
-	valuesObj.Operator.Image.Repository = "docker.io/robolaunchio/submariner-operator"
-	valuesObj.Operator.Image.Tag = "dev-v20"
-	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
-	valuesObj.Submariner.Images.Tag = "dev-v11"
+	// valuesObj.Gateway.Image.Repository = "docker.io/robolaunchio/submariner-gateway"
+	valuesObj.Gateway.Image.Repository = submarinerOperator.Spec.GatewayImage.Repository
+	// valuesObj.Gateway.Image.Tag = "dev"
+	valuesObj.Gateway.Image.Tag = submarinerOperator.Spec.GatewayImage.Tag
+	// valuesObj.Operator.Image.Repository = "docker.io/robolaunchio/submariner-operator"
+	valuesObj.Operator.Image.Repository = submarinerOperator.Spec.OperatorImage.Repository
+	// valuesObj.Operator.Image.Tag = "dev"
+	valuesObj.Operator.Image.Tag = submarinerOperator.Spec.OperatorImage.Tag
+	// valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
+	valuesObj.Submariner.Images.Repository = submarinerOperator.Spec.SubmarinerImages.Repository
+	// valuesObj.Submariner.Images.Tag = "dev"
+	valuesObj.Submariner.Images.Tag = submarinerOperator.Spec.SubmarinerImages.Tag
 	valuesObj.NodeSelector = submarinerOperator.Status.NodeInfo.Selectors
 
 	return valuesObj
