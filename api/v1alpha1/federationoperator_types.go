@@ -12,11 +12,15 @@ const (
 
 // FederationOperatorSpec defines the desired state of FederationOperator
 type FederationOperatorSpec struct {
+	FederatedTypes []string `json:"federatedTypes,omitempty"`
+	// +kubebuilder:validation:Required
+	ControllerImage DockerImage `json:"controllerImage"`
+	// +kubebuilder:validation:Required
+	WebhookImage DockerImage `json:"webhookImage"`
 	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
-	HelmChart      HelmChart `json:"helmChart"`
-	FederatedTypes []string  `json:"federatedTypes,omitempty"`
+	HelmChart HelmChart `json:"helmChart"`
 }
 
 type FederationOperatorPhase string
