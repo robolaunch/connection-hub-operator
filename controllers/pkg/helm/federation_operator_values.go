@@ -8,9 +8,19 @@ type FeatureGates struct {
 	RawResourceStatusCollection string `yaml:"RawResourceStatusCollection"`
 }
 
+type Controller struct {
+	Image string `yaml:"image"`
+}
+
+type Webhook struct {
+	Image string `yaml:"image"`
+}
+
 type ControllerManager struct {
 	CommonNodeSelector map[string]string `yaml:"commonNodeSelector"`
 	FeatureGates       FeatureGates      `yaml:"featureGates"`
+	Controller         Controller        `yaml:"controller"`
+	Webhook            Webhook           `yaml:"webhook"`
 }
 
 type FederationOperatorValues struct {
