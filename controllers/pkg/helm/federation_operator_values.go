@@ -1,6 +1,8 @@
 package helm
 
-import connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+import (
+	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+)
 
 // controllermanager.featureGates.RawResourceStatusCollection
 
@@ -39,6 +41,8 @@ func GetFederationOperatorValues(federationOperator connectionhubv1alpha1.Federa
 	valuesObj := getFederationOperatorValuesDefault()
 	valuesObj.ControllerManager.CommonNodeSelector = federationOperator.Labels
 	valuesObj.ControllerManager.FeatureGates.RawResourceStatusCollection = "Enabled"
+	valuesObj.ControllerManager.Controller.Image = federationOperator.Spec.ControllerImage.Repository + federationOperator.Spec.ControllerImage.Tag
+	valuesObj.ControllerManager.Webhook.Image = federationOperator.Spec.WebhookImage.Repository + federationOperator.Spec.WebhookImage.Tag
 
 	return valuesObj
 }
