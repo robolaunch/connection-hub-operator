@@ -18,6 +18,8 @@ type FederationOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	WebhookImage DockerImage `json:"webhookImage"`
 	// +kubebuilder:validation:Required
+	PostInstallJobImage DockerImage `json:"postInstallJobImage"`
+	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
 	HelmChart HelmChart `json:"helmChart"`
