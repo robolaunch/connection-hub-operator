@@ -11,11 +11,21 @@ type FeatureGates struct {
 }
 
 type Controller struct {
-	Image string `yaml:"image"`
+	Repository string `yaml:"repository"`
+	Image      string `yaml:"image"`
+	Tag        string `yaml:"tag"`
 }
 
 type Webhook struct {
-	Image string `yaml:"image"`
+	Repository string `yaml:"repository"`
+	Image      string `yaml:"image"`
+	Tag        string `yaml:"tag"`
+}
+
+type PostInstallJob struct {
+	Repository string `yaml:"repository"`
+	Image      string `yaml:"image"`
+	Tag        string `yaml:"tag"`
 }
 
 type ControllerManager struct {
@@ -23,6 +33,7 @@ type ControllerManager struct {
 	FeatureGates       FeatureGates      `yaml:"featureGates"`
 	Controller         Controller        `yaml:"controller"`
 	Webhook            Webhook           `yaml:"webhook"`
+	PostInstallJob     PostInstallJob    `yaml:"postInstallJob"`
 }
 
 type FederationOperatorValues struct {
@@ -41,8 +52,18 @@ func GetFederationOperatorValues(federationOperator connectionhubv1alpha1.Federa
 	valuesObj := getFederationOperatorValuesDefault()
 	valuesObj.ControllerManager.CommonNodeSelector = federationOperator.Labels
 	valuesObj.ControllerManager.FeatureGates.RawResourceStatusCollection = "Enabled"
-	valuesObj.ControllerManager.Controller.Image = federationOperator.Spec.ControllerImage.Repository + federationOperator.Spec.ControllerImage.Tag
-	valuesObj.ControllerManager.Webhook.Image = federationOperator.Spec.WebhookImage.Repository + federationOperator.Spec.WebhookImage.Tag
+
+	valuesObj.ControllerManager.Controller.Repository = federationOperator.Spec.ControllerImage.Repository
+	valuesObj.ControllerManager.Webhook.Repository = federationOperator.Spec.WebhookImage.Repository
+	valuesObj.ControllerManager.PostInstallJob.Repository = federationOperator.Spec.PostInstallJobImage.Repository
+
+	valuesObj.ControllerManager.Controller.Image = federationOperator.Spec.ControllerImage.Image
+	valuesObj.ControllerManager.Webhook.Image = federationOperator.Spec.WebhookImage.Image
+	valuesObj.ControllerManager.PostInstallJob.Image = federationOperator.Spec.PostInstallJobImage.Image
+
+	valuesObj.ControllerManager.Controller.Tag = federationOperator.Spec.ControllerImage.Tag
+	valuesObj.ControllerManager.Webhook.Tag = federationOperator.Spec.WebhookImage.Tag
+	valuesObj.ControllerManager.PostInstallJob.Tag = federationOperator.Spec.PostInstallJobImage.Tag
 
 	return valuesObj
 }
