@@ -192,7 +192,7 @@ func (submariner *Submariner) GetSubmarinerOperatorMetadata() *types.NamespacedN
 
 func (submariner *Submariner) GetSubmarinerCustomResourceMetadata() *types.NamespacedName {
 	return &types.NamespacedName{
-		Name:      submariner.Name + "-cr",
+		Name:      submariner.Name, // + "-cr",
 		Namespace: SubmarinerOperatorNamespace,
 	}
 }
