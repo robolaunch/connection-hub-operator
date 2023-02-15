@@ -17,6 +17,7 @@ type ResourceItem struct {
 
 type DockerImage struct {
 	Repository string `json:"repository"`
+	Image      string `json:"image"`
 	Tag        string `json:"tag"`
 }
 
