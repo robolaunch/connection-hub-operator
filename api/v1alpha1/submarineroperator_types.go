@@ -15,6 +15,12 @@ type ResourceItem struct {
 	GroupVersionKind metav1.GroupVersionKind
 }
 
+type DockerImage struct {
+	Repository string `json:"repository"`
+	Image      string `json:"image"`
+	Tag        string `json:"tag"`
+}
+
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
@@ -29,6 +35,12 @@ type SubmarinerOperatorSpec struct {
 	ClusterID string `json:"clusterID"`
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
+	// +kubebuilder:validation:Required
+	OperatorImage DockerImage `json:"operatorImage"`
+	// +kubebuilder:validation:Required
+	GatewayImage DockerImage `json:"gatewayImage"`
+	// +kubebuilder:validation:Required
+	SubmarinerImages DockerImage `json:"submarinerImages"`
 	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required

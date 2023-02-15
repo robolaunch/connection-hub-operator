@@ -84,10 +84,10 @@ type IPSEC struct {
 	PSK string `yaml:"psk"`
 	// Debug           bool   `yaml:"debug"`
 	// ForceUDPEncaps  bool   `yaml:"forceUDPEncaps"`
-	IKEPort         int  `yaml:"ikePort"`
-	NATPort         int  `yaml:"natPort"`
-	NATDiscovery    int  `yaml:"natDiscovery"`
-	PreferredServer bool `yaml:"preferredServer"`
+	// IKEPort         int  `yaml:"ikePort"`
+	// NATPort         int  `yaml:"natPort"`
+	// NATDiscovery    int  `yaml:"natDiscovery"`
+	// PreferredServer bool `yaml:"preferredServer"`
 }
 
 func getIPSECDefault() IPSEC {
@@ -95,10 +95,10 @@ func getIPSECDefault() IPSEC {
 		PSK: "",
 		// Debug:           false,
 		// ForceUDPEncaps:  false,
-		IKEPort:         500,
-		NATPort:         4500,
-		NATDiscovery:    4490,
-		PreferredServer: false,
+		// IKEPort:         500,
+		// NATPort:         4500,
+		// NATDiscovery:    4490,
+		// PreferredServer: false,
 	}
 }
 
@@ -245,17 +245,13 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
 	valuesObj.ServiceAccounts.LighthouseCoreDNS.Create = true
 	valuesObj.Submariner.HealthCheckEnabled = true
-	valuesObj.IPSEC.NATPort = 4500
-	valuesObj.IPSEC.IKEPort = 500
-	valuesObj.IPSEC.PreferredServer = true
-	valuesObj.IPSEC.NATDiscovery = 4490
-	valuesObj.Gateway.Image.Repository = "docker.io/robolaunchio/submariner-gateway"
-	valuesObj.Gateway.Image.Tag = "dev-v11"
-	valuesObj.Operator.Image.Repository = "docker.io/robolaunchio/submariner-operator"
-	valuesObj.Operator.Image.Tag = "dev-v20"
-	valuesObj.Submariner.Images.Repository = "docker.io/robolaunchio"
-	valuesObj.Submariner.Images.Tag = "dev-v11"
-	valuesObj.NodeSelector = submarinerOperator.Status.NodeInfo.Selectors
+	valuesObj.Gateway.Image.Repository = submarinerOperator.Spec.GatewayImage.Repository
+	valuesObj.Gateway.Image.Tag = submarinerOperator.Spec.GatewayImage.Tag
+	valuesObj.Operator.Image.Repository = submarinerOperator.Spec.OperatorImage.Repository
+	valuesObj.Operator.Image.Tag = submarinerOperator.Spec.OperatorImage.Tag
+	valuesObj.Submariner.Images.Repository = submarinerOperator.Spec.SubmarinerImages.Repository
+	valuesObj.Submariner.Images.Tag = submarinerOperator.Spec.SubmarinerImages.Tag
+	// valuesObj.NodeSelector = submarinerOperator.Status.NodeInfo.Selectors
 
 	return valuesObj
 }

@@ -36,6 +36,19 @@ spec:
           spec:
             description: FederationOperatorSpec defines the desired state of FederationOperator
             properties:
+              controllerImage:
+                properties:
+                  image:
+                    type: string
+                  repository:
+                    type: string
+                  tag:
+                    type: string
+                required:
+                - image
+                - repository
+                - tag
+                type: object
               federatedTypes:
                 items:
                   type: string
@@ -63,9 +76,38 @@ spec:
                 - name
                 - url
                 type: object
+              postInstallJobImage:
+                properties:
+                  image:
+                    type: string
+                  repository:
+                    type: string
+                  tag:
+                    type: string
+                required:
+                - image
+                - repository
+                - tag
+                type: object
+              webhookImage:
+                properties:
+                  image:
+                    type: string
+                  repository:
+                    type: string
+                  tag:
+                    type: string
+                required:
+                - image
+                - repository
+                - tag
+                type: object
             required:
+            - controllerImage
             - helmChart
             - helmRepository
+            - postInstallJobImage
+            - webhookImage
             type: object
           status:
             description: FederationOperatorStatus defines the observed state of FederationOperator

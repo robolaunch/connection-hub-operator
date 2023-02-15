@@ -142,27 +142,27 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForBothInstances(ct
 		switch instance.Status.OperatorStatus.Phase {
 		case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
 
-			switch instance.Status.CustomResourceStatus.Created {
+			// switch instance.Status.CustomResourceStatus.Created {
+			// case true:
+
+			switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
 			case true:
 
-				switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
-				case true:
-
-					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
-
-				case false:
-
-					logger.Info("STATUS: Checking for Submariner CR resources.")
-					instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
-
-				}
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseReadyToConnect
 
 			case false:
-				err := r.submarinerReconcileCreateCustomResource(ctx, instance)
-				if err != nil {
-					return err
-				}
+
+				logger.Info("STATUS: Checking for Submariner CR resources.")
+				instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
+
 			}
+
+			// case false:
+			// 	err := r.submarinerReconcileCreateCustomResource(ctx, instance)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// }
 
 		}
 
@@ -205,15 +205,15 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 		instance.Status.OperatorStatus.Phase = submarinerOperatorQuery.Status.Phase
 	}
 
-	submarinerCRQuery := &submv1alpha1.Submariner{}
-	err = r.Get(ctx, *instance.GetSubmarinerCustomResourceMetadata(), submarinerCRQuery)
-	if err != nil && errors.IsNotFound(err) {
-		instance.Status.CustomResourceStatus = connectionhubv1alpha1.CustomResourceStatus{}
-	} else if err != nil {
-		return err
-	} else {
-		instance.Status.CustomResourceStatus.Created = true
-	}
+	// submarinerCRQuery := &submv1alpha1.Submariner{}
+	// err = r.Get(ctx, *instance.GetSubmarinerCustomResourceMetadata(), submarinerCRQuery)
+	// if err != nil && errors.IsNotFound(err) {
+	// 	instance.Status.CustomResourceStatus = connectionhubv1alpha1.CustomResourceStatus{}
+	// } else if err != nil {
+	// 	return err
+	// } else {
+	// 	instance.Status.CustomResourceStatus.Created = true
+	// }
 
 	instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed = true
 	resources := instance.GetResourcesForCheck()
@@ -292,26 +292,26 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Con
 	return nil
 }
 
-func (r *SubmarinerReconciler) submarinerReconcileCreateCustomResource(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
-	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingCustomResource
+// func (r *SubmarinerReconciler) submarinerReconcileCreateCustomResource(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
+// 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingCustomResource
 
-	submarinerCR := resources.GetSubmarinerCustomResource(instance)
+// 	submarinerCR := resources.GetSubmarinerCustomResource(instance)
 
-	err := ctrl.SetControllerReference(instance, submarinerCR, r.Scheme)
-	if err != nil {
-		return err
-	}
+// 	err := ctrl.SetControllerReference(instance, submarinerCR, r.Scheme)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	err = r.Create(ctx, submarinerCR)
-	if err != nil {
-		return err
-	}
+// 	err = r.Create(ctx, submarinerCR)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	logger.Info("STATUS: Submariner custom resource is created.")
+// 	logger.Info("STATUS: Submariner custom resource is created.")
 
-	instance.Status.CustomResourceStatus.Created = true
-	return nil
-}
+// 	instance.Status.CustomResourceStatus.Created = true
+// 	return nil
+// }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	tenancy := instance.GetTenancySelectors()
