@@ -3,6 +3,10 @@
 IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25.0
+# Manifest location
+MANIFEST_LOCATION = hack/deploy/manifests
+# Local manifest location
+LOCAL_MANIFEST_LOCATION = hack/deploy.local/manifests
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -124,26 +128,26 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 .PHONY: extract
 extract: manifests kustomize ## Extract controller YAMLs, not deploy
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default > hack/deploy.local/connection_hub_operator.yaml
+	$(KUSTOMIZE) build config/default > $(LOCAL_MANIFEST_LOCATION)/connection_hub_operator.yaml
 
 .PHONY: select-node
 select-node: 
-	yq -i e '(select(.kind == "Deployment") | .spec.template.spec.nodeSelector."${LABEL_KEY}") = "${LABEL_VAL}"' hack/deploy.local/connection_hub_operator.yaml
+	yq -i e '(select(.kind == "Deployment") | .spec.template.spec.nodeSelector."${LABEL_KEY}") = "${LABEL_VAL}"' $(LOCAL_MANIFEST_LOCATION)/connection_hub_operator.yaml
 
 .PHONY: apply
 apply: 
-	kubectl apply -f hack/deploy.local/connection_hub_operator.yaml
+	kubectl apply -f $(LOCAL_MANIFEST_LOCATION)/connection_hub_operator.yaml
 
 # Production
 
 .PHONY: gh-extract
 gh-extract: manifests kustomize ## Extract controller YAMLs, not deploy
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default > hack/deploy/connection_hub_operator.yaml
+	$(KUSTOMIZE) build config/default > $(MANIFEST_LOCATION)/connection_hub_operator.yaml
 
 .PHONY: gh-select-node
 gh-select-node: 
-	yq -i e '(select(.kind == "Deployment") | .spec.template.spec.nodeSelector."${LABEL_KEY}") = "${LABEL_VAL}"' hack/deploy/connection_hub_operator.yaml
+	yq -i e '(select(.kind == "Deployment") | .spec.template.spec.nodeSelector."${LABEL_KEY}") = "${LABEL_VAL}"' $(MANIFEST_LOCATION)/connection_hub_operator.yaml
 
 ##@ Build Dependencies
 
