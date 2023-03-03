@@ -13,4 +13,4 @@ Organization: {{ .Values.organization }}
 Team: {{ .Values.team }}
 Region: {{ .Values.region }}
 Cloud Instance: {{ .Values.cloudInstance }}
-Alias for cloud instance: {{ .Values.cloudInstanceAlias }}
+Alias for Cloud Instance: {{ .Values.cloudInstanceAlias }}
