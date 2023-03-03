@@ -4,11 +4,6 @@ region: europe-east
 cloudInstance: cluster
 cloudInstanceAlias: cluster-alias
 
-instanceType: cloud
-cloudInstanceAPIServerURL: ""
-clusterCIDR: ""
-serviceCIDR: ""
-
 replicaCount: 1
 
 managerResources:
