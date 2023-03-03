@@ -12,5 +12,5 @@ robolaunch Connection Hub Operator {{ .Chart.AppVersion }}
 Organization: {{ .Values.organization }}
 Team: {{ .Values.team }}
 Region: {{ .Values.region }}
-CloudInstance: {{ .Values.cloudInstance }}
-CloudInstanceAlias: {{ .Values.cloudInstanceAlias }}
+Cloud Instance: {{ .Values.cloudInstance }}
+Alias for cloud instance: {{ .Values.cloudInstanceAlias }}
