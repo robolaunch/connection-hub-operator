@@ -28,3 +28,6 @@ Dockerfile.cross
 # local yamls
 *.yaml.local
 *.local*
+
+# helm packages
+*.tgz
