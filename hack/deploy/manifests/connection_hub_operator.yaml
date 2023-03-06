@@ -821,6 +821,8 @@ spec:
                     phase:
                       type: string
                   type: object
+                key:
+                  type: string
                 nodeInfo:
                   properties:
                     name:
@@ -4465,7 +4467,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.1
+          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.3
           livenessProbe:
             httpGet:
               path: /healthz
