@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/base64"
 	basicErr "errors"
 
 	corev1 "k8s.io/api/core/v1"
@@ -181,6 +182,10 @@ func (r *ConnectionHubReconciler) reconcileCheckResources(ctx context.Context, i
 			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.BrokerCredentials.CA = brokerCredentials.CA
 			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.BrokerCredentials.Token = brokerCredentials.Token
 			instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.PresharedKey = submariner.Spec.PresharedKey
+
+			decodedKey := instance.Spec.SubmarinerSpec.APIServerURL + "/" + brokerCredentials.CA + "/" + brokerCredentials.Token + "/" + submariner.Spec.PresharedKey
+			encodedKey := base64.StdEncoding.EncodeToString([]byte(decodedKey))
+			instance.Status.Key = encodedKey
 		}
 
 	}

@@ -87,6 +87,7 @@ type ConnectionHubStatus struct {
 	CloudInstance  CloudInstanceInstanceStatus  `json:"cloudInstance,omitempty"`
 
 	ConnectionInterfaces ConnectionInterfaces `json:"connectionInterfaces,omitempty"`
+	Key                  string               `json:"key,omitempty"`
 }
 
 //+kubebuilder:object:root=true
