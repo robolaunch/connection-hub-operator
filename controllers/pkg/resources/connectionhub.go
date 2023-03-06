@@ -1,8 +1,12 @@
 package resources
 
 import (
+	"bytes"
+	"encoding/base64"
+
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/cli-runtime/pkg/printers"
 )
 
 func GetSubmariner(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1alpha1.Submariner {
@@ -57,4 +61,31 @@ func GetCloudInstance(cr *connectionhubv1alpha1.ConnectionHub) *connectionhubv1a
 	}
 
 	return cloudInstance
+}
+
+// for cloud instances --dry-run
+func GetConnectionHubTemplateKey(cr *connectionhubv1alpha1.ConnectionHub) (string, error) {
+
+	cr.ObjectMeta.Labels["robolaunch.io/physical-instance"] = "<PHYSICAL-INSTANCE>"
+
+	chTemplate := connectionhubv1alpha1.ConnectionHub{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: cr.APIVersion,
+			Kind:       cr.Kind,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   cr.Name,
+			Labels: cr.ObjectMeta.Labels,
+		},
+		Spec: cr.Status.ConnectionInterfaces.ForPhysicalInstance,
+	}
+
+	var chTemplateYAMLBytes bytes.Buffer
+
+	p := printers.YAMLPrinter{}
+	p.PrintObj(&chTemplate, &chTemplateYAMLBytes)
+
+	chTemplateEncoded := base64.StdEncoding.EncodeToString(chTemplateYAMLBytes.Bytes())
+
+	return chTemplateEncoded, nil
 }
