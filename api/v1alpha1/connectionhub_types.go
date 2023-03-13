@@ -12,13 +12,6 @@ const (
 	InstanceTypePhysical InstanceType = "PhysicalInstance"
 )
 
-type NetworkType string
-
-const (
-	NetworkTypeLocal    NetworkType = "Local"
-	NetworkTypeExternal NetworkType = "External"
-)
-
 type HelmRepository struct {
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
@@ -72,8 +65,6 @@ const (
 type ConnectionHubSpec struct {
 	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
 	InstanceType `json:"instanceType,omitempty"`
-	// +kubebuilder:validation:Enum=Local;External
-	NetworkType `json:"networkType,omitempty"`
 	// +kubebuilder:validation:Required
 	SubmarinerSpec SubmarinerSpec `json:"submarinerSpec"`
 	// +kubebuilder:validation:Required

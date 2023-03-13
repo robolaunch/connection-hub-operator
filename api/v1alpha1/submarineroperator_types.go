@@ -21,8 +21,19 @@ type DockerImage struct {
 	Tag        string `json:"tag"`
 }
 
+type NetworkType string
+
+const (
+	NetworkTypeLocal    NetworkType = "Local"
+	NetworkTypeExternal NetworkType = "External"
+)
+
 // SubmarinerOperatorSpec defines the desired state of SubmarinerOperator
 type SubmarinerOperatorSpec struct {
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum=Local;External
+	// +kubebuilder:default="External"
+	NetworkType `json:"networkType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:validation:Required
