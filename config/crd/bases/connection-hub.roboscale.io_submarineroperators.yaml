@@ -85,6 +85,12 @@ spec:
                 - name
                 - url
                 type: object
+              networkType:
+                default: External
+                enum:
+                - Local
+                - External
+                type: string
               operatorImage:
                 properties:
                   image:

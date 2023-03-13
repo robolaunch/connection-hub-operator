@@ -91,6 +91,12 @@ spec:
                 - CloudInstance
                 - PhysicalInstance
                 type: string
+              networkType:
+                default: External
+                enum:
+                - Local
+                - External
+                type: string
               operatorHelmChart:
                 properties:
                   chartName:
