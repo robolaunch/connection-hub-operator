@@ -142,9 +142,6 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForBothInstances(ct
 		switch instance.Status.OperatorStatus.Phase {
 		case connectionhubv1alpha1.SubmarinerOperatorPhaseDeployed:
 
-			// switch instance.Status.CustomResourceStatus.Created {
-			// case true:
-
 			switch instance.Status.CustomResourceStatus.OwnedResourceStatus.Deployed {
 			case true:
 
@@ -156,13 +153,6 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckStatusForBothInstances(ct
 				instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCheckingResources
 
 			}
-
-			// case false:
-			// 	err := r.submarinerReconcileCreateCustomResource(ctx, instance)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
 
 		}
 
@@ -238,16 +228,6 @@ func (r *SubmarinerReconciler) submarinerReconcileCheckResources(ctx context.Con
 	return nil
 }
 
-// func (r *SubmarinerReconciler) submarinerReconcileSetCredentials(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
-
-// 	switch instance.Spec.InstanceType {
-// 	case connectionhubv1alpha1.InstanceTypePhysical:
-// 		instance.Status.BrokerStatus.Status.BrokerCredentials = instance.Spec.BrokerCredentials
-// 	}
-
-// 	return nil
-// }
-
 func (r *SubmarinerReconciler) submarinerReconcileCreateBroker(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingBroker
 
@@ -291,27 +271,6 @@ func (r *SubmarinerReconciler) submarinerReconcileCreateOperator(ctx context.Con
 
 	return nil
 }
-
-// func (r *SubmarinerReconciler) submarinerReconcileCreateCustomResource(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
-// 	instance.Status.Phase = connectionhubv1alpha1.SubmarinerPhaseCreatingCustomResource
-
-// 	submarinerCR := resources.GetSubmarinerCustomResource(instance)
-
-// 	err := ctrl.SetControllerReference(instance, submarinerCR, r.Scheme)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = r.Create(ctx, submarinerCR)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	logger.Info("STATUS: Submariner custom resource is created.")
-
-// 	instance.Status.CustomResourceStatus.Created = true
-// 	return nil
-// }
 
 func (r *SubmarinerReconciler) submarinerReconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.Submariner) error {
 	tenancy := instance.GetTenancySelectors()
