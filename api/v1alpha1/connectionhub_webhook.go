@@ -25,6 +25,7 @@ func (r *ConnectionHub) Default() {
 	connectionhublog.Info("default", "name", r.Name)
 
 	r.setInstanceType()
+	r.setNetworkType()
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -52,6 +53,12 @@ func (r *ConnectionHub) ValidateDelete() error {
 
 func (r *ConnectionHub) setInstanceType() {
 	r.Spec.InstanceType = r.getInstanceType()
+}
+
+func (r *ConnectionHub) setNetworkType() {
+	if r.Spec.InstanceType == InstanceTypeCloud {
+		r.Spec.SubmarinerSpec.NetworkType = NetworkTypeExternal
+	}
 }
 
 func (r *ConnectionHub) getInstanceType() InstanceType {
