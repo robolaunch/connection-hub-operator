@@ -513,6 +513,12 @@ spec:
                         - CloudInstance
                         - PhysicalInstance
                       type: string
+                    networkType:
+                      default: External
+                      enum:
+                        - Local
+                        - External
+                      type: string
                     operatorHelmChart:
                       properties:
                         chartName:
@@ -747,6 +753,12 @@ spec:
                               enum:
                                 - CloudInstance
                                 - PhysicalInstance
+                              type: string
+                            networkType:
+                              default: External
+                              enum:
+                                - Local
+                                - External
                               type: string
                             operatorHelmChart:
                               properties:
@@ -2489,6 +2501,12 @@ spec:
                     - name
                     - url
                   type: object
+                networkType:
+                  default: External
+                  enum:
+                    - Local
+                    - External
+                  type: string
                 operatorImage:
                   properties:
                     image:
@@ -2665,6 +2683,12 @@ spec:
                   enum:
                     - CloudInstance
                     - PhysicalInstance
+                  type: string
+                networkType:
+                  default: External
+                  enum:
+                    - Local
+                    - External
                   type: string
                 operatorHelmChart:
                   properties:
@@ -4461,7 +4485,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.3
+          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.4
           livenessProbe:
             httpGet:
               path: /healthz

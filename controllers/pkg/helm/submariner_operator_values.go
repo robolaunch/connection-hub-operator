@@ -241,7 +241,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Submariner.ServiceDiscovery = true
 	valuesObj.Submariner.CableDriver = "wireguard"
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
-	valuesObj.Submariner.NatEnabled = true
+	valuesObj.Submariner.NatEnabled = submarinerOperator.Spec.NetworkType == connectionhubv1alpha1.NetworkTypeExternal
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
 	valuesObj.ServiceAccounts.LighthouseCoreDNS.Create = true
 	valuesObj.Submariner.HealthCheckEnabled = true

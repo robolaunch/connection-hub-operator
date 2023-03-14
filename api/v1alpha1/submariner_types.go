@@ -11,6 +11,10 @@ const (
 
 // SubmarinerSpec defines the desired state of Submariner
 type SubmarinerSpec struct {
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum=Local;External
+	// +kubebuilder:default="External"
+	NetworkType `json:"networkType,omitempty"`
 	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
 	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
