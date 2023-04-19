@@ -1,0 +1,129 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: {{ include "connection-hub-operator.fullname" . }}-validating-webhook-configuration
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Release.Namespace }}/{{ include "connection-hub-operator.fullname" . }}-serving-cert
+  labels:
+  {{- include "connection-hub-operator.labels" . | nindent 4 }}
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-cloudinstance
+  failurePolicy: Fail
+  name: vcloudinstance.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - cloudinstances
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-connectionhub
+  failurePolicy: Fail
+  name: vconnectionhub.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - connectionhubs
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-federationoperator
+  failurePolicy: Fail
+  name: vfederationoperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - federationoperators
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submariner
+  failurePolicy: Fail
+  name: vsubmariner.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submariners
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submarinerbroker
+  failurePolicy: Fail
+  name: vsubmarinerbroker.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarinerbrokers
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+      namespace: '{{ .Release.Namespace }}'
+      path: /validate-connection-hub-roboscale-io-v1alpha1-submarineroperator
+  failurePolicy: Fail
+  name: vsubmarineroperator.kb.io
+  rules:
+  - apiGroups:
+    - connection-hub.roboscale.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - submarineroperators
+  sideEffects: None

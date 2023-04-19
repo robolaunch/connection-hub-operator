@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "connection-hub-operator.fullname" . }}-webhook-service
+  labels:
+    app.kubernetes.io/component: webhook
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+  {{- include "connection-hub-operator.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.webhookService.type }}
+  selector:
+    control-plane: controller-manager
+  {{- include "connection-hub-operator.selectorLabels" . | nindent 4 }}
+  ports:
+	{{- .Values.webhookService.ports | toYaml | nindent 2 -}}

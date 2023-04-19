@@ -1,0 +1,127 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: submarinerbrokers.connection-hub.roboscale.io
+  annotations:
+    cert-manager.io/inject-ca-from: '{{ .Release.Namespace }}/{{ include "connection-hub-operator.fullname"
+      . }}-serving-cert'
+    controller-gen.kubebuilder.io/version: v0.9.2
+  labels:
+  {{- include "connection-hub-operator.labels" . | nindent 4 }}
+spec:
+  conversion:
+    strategy: Webhook
+    webhook:
+      clientConfig:
+        service:
+          name: '{{ include "connection-hub-operator.fullname" . }}-webhook-service'
+          namespace: '{{ .Release.Namespace }}'
+          path: /convert
+      conversionReviewVersions:
+      - v1
+  group: connection-hub.roboscale.io
+  names:
+    kind: SubmarinerBroker
+    listKind: SubmarinerBrokerList
+    plural: submarinerbrokers
+    singular: submarinerbroker
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SubmarinerBroker is the Schema for the submarinerbrokers API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SubmarinerBrokerSpec defines the desired state of SubmarinerBroker
+            properties:
+              apiServerURL:
+                type: string
+              helmChart:
+                properties:
+                  chartName:
+                    type: string
+                  releaseName:
+                    type: string
+                  version:
+                    type: string
+                required:
+                - chartName
+                - releaseName
+                - version
+                type: object
+              helmRepository:
+                properties:
+                  name:
+                    type: string
+                  url:
+                    type: string
+                required:
+                - name
+                - url
+                type: object
+            required:
+            - apiServerURL
+            - helmChart
+            - helmRepository
+            type: object
+          status:
+            description: SubmarinerBrokerStatus defines the observed state of SubmarinerBroker
+            properties:
+              brokerCredentials:
+                properties:
+                  ca:
+                    type: string
+                  token:
+                    type: string
+                type: object
+              chartResourceStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              chartStatus:
+                properties:
+                  deployed:
+                    type: boolean
+                type: object
+              namespaceStatus:
+                properties:
+                  created:
+                    type: boolean
+                type: object
+              nodeInfo:
+                properties:
+                  name:
+                    type: string
+                  selectors:
+                    additionalProperties:
+                      type: string
+                    type: object
+                type: object
+              phase:
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

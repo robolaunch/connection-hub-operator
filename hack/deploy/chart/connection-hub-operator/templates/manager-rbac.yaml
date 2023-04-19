@@ -1,0 +1,670 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "connection-hub-operator.fullname" . }}-manager-role
+  labels:
+  {{- include "connection-hub-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - daemonsets
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - deployments/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - '*'
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - '*'
+- apiGroups:
+  - batch
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - config.openshift.io
+  resources:
+  - networks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - cloudinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - connectionhubs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - connectionhubs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - connectionhubs/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationhosts/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationmembers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationoperators
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationoperators/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - federationoperators/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - physicalinstances/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarinerbrokers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarinerbrokers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarinerbrokers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarineroperators
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarineroperators/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submarineroperators/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submariners
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submariners/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - connection-hub.roboscale.io
+  resources:
+  - submariners/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - '*'
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - '*'
+- apiGroups:
+  - ""
+  resources:
+  - services/finalizers
+  verbs:
+  - '*'
+- apiGroups:
+  - core.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices/restricted
+  verbs:
+  - create
+  - delete
+  - deletecollection
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lighthouse.submariner.io
+  resources:
+  - '*'
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - lighthouse.submariner.io
+  resources:
+  - serviceexports
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multicluster.x-k8s.io
+  resources:
+  - '*'
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - multiclusterdns.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - mutation.core.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - network.openshift.io
+  resources:
+  - service/externalips
+  verbs:
+  - '*'
+- apiGroups:
+  - operator.openshift.io
+  resources:
+  - dnses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterrolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - clusterroles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - rolebindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - rbac.authorization.k8s.io
+  resources:
+  - roles
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - scheduling.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - submariner.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - submariner.io
+  resources:
+  - clusters
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - submariner.io
+  resources:
+  - endpoints
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - submariner.io
+  resources:
+  - gateways
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - submariner.io
+  resources:
+  - globalingressips
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - submariner.io
+  resources:
+  - servicediscoveries
+  verbs:
+  - '*'
+- apiGroups:
+  - submariner.io
+  resources:
+  - submariners
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - types.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - validation.core.kubefed.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "connection-hub-operator.fullname" . }}-manager-rolebinding
+  labels:
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: connection-hub-operator
+    app.kubernetes.io/part-of: connection-hub-operator
+  {{- include "connection-hub-operator.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: '{{ include "connection-hub-operator.fullname" . }}-manager-role'
+subjects:
+- kind: ServiceAccount
+  name: '{{ include "connection-hub-operator.fullname" . }}-controller-manager'
+  namespace: '{{ .Release.Namespace }}'
