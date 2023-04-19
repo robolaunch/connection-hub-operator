@@ -180,3 +180,20 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+.PHONY: helmify
+helmify: $(HELMIFY) ## Download helmify locally if necessary.
+$(HELMIFY): $(LOCALBIN)
+	test -s $(LOCALBIN)/helmify || GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@latest
+
+helm: manifests kustomize helmify
+	rm -rf hack/deploy.local/chart/connection-hub-operator
+	$(KUSTOMIZE) build config/default | $(HELMIFY) hack/deploy.local/chart/connection-hub-operator
+	yq e -i '.appVersion = "v${RELEASE}"' hack/deploy.local/chart/connection-hub-operator/Chart.yaml
+	yq e -i '.version = "${RELEASE}"' hack/deploy.local/chart/connection-hub-operator/Chart.yaml
+  
+gh-helm: manifests kustomize helmify
+	rm -rf hack/deploy/chart/connection-hub-operator
+	$(KUSTOMIZE) build config/default | $(HELMIFY) hack/deploy/chart/connection-hub-operator
+	yq e -i '.appVersion = "v${RELEASE}"' hack/deploy/chart/connection-hub-operator/Chart.yaml
+	yq e -i '.version = "${RELEASE}"' hack/deploy/chart/connection-hub-operator/Chart.yaml
