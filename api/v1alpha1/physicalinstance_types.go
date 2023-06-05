@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -38,16 +39,26 @@ type SubnetsInformation struct {
 	ListInStr string   `json:"listInStr,omitempty"`
 }
 
+type RelayServerPodStatus struct {
+	Created bool            `json:"created,omitempty"`
+	Phase   corev1.PodPhase `json:"phase,omitempty"`
+}
+
+type RelayServerServiceStatus struct {
+	Created bool `json:"created,omitempty"`
+}
+
 type PhysicalInstancePhase string
 type PhysicalInstanceMulticastConnectionPhase string
 type PhysicalInstanceFederationConnectionPhase string
 
 const (
-	PhysicalInstancePhaseLookingForDeployer PhysicalInstancePhase = "LookingForDeployer"
-	PhysicalInstancePhaseWaitingForDeployer PhysicalInstancePhase = "WaitingForDeployer"
-	PhysicalInstancePhaseRegistered         PhysicalInstancePhase = "Registered"
-	PhysicalInstancePhaseConnected          PhysicalInstancePhase = "Connected"
-	PhysicalInstancePhaseNotReady           PhysicalInstancePhase = "NotReady"
+	PhysicalInstancePhaseLookingForDeployer  PhysicalInstancePhase = "LookingForDeployer"
+	PhysicalInstancePhaseWaitingForDeployer  PhysicalInstancePhase = "WaitingForDeployer"
+	PhysicalInstancePhaseRegistered          PhysicalInstancePhase = "Registered"
+	PhysicalInstancePhaseCreatingRelayServer PhysicalInstancePhase = "CreatingRelayServer"
+	PhysicalInstancePhaseConnected           PhysicalInstancePhase = "Connected"
+	PhysicalInstancePhaseNotReady            PhysicalInstancePhase = "NotReady"
 )
 
 const (
@@ -73,6 +84,9 @@ type PhysicalInstanceStatus struct {
 	MulticastConnectionPhase  PhysicalInstanceMulticastConnectionPhase  `json:"multicastPhase,omitempty"`
 	FederationConnectionPhase PhysicalInstanceFederationConnectionPhase `json:"federationPhase,omitempty"`
 	Subnets                   SubnetsInformation                        `json:"subnets,omitempty"`
+	RelayServerPodStatus      RelayServerPodStatus                      `json:"relayServerPodStatus,omitempty"`
+	RelayServerServiceStatus  RelayServerServiceStatus                  `json:"relayServerServiceStatus,omitempty"`
+	ConnectionURL             string                                    `json:"connectionURL,omitempty"`
 }
 
 //+kubebuilder:object:root=true
