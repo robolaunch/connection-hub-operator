@@ -136,3 +136,17 @@ func (physicalinstance *PhysicalInstance) GetSubmarinerClusterMetadata() types.N
 		Namespace: SubmarinerOperatorNamespace,
 	}
 }
+
+func (physicalinstance *PhysicalInstance) GetRelayServerPodMetadata() types.NamespacedName {
+	return types.NamespacedName{
+		Name:      physicalinstance.Name + "-relay",
+		Namespace: "connection-hub-system",
+	}
+}
+
+func (physicalinstance *PhysicalInstance) GetRelayServerServiceMetadata() types.NamespacedName {
+	return types.NamespacedName{
+		Name:      physicalinstance.Name + "-relay",
+		Namespace: "connection-hub-system",
+	}
+}
