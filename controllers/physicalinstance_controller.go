@@ -4,7 +4,9 @@ import (
 	"context"
 	basicErr "errors"
 	"reflect"
+	"strconv"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -153,7 +155,28 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 	if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected &&
 		instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnected {
-		instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+		switch instance.Status.RelayServerPodStatus.Created {
+		case true:
+
+			switch instance.Status.RelayServerPodStatus.Phase {
+			case corev1.PodRunning:
+				switch instance.Status.RelayServerServiceStatus.Created {
+				case true:
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+				case false:
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
+					// create service
+					instance.Status.RelayServerServiceStatus.Created = true
+				}
+			}
+
+		case false:
+			instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
+			// create pod
+			instance.Status.RelayServerPodStatus.Created = true
+		}
+
 	} else {
 		if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseFailed ||
 			instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseFailed {
@@ -283,6 +306,30 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 		instance.Status.FederationMember.Created = true
 		instance.Status.FederationMember.Status = federationMember.Status
 
+	}
+
+	// check relay server resources
+
+	relayServerPod := &corev1.Pod{}
+	err = r.Get(ctx, instance.GetRelayServerPodMetadata(), relayServerPod)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.RelayServerPodStatus = connectionhubv1alpha1.RelayServerPodStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.RelayServerPodStatus.Created = true
+		instance.Status.RelayServerPodStatus.Phase = relayServerPod.Status.Phase
+	}
+
+	relayServerService := &corev1.Service{}
+	err = r.Get(ctx, instance.GetRelayServerServiceMetadata(), relayServerService)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.RelayServerServiceStatus = connectionhubv1alpha1.RelayServerServiceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.RelayServerServiceStatus.Created = true
+		instance.Status.ConnectionURL = "IP:" + strconv.Itoa(int(relayServerService.Spec.Ports[0].NodePort))
 	}
 
 	return nil
