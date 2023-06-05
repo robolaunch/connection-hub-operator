@@ -22,6 +22,7 @@ import (
 
 	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
 )
 
 // PhysicalInstanceReconciler reconciles a PhysicalInstance object
@@ -166,14 +167,22 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
 				case false:
 					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
-					// create service
+					svc := resources.GetRelayServerService(instance)
+					err := r.Create(ctx, svc)
+					if err != nil {
+						return err
+					}
 					instance.Status.RelayServerServiceStatus.Created = true
 				}
 			}
 
 		case false:
 			instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
-			// create pod
+			pod := resources.GetRelayServerPod(instance)
+			err := r.Create(ctx, pod)
+			if err != nil {
+				return err
+			}
 			instance.Status.RelayServerPodStatus.Created = true
 		}
 
