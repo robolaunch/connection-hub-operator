@@ -2104,6 +2104,8 @@ spec:
             status:
               description: PhysicalInstanceStatus defines the observed state of PhysicalInstance
               properties:
+                connectionURL:
+                  type: string
                 federation:
                   properties:
                     created:
@@ -2139,6 +2141,19 @@ spec:
                   type: string
                 phase:
                   type: string
+                relayServerPodStatus:
+                  properties:
+                    created:
+                      type: boolean
+                    phase:
+                      description: PodPhase is a label for the condition of a pod at the current time.
+                      type: string
+                  type: object
+                relayServerServiceStatus:
+                  properties:
+                    created:
+                      type: boolean
+                  type: object
                 submariner:
                   properties:
                     connectionResources:
@@ -3989,6 +4004,13 @@ rules:
       - pods
     verbs:
       - '*'
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - ""
     resources:
@@ -4020,6 +4042,13 @@ rules:
       - services
     verbs:
       - '*'
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
   - apiGroups:
       - ""
     resources:
@@ -4491,7 +4520,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.2
+          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.3
           livenessProbe:
             httpGet:
               path: /healthz
