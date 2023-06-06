@@ -21,7 +21,7 @@ helm install submariner-operator  ./submariner-operator \
 --set broker.namespace="${BROKER_NS}" \
 --set broker.ca="${SUBMARINER_BROKER_CA}" \
 --set submariner.serviceDiscovery=true \
---set submariner.cableDriver=wireguard \
+--set submariner.cableDriver=libreswan \
 --set submariner.clusterId="${CLUSTER_ID}" \
 --set submariner.natEnabled="true" \
 --set serviceAccounts.lighthouseAgent.create=true \
