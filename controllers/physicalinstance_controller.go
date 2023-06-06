@@ -170,7 +170,11 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 				case false:
 					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
 					svc := resources.GetRelayServerService(instance)
-					err := r.Create(ctx, svc)
+					err := ctrl.SetControllerReference(instance, svc, r.Scheme)
+					if err != nil {
+						return err
+					}
+					err = r.Create(ctx, svc)
 					if err != nil {
 						return err
 					}
@@ -181,7 +185,11 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 		case false:
 			instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
 			pod := resources.GetRelayServerPod(instance)
-			err := r.Create(ctx, pod)
+			err := ctrl.SetControllerReference(instance, pod, r.Scheme)
+			if err != nil {
+				return err
+			}
+			err = r.Create(ctx, pod)
 			if err != nil {
 				return err
 			}
