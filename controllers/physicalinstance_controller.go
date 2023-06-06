@@ -39,6 +39,8 @@ type PhysicalInstanceReconciler struct {
 //+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=endpoints,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=gateways,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 func (r *PhysicalInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
@@ -421,6 +423,9 @@ func (r *PhysicalInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Gateway{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
+		Owns(&connectionhubv1alpha1.FederationMember{}).
+		Owns(&corev1.Pod{}).
+		Owns(&corev1.Service{}).
 		Owns(&connectionhubv1alpha1.FederationMember{}).
 		Complete(r)
 }
