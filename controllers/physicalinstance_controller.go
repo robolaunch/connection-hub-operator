@@ -5,6 +5,7 @@ import (
 	basicErr "errors"
 	"reflect"
 	"strconv"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -348,7 +349,11 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 		return err
 	} else {
 		instance.Status.RelayServerServiceStatus.Created = true
-		instance.Status.ConnectionURL = "IP:" + strconv.Itoa(int(relayServerService.Spec.Ports[0].NodePort))
+		ch, err := r.reconcileGetConnectionHub(ctx, instance.GetConnectionHubMetadata())
+		if err != nil {
+			return err
+		}
+		instance.Status.ConnectionURL = strings.ReplaceAll(ch.Spec.SubmarinerSpec.APIServerURL, ":6443", "") + ":" + strconv.Itoa(int(relayServerService.Spec.Ports[0].NodePort))
 	}
 
 	return nil
@@ -395,6 +400,16 @@ func (r *PhysicalInstanceReconciler) reconcileGetInstance(ctx context.Context, m
 	}
 
 	return instance, nil
+}
+
+func (r *PhysicalInstanceReconciler) reconcileGetConnectionHub(ctx context.Context, meta types.NamespacedName) (*connectionhubv1alpha1.ConnectionHub, error) {
+	ch := &connectionhubv1alpha1.ConnectionHub{}
+	err := r.Get(ctx, meta, ch)
+	if err != nil {
+		return &connectionhubv1alpha1.ConnectionHub{}, err
+	}
+
+	return ch, nil
 }
 
 func (r *PhysicalInstanceReconciler) reconcileUpdateInstanceStatus(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {

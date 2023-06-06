@@ -150,3 +150,9 @@ func (physicalinstance *PhysicalInstance) GetRelayServerServiceMetadata() types.
 		Namespace: "connection-hub-system",
 	}
 }
+
+func (physicalinstance *PhysicalInstance) GetConnectionHubMetadata() types.NamespacedName {
+	return types.NamespacedName{
+		Name: "connection-hub",
+	}
+}
