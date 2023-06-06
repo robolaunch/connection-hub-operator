@@ -4,7 +4,10 @@ import (
 	"context"
 	basicErr "errors"
 	"reflect"
+	"strconv"
+	"strings"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -20,6 +23,7 @@ import (
 
 	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
 )
 
 // PhysicalInstanceReconciler reconciles a PhysicalInstance object
@@ -36,6 +40,8 @@ type PhysicalInstanceReconciler struct {
 //+kubebuilder:rbac:groups=submariner.io,resources=clusters,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=endpoints,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=submariner.io,resources=gateways,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 func (r *PhysicalInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
@@ -153,7 +159,44 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 	if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected &&
 		instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseConnected {
-		instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+
+		switch instance.Status.RelayServerPodStatus.Created {
+		case true:
+
+			switch instance.Status.RelayServerPodStatus.Phase {
+			case corev1.PodRunning:
+				switch instance.Status.RelayServerServiceStatus.Created {
+				case true:
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseConnected
+				case false:
+					instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
+					svc := resources.GetRelayServerService(instance)
+					err := ctrl.SetControllerReference(instance, svc, r.Scheme)
+					if err != nil {
+						return err
+					}
+					err = r.Create(ctx, svc)
+					if err != nil {
+						return err
+					}
+					instance.Status.RelayServerServiceStatus.Created = true
+				}
+			}
+
+		case false:
+			instance.Status.Phase = connectionhubv1alpha1.PhysicalInstancePhaseCreatingRelayServer
+			pod := resources.GetRelayServerPod(instance)
+			err := ctrl.SetControllerReference(instance, pod, r.Scheme)
+			if err != nil {
+				return err
+			}
+			err = r.Create(ctx, pod)
+			if err != nil {
+				return err
+			}
+			instance.Status.RelayServerPodStatus.Created = true
+		}
+
 	} else {
 		if instance.Status.MulticastConnectionPhase == connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseFailed ||
 			instance.Status.FederationConnectionPhase == connectionhubv1alpha1.PhysicalInstanceFederationConnectionPhaseFailed {
@@ -285,6 +328,34 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 
 	}
 
+	// check relay server resources
+
+	relayServerPod := &corev1.Pod{}
+	err = r.Get(ctx, instance.GetRelayServerPodMetadata(), relayServerPod)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.RelayServerPodStatus = connectionhubv1alpha1.RelayServerPodStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.RelayServerPodStatus.Created = true
+		instance.Status.RelayServerPodStatus.Phase = relayServerPod.Status.Phase
+	}
+
+	relayServerService := &corev1.Service{}
+	err = r.Get(ctx, instance.GetRelayServerServiceMetadata(), relayServerService)
+	if err != nil && errors.IsNotFound(err) {
+		instance.Status.RelayServerServiceStatus = connectionhubv1alpha1.RelayServerServiceStatus{}
+	} else if err != nil {
+		return err
+	} else {
+		instance.Status.RelayServerServiceStatus.Created = true
+		ch, err := r.reconcileGetConnectionHub(ctx, instance.GetConnectionHubMetadata())
+		if err != nil {
+			return err
+		}
+		instance.Status.ConnectionURL = strings.ReplaceAll(ch.Spec.SubmarinerSpec.APIServerURL, ":6443", "") + ":" + strconv.Itoa(int(relayServerService.Spec.Ports[0].NodePort))
+	}
+
 	return nil
 }
 
@@ -331,6 +402,16 @@ func (r *PhysicalInstanceReconciler) reconcileGetInstance(ctx context.Context, m
 	return instance, nil
 }
 
+func (r *PhysicalInstanceReconciler) reconcileGetConnectionHub(ctx context.Context, meta types.NamespacedName) (*connectionhubv1alpha1.ConnectionHub, error) {
+	ch := &connectionhubv1alpha1.ConnectionHub{}
+	err := r.Get(ctx, meta, ch)
+	if err != nil {
+		return &connectionhubv1alpha1.ConnectionHub{}, err
+	}
+
+	return ch, nil
+}
+
 func (r *PhysicalInstanceReconciler) reconcileUpdateInstanceStatus(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		instanceLV := &connectionhubv1alpha1.PhysicalInstance{}
@@ -365,6 +446,9 @@ func (r *PhysicalInstanceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &brokerv1.Gateway{}},
 			handler.EnqueueRequestsFromMapFunc(r.watchGateways)).
+		Owns(&connectionhubv1alpha1.FederationMember{}).
+		Owns(&corev1.Pod{}).
+		Owns(&corev1.Service{}).
 		Owns(&connectionhubv1alpha1.FederationMember{}).
 		Complete(r)
 }
