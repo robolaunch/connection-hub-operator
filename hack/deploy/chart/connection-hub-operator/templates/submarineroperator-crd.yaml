@@ -60,19 +60,6 @@ spec:
                 type: string
               clusterID:
                 type: string
-              gatewayImage:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
               helmChart:
                 properties:
                   chartName:
@@ -96,54 +83,30 @@ spec:
                 - name
                 - url
                 type: object
+              instanceType:
+                enum:
+                - CloudInstance
+                - PhysicalInstance
+                type: string
               networkType:
                 default: External
                 enum:
                 - Local
                 - External
                 type: string
-              operatorImage:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
               presharedKey:
                 type: string
               serviceCIDR:
                 type: string
-              submarinerImages:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
             required:
             - apiServerURL
             - broker
             - clusterCIDR
             - clusterID
-            - gatewayImage
             - helmChart
             - helmRepository
-            - operatorImage
             - presharedKey
             - serviceCIDR
-            - submarinerImages
             type: object
           status:
             description: SubmarinerOperatorStatus defines the observed state of SubmarinerOperator
