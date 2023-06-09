@@ -50,14 +50,11 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 			Token: token,
 			CA:    ca,
 		},
-		ClusterID:        string(clusterID),
-		APIServerURL:     cr.Spec.APIServerURL,
-		OperatorImage:    cr.Spec.OperatorImage,
-		SubmarinerImages: cr.Spec.SubmarinerImages,
-		GatewayImage:     cr.Spec.GatewayImage,
-		HelmRepository:   cr.Spec.HelmRepository,
-		HelmChart:        cr.Spec.OperatorHelmChart,
-		NetworkType:      cr.Spec.NetworkType,
+		ClusterID:      string(clusterID),
+		APIServerURL:   cr.Spec.APIServerURL,
+		HelmRepository: cr.Spec.HelmRepository,
+		HelmChart:      cr.Spec.OperatorHelmChart,
+		NetworkType:    cr.Spec.NetworkType,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{
