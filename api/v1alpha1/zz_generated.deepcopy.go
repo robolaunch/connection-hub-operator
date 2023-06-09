@@ -1267,9 +1267,6 @@ func (in *SubmarinerOperatorList) DeepCopyObject() runtime.Object {
 func (in *SubmarinerOperatorSpec) DeepCopyInto(out *SubmarinerOperatorSpec) {
 	*out = *in
 	out.BrokerCredentials = in.BrokerCredentials
-	out.OperatorImage = in.OperatorImage
-	out.GatewayImage = in.GatewayImage
-	out.SubmarinerImages = in.SubmarinerImages
 	out.HelmRepository = in.HelmRepository
 	out.HelmChart = in.HelmChart
 }
@@ -1325,9 +1322,6 @@ func (in *SubmarinerResourceStates) DeepCopy() *SubmarinerResourceStates {
 func (in *SubmarinerSpec) DeepCopyInto(out *SubmarinerSpec) {
 	*out = *in
 	out.BrokerCredentials = in.BrokerCredentials
-	out.OperatorImage = in.OperatorImage
-	out.GatewayImage = in.GatewayImage
-	out.SubmarinerImages = in.SubmarinerImages
 	out.HelmRepository = in.HelmRepository
 	out.BrokerHelmChart = in.BrokerHelmChart
 	out.OperatorHelmChart = in.OperatorHelmChart

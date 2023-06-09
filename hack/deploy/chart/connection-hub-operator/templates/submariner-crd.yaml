@@ -75,19 +75,6 @@ spec:
                 type: object
               clusterCIDR:
                 type: string
-              gatewayImage:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
               helmRepository:
                 properties:
                   name:
@@ -122,46 +109,17 @@ spec:
                 - releaseName
                 - version
                 type: object
-              operatorImage:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
               presharedKey:
                 type: string
               serviceCIDR:
                 default: 10.32.0.0/16
                 type: string
-              submarinerImages:
-                properties:
-                  image:
-                    type: string
-                  repository:
-                    type: string
-                  tag:
-                    type: string
-                required:
-                - image
-                - repository
-                - tag
-                type: object
             required:
             - apiServerURL
             - brokerHelmChart
             - clusterCIDR
-            - gatewayImage
             - helmRepository
             - operatorHelmChart
-            - operatorImage
-            - submarinerImages
             type: object
           status:
             description: SubmarinerStatus defines the observed state of Submariner

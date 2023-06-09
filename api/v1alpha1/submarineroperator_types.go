@@ -34,6 +34,8 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Enum=Local;External
 	// +kubebuilder:default="External"
 	NetworkType `json:"networkType,omitempty"`
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:validation:Required
@@ -46,12 +48,6 @@ type SubmarinerOperatorSpec struct {
 	ClusterID string `json:"clusterID"`
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
-	// +kubebuilder:validation:Required
-	OperatorImage DockerImage `json:"operatorImage"`
-	// +kubebuilder:validation:Required
-	GatewayImage DockerImage `json:"gatewayImage"`
-	// +kubebuilder:validation:Required
-	SubmarinerImages DockerImage `json:"submarinerImages"`
 	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required

@@ -10,35 +10,6 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-/*
-helm install submariner-operator  ./submariner-operator \
---create-namespace --namespace "${SUBMARINER_NS}"  \
---set submariner.clusterCidr="${CLUSTER_CIDR}" \
---set submariner.serviceCidr="${SERVICE_CIDR}" \
---set ipsec.psk="${SUBMARINER_PSK}" \
---set broker.server="${SUBMARINER_BROKER_URL}" \
---set broker.token="${SUBMARINER_BROKER_TOKEN}" \
---set broker.namespace="${BROKER_NS}" \
---set broker.ca="${SUBMARINER_BROKER_CA}" \
---set submariner.serviceDiscovery=true \
---set submariner.cableDriver=libreswan \
---set submariner.clusterId="${CLUSTER_ID}" \
---set submariner.natEnabled="true" \
---set serviceAccounts.lighthouseAgent.create=true \
---set serviceAccounts.lighthouseCoreDns.create=true \
---set submariner.healthcheckEnabled=false \
---set ipsec.natPort=4500 \
---set ipsec.ikePort=500 \
---set ipsec.preferredServer="true" \
---set ipsec.natDiscovery=4490 \
---set gateway.image.repository="docker.io/robolaunchio/submariner-gateway" \
---set gateway.image.tag="dev-v11" \
---set operator.image.repository="docker.io/robolaunchio/submariner-operator" \
---set operator.image.tag="dev-v14" \
---set submariner.images.repository="docker.io/robolaunchio" \
---set submariner.images.tag="dev-v11"
-*/
-
 func CheckIfSubmarinerOperatorExists(submarinerOperator connectionhubv1alpha1.SubmarinerOperator, config *rest.Config) (bool, error) {
 	cli, err := getClient(config, submarinerOperator.GetNamespaceMetadata().Name)
 	if err != nil {
