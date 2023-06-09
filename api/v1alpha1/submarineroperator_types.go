@@ -34,6 +34,8 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Enum=Local;External
 	// +kubebuilder:default="External"
 	NetworkType `json:"networkType,omitempty"`
+	// +kubebuilder:validation:Enum=CloudInstance;PhysicalInstance
+	InstanceType InstanceType `json:"instanceType,omitempty"`
 	// +kubebuilder:validation:Required
 	ClusterCIDR string `json:"clusterCIDR"`
 	// +kubebuilder:validation:Required

@@ -43,6 +43,8 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 	}
 
 	operatorSpec := connectionhubv1alpha1.SubmarinerOperatorSpec{
+		NetworkType:  cr.Spec.NetworkType,
+		InstanceType: cr.Spec.InstanceType,
 		ClusterCIDR:  cr.Spec.ClusterCIDR,
 		ServiceCIDR:  cr.Spec.ServiceCIDR,
 		PresharedKey: cr.Spec.PresharedKey,
@@ -54,7 +56,6 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 		APIServerURL:   cr.Spec.APIServerURL,
 		HelmRepository: cr.Spec.HelmRepository,
 		HelmChart:      cr.Spec.OperatorHelmChart,
-		NetworkType:    cr.Spec.NetworkType,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{
