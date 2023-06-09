@@ -6,13 +6,7 @@ import (
 
 type CoreDNSCustomConfig struct{}
 
-type Images struct {
-	Repository string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
-}
-
 type Submariner struct {
-	DeployCR           bool   `yaml:"deployCR"`
 	ClusterID          string `yaml:"clusterId"`
 	ClusterCIDR        string `yaml:"clusterCidr"`
 	ServiceCIDR        string `yaml:"serviceCidr"`
@@ -24,13 +18,12 @@ type Submariner struct {
 
 func getSubmarinerDefault() Submariner {
 	return Submariner{
-		DeployCR:           false,
 		ClusterID:          "",
 		ClusterCIDR:        "",
 		ServiceCIDR:        "",
-		NatEnabled:         false,
+		NatEnabled:         true,
 		ServiceDiscovery:   true,
-		CableDriver:        "libreswan",
+		CableDriver:        "wireguard",
 		HealthCheckEnabled: true,
 	}
 }
@@ -39,9 +32,8 @@ type Broker struct {
 	Server    string `yaml:"server"`
 	Token     string `yaml:"token"`
 	Namespace string `yaml:"namespace"`
-	// Insecure  bool   `yaml:"insecure"`
-	Ca string `yaml:"ca"`
-	// GlobalNet bool   `yaml:"globalnet"`
+	Insecure  bool   `yaml:"insecure"`
+	Ca        string `yaml:"ca"`
 }
 
 func getBrokerDefault() Broker {
@@ -49,9 +41,8 @@ func getBrokerDefault() Broker {
 		Server:    "example.k8s.apiserver",
 		Token:     "test",
 		Namespace: "xyz",
-		// Insecure:  false,
-		Ca: "",
-		// GlobalNet: false,
+		Insecure:  false,
+		Ca:        "",
 	}
 }
 
@@ -64,18 +55,6 @@ func getIPSECDefault() IPSEC {
 		PSK: "",
 	}
 }
-
-type OperatorImage struct {
-	Repository string `yaml:"repository"`
-	Tag        string `yaml:"tag"`
-	// PullPolicy string `yaml:"pullPolicy"`
-}
-
-type OperatorResources struct{}
-
-type OperatorToleration struct{}
-
-type OperatorAffinity struct{}
 
 type Operator struct{}
 
@@ -135,7 +114,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Broker.Token = submarinerOperator.Spec.BrokerCredentials.Token
 	valuesObj.Broker.Ca = submarinerOperator.Spec.BrokerCredentials.CA
 	valuesObj.Submariner.ServiceDiscovery = true
-	valuesObj.Submariner.CableDriver = "libreswan"
+	valuesObj.Submariner.CableDriver = "wireguard"
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
 	valuesObj.Submariner.NatEnabled = submarinerOperator.Spec.NetworkType == connectionhubv1alpha1.NetworkTypeExternal
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
