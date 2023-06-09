@@ -14,6 +14,7 @@ type Submariner struct {
 	ServiceDiscovery   bool   `yaml:"serviceDiscovery"`
 	CableDriver        string `yaml:"cableDriver"`
 	HealthCheckEnabled bool   `yaml:"healthcheckEnabled"`
+	GlobalCIDR         string `yaml:"globalCidr"`
 }
 
 func getSubmarinerDefault() Submariner {
@@ -25,6 +26,7 @@ func getSubmarinerDefault() Submariner {
 		ServiceDiscovery:   true,
 		CableDriver:        "wireguard",
 		HealthCheckEnabled: true,
+		GlobalCIDR:         "",
 	}
 }
 
@@ -34,6 +36,7 @@ type Broker struct {
 	Namespace string `yaml:"namespace"`
 	Insecure  bool   `yaml:"insecure"`
 	Ca        string `yaml:"ca"`
+	GlobalNet string `yaml:"globalnet"`
 }
 
 func getBrokerDefault() Broker {
@@ -43,6 +46,7 @@ func getBrokerDefault() Broker {
 		Namespace: "xyz",
 		Insecure:  false,
 		Ca:        "",
+		GlobalNet: "",
 	}
 }
 
@@ -56,42 +60,40 @@ func getIPSECDefault() IPSEC {
 	}
 }
 
-type Operator struct{}
-
-func getOperatorDefault() Operator {
-	return Operator{}
+type ServiceAccount struct {
+	Create bool `yaml:"create"`
 }
 
-type ServiceAccount struct {
-	Create bool   `yaml:"create"`
-	Name   string `yaml:"name"`
+type ServiceAccountGlobalNet struct {
+	Create string `yaml:"create"`
 }
 
 type ServiceAccounts struct {
-	LighthouseAgent   ServiceAccount `yaml:"lighthouseAgent"`
-	LighthouseCoreDNS ServiceAccount `yaml:"lighthouseCoreDns"`
+	GlobalNet         ServiceAccountGlobalNet `yaml:"globalnet"`
+	LighthouseAgent   ServiceAccount          `yaml:"lighthouseAgent"`
+	LighthouseCoreDNS ServiceAccount          `yaml:"lighthouseCoreDns"`
 }
 
 func getServiceAccountsDefault() ServiceAccounts {
 	return ServiceAccounts{
+		GlobalNet: ServiceAccountGlobalNet{
+			Create: "",
+		},
 		LighthouseAgent: ServiceAccount{
 			Create: true,
-			Name:   "",
 		},
 		LighthouseCoreDNS: ServiceAccount{
 			Create: true,
-			Name:   "",
 		},
 	}
 }
 
 type SubmarinerOperatorValues struct {
-	Submariner      Submariner        `yaml:"submariner"`
-	Broker          Broker            `yaml:"broker"`
-	IPSEC           IPSEC             `yaml:"ipsec"`
-	Operator        Operator          `yaml:"operator"`
-	ServiceAccounts ServiceAccounts   `yaml:"serviceAccounts"`
-	NodeSelector    map[string]string `yaml:"nodeSelector"`
+	Submariner      Submariner      `yaml:"submariner"`
+	Broker          Broker          `yaml:"broker"`
+	IPSEC           IPSEC           `yaml:"ipsec"`
+	ServiceAccounts ServiceAccounts `yaml:"serviceAccounts"`
+	// NodeSelector    map[string]string `yaml:"nodeSelector"`
 }
 
 func getSubmarinerOperatorValuesDefault() SubmarinerOperatorValues {
@@ -99,7 +101,6 @@ func getSubmarinerOperatorValuesDefault() SubmarinerOperatorValues {
 		Submariner:      getSubmarinerDefault(),
 		Broker:          getBrokerDefault(),
 		IPSEC:           getIPSECDefault(),
-		Operator:        getOperatorDefault(),
 		ServiceAccounts: getServiceAccountsDefault(),
 	}
 }
