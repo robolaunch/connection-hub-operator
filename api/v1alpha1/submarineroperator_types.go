@@ -47,12 +47,6 @@ type SubmarinerOperatorSpec struct {
 	// +kubebuilder:validation:Required
 	APIServerURL string `json:"apiServerURL"`
 	// +kubebuilder:validation:Required
-	OperatorImage DockerImage `json:"operatorImage"`
-	// +kubebuilder:validation:Required
-	GatewayImage DockerImage `json:"gatewayImage"`
-	// +kubebuilder:validation:Required
-	SubmarinerImages DockerImage `json:"submarinerImages"`
-	// +kubebuilder:validation:Required
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
 	HelmChart HelmChart `json:"helmChart"`
