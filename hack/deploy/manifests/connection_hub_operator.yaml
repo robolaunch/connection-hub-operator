@@ -4357,7 +4357,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.9
+          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.10
           livenessProbe:
             httpGet:
               path: /healthz
