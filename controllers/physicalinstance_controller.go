@@ -93,12 +93,18 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 					if instance.Status.MulticastConnectionPhase != connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected {
 						logger.Info("INFO: Deleting all of the ServiceExport objects.")
-						serviceexport := mcsv1alpha1.ServiceExport{}
-						err := r.DeleteAllOf(ctx, &serviceexport, &client.DeleteAllOfOptions{
-							ListOptions: client.ListOptions{},
-						})
+						serviceExportList := mcsv1alpha1.ServiceExportList{}
+						err := r.List(ctx, &serviceExportList)
 						if err != nil {
 							return err
+						}
+
+						if len(serviceExportList.Items) > 0 {
+							serviceExport := mcsv1alpha1.ServiceExport{}
+							err := r.DeleteAllOf(ctx, &serviceExport)
+							if err != nil {
+								return err
+							}
 						}
 					}
 
