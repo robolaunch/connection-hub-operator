@@ -39,6 +39,7 @@ import (
 	submv1alpha1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1alpha1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers"
+	mcsv1alpha1 "sigs.k8s.io/mcs-api/pkg/apis/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -55,6 +56,7 @@ func init() {
 	_ = brokerv1.AddToScheme(scheme)
 	_ = extensionsv1.AddToScheme(scheme)
 	_ = kubefedv1beta1.AddToScheme(scheme)
+	_ = mcsv1alpha1.AddToScheme(scheme)
 
 	//+kubebuilder:scaffold:scheme
 }

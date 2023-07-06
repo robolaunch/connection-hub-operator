@@ -24,6 +24,7 @@ import (
 	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 	"github.com/robolaunch/connection-hub-operator/controllers/pkg/resources"
+	mcsv1alpha1 "sigs.k8s.io/mcs-api/pkg/apis/v1alpha1"
 )
 
 // PhysicalInstanceReconciler reconciles a PhysicalInstance object
@@ -89,6 +90,17 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 
 				switch instance.Status.Submariner.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
+
+					if instance.Status.MulticastConnectionPhase != connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected {
+						logger.Info("INFO: Deleting all of the ServiceExport objects.")
+						serviceexport := mcsv1alpha1.ServiceExport{}
+						err := r.DeleteAllOf(ctx, &serviceexport, &client.DeleteAllOfOptions{
+							ListOptions: client.ListOptions{},
+						})
+						if err != nil {
+							return err
+						}
+					}
 
 					instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected
 

@@ -18,6 +18,7 @@ import (
 
 	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	mcsv1alpha1 "sigs.k8s.io/mcs-api/pkg/apis/v1alpha1"
 )
 
 // CloudInstanceReconciler reconciles a CloudInstance object
@@ -81,6 +82,17 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 
 				switch instance.Status.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
+
+					if instance.Status.Phase != connectionhubv1alpha1.CloudInstancePhaseConnected {
+						logger.Info("INFO: Deleting all of the ServiceExport objects.")
+						serviceexport := mcsv1alpha1.ServiceExport{}
+						err := r.DeleteAllOf(ctx, &serviceexport, &client.DeleteAllOfOptions{
+							ListOptions: client.ListOptions{},
+						})
+						if err != nil {
+							return err
+						}
+					}
 
 					instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnected
 
