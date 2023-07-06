@@ -32,7 +32,7 @@ controllerManager:
         - ALL
     image:
       repository: robolaunchio/connection-hub-controller-manager
-      tag: v0.1.7-alpha.8
+      tag: v0.1.7-alpha.9
     resources:
       limits:
         cpu: 500m
