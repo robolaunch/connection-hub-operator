@@ -21,6 +21,7 @@ require (
 	k8s.io/klog v1.0.0
 	sigs.k8s.io/controller-runtime v0.13.0
 	sigs.k8s.io/kubefed v0.10.0
+	sigs.k8s.io/mcs-api v0.1.0
 )
 
 require (
