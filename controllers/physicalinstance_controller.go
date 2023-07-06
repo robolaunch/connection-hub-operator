@@ -99,9 +99,8 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 							return err
 						}
 
-						if len(serviceExportList.Items) > 0 {
-							serviceExport := mcsv1alpha1.ServiceExport{}
-							err := r.DeleteAllOf(ctx, &serviceExport)
+						for _, v := range serviceExportList.Items {
+							err := r.Delete(ctx, &v)
 							if err != nil {
 								return err
 							}

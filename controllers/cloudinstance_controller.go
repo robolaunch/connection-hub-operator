@@ -85,12 +85,17 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 
 					if instance.Status.Phase != connectionhubv1alpha1.CloudInstancePhaseConnected {
 						logger.Info("INFO: Deleting all of the ServiceExport objects.")
-						serviceexport := mcsv1alpha1.ServiceExport{}
-						err := r.DeleteAllOf(ctx, &serviceexport, &client.DeleteAllOfOptions{
-							ListOptions: client.ListOptions{},
-						})
+						serviceExportList := mcsv1alpha1.ServiceExportList{}
+						err := r.List(ctx, &serviceExportList)
 						if err != nil {
 							return err
+						}
+
+						for _, v := range serviceExportList.Items {
+							err := r.Delete(ctx, &v)
+							if err != nil {
+								return err
+							}
 						}
 					}
 
