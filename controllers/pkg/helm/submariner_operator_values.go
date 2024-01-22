@@ -4,17 +4,21 @@ import (
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
 )
 
-type CoreDNSCustomConfig struct{}
-
 type Submariner struct {
-	ClusterID          string `yaml:"clusterId"`
-	ClusterCIDR        string `yaml:"clusterCidr"`
-	ServiceCIDR        string `yaml:"serviceCidr"`
-	NatEnabled         bool   `yaml:"natEnabled"`
-	ServiceDiscovery   bool   `yaml:"serviceDiscovery"`
-	CableDriver        string `yaml:"cableDriver"`
-	HealthCheckEnabled bool   `yaml:"healthcheckEnabled"`
-	GlobalCIDR         string `yaml:"globalCidr"`
+	ClusterID           string              `yaml:"clusterId"`
+	ClusterCIDR         string              `yaml:"clusterCidr"`
+	ServiceCIDR         string              `yaml:"serviceCidr"`
+	NatEnabled          bool                `yaml:"natEnabled"`
+	ServiceDiscovery    bool                `yaml:"serviceDiscovery"`
+	CableDriver         string              `yaml:"cableDriver"`
+	HealthCheckEnabled  bool                `yaml:"healthcheckEnabled"`
+	GlobalCIDR          string              `yaml:"globalCidr"`
+	CoreDNSCustomConfig CoreDNSCustomConfig `yaml:"coreDNSCustomConfig"`
+}
+
+type CoreDNSCustomConfig struct {
+	ConfigMapName string `yaml:"configMapName"`
+	Namespace     string `yaml:"namespace"`
 }
 
 func getSubmarinerDefault() Submariner {
@@ -27,6 +31,10 @@ func getSubmarinerDefault() Submariner {
 		CableDriver:        "wireguard",
 		HealthCheckEnabled: true,
 		GlobalCIDR:         "",
+		CoreDNSCustomConfig: CoreDNSCustomConfig{
+			ConfigMapName: "coredns-coredns",
+			Namespace:     "coredns",
+		},
 	}
 }
 
