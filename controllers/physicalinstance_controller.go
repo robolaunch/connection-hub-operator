@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	robotErr "github.com/robolaunch/connection-hub-operator/controllers/pkg/error"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -54,6 +55,14 @@ func (r *PhysicalInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
+	if instance.Status.BootID == "" {
+		activeNode, err := r.reconcileCheckNode(ctx, instance)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		instance.Status.BootID = activeNode.Status.NodeInfo.BootID
+	}
+
 	err = r.reconcileCheckStatus(ctx, instance)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -91,7 +100,12 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 				switch instance.Status.Submariner.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
 
-					if instance.Status.MulticastConnectionPhase != connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected {
+					activeNode, err := r.reconcileCheckNode(ctx, instance)
+					if err != nil {
+						return err
+					}
+
+					if instance.Status.MulticastConnectionPhase != connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected || instance.Status.BootID != activeNode.Status.NodeInfo.BootID {
 						logger.Info("INFO: Deleting all of the ServiceExport objects.")
 						serviceExportList := mcsv1alpha1.ServiceExportList{}
 						err := r.List(ctx, &serviceExportList)
@@ -105,6 +119,8 @@ func (r *PhysicalInstanceReconciler) reconcileCheckStatus(ctx context.Context, i
 								return err
 							}
 						}
+
+						instance.Status.BootID = activeNode.Status.NodeInfo.BootID
 					}
 
 					instance.Status.MulticastConnectionPhase = connectionhubv1alpha1.PhysicalInstanceMulticastConnectionPhaseConnected
@@ -374,6 +390,46 @@ func (r *PhysicalInstanceReconciler) reconcileCheckResources(ctx context.Context
 	}
 
 	return nil
+}
+
+func (r *PhysicalInstanceReconciler) reconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) (*corev1.Node, error) {
+
+	tenancyMap := connectionhubv1alpha1.GetTenancyMap(instance)
+
+	requirements := []labels.Requirement{}
+	for k, v := range tenancyMap {
+		newReq, err := labels.NewRequirement(k, selection.In, []string{v})
+		if err != nil {
+			return nil, err
+		}
+		requirements = append(requirements, *newReq)
+	}
+
+	nodeSelector := labels.NewSelector().Add(requirements...)
+
+	nodes := &corev1.NodeList{}
+	err := r.List(ctx, nodes, &client.ListOptions{
+		LabelSelector: nodeSelector,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(nodes.Items) == 0 {
+		return nil, &robotErr.NodeNotFoundError{
+			ResourceKind:      instance.Kind,
+			ResourceName:      instance.Name,
+			ResourceNamespace: instance.Namespace,
+		}
+	} else if len(nodes.Items) > 1 {
+		return nil, &robotErr.MultipleNodeFoundError{
+			ResourceKind:      instance.Kind,
+			ResourceName:      instance.Name,
+			ResourceNamespace: instance.Namespace,
+		}
+	}
+
+	return &nodes.Items[0], nil
 }
 
 func (r *PhysicalInstanceReconciler) reconcileCreateFederationMember(ctx context.Context, instance *connectionhubv1alpha1.PhysicalInstance) error {
