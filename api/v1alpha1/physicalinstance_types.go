@@ -87,6 +87,7 @@ type PhysicalInstanceStatus struct {
 	RelayServerPodStatus      RelayServerPodStatus                      `json:"relayServerPodStatus,omitempty"`
 	RelayServerServiceStatus  RelayServerServiceStatus                  `json:"relayServerServiceStatus,omitempty"`
 	ConnectionURL             string                                    `json:"connectionURL,omitempty"`
+	BootID                    string                                    `json:"bootID,omitempty"`
 }
 
 //+kubebuilder:object:root=true
