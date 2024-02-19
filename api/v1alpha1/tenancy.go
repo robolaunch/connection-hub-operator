@@ -4,6 +4,7 @@ const (
 	RobolaunchCloudInstanceLabelKey      = "robolaunch.io/cloud-instance"
 	RobolaunchCloudInstanceAliasLabelKey = "robolaunch.io/cloud-instance-alias"
 	RobolaunchPhysicalInstanceLabelKey   = "robolaunch.io/physical-instance"
+	RobolaunchBootIDLabelKey             = "robolaunch.io/boot-id"
 )
 
 // Not used in robot manifest, needed for internal use.
