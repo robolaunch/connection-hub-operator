@@ -31,10 +31,11 @@ func getSubmarinerDefault() Submariner {
 		CableDriver:        "wireguard",
 		HealthCheckEnabled: true,
 		GlobalCIDR:         "",
-		CoreDNSCustomConfig: CoreDNSCustomConfig{
-			ConfigMapName: "coredns-coredns",
-			Namespace:     "coredns",
-		},
+		// not a safe way to indicate CoreDNS
+		// CoreDNSCustomConfig: CoreDNSCustomConfig{
+		// 	ConfigMapName: "coredns-coredns",
+		// 	Namespace:     "coredns",
+		// },
 	}
 }
 
