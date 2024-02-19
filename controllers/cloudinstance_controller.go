@@ -4,6 +4,7 @@ import (
 	"context"
 	basicErr "errors"
 
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,6 +19,7 @@ import (
 
 	brokerv1 "github.com/robolaunch/connection-hub-operator/api/external/submariner/v1"
 	connectionhubv1alpha1 "github.com/robolaunch/connection-hub-operator/api/v1alpha1"
+	robotErr "github.com/robolaunch/connection-hub-operator/controllers/pkg/error"
 	mcsv1alpha1 "sigs.k8s.io/mcs-api/pkg/apis/v1alpha1"
 )
 
@@ -44,6 +46,14 @@ func (r *CloudInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	if instance.Status.BootID == "" {
+		activeNode, err := r.reconcileCheckNode(ctx, instance)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		instance.Status.BootID = activeNode.Status.NodeInfo.BootID
 	}
 
 	err = r.reconcileCheckStatus(ctx, instance)
@@ -83,7 +93,12 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 				switch instance.Status.GatewayConnection.ConnectionStatus {
 				case brokerv1.Connected:
 
-					if instance.Status.Phase != connectionhubv1alpha1.CloudInstancePhaseConnected {
+					activeNode, err := r.reconcileCheckNode(ctx, instance)
+					if err != nil {
+						return err
+					}
+
+					if instance.Status.Phase != connectionhubv1alpha1.CloudInstancePhaseConnected || instance.Status.BootID != activeNode.Status.NodeInfo.BootID {
 						logger.Info("INFO: Deleting all of the ServiceExport objects.")
 						serviceExportList := mcsv1alpha1.ServiceExportList{}
 						err := r.List(ctx, &serviceExportList)
@@ -97,6 +112,8 @@ func (r *CloudInstanceReconciler) reconcileCheckStatus(ctx context.Context, inst
 								return err
 							}
 						}
+
+						instance.Status.BootID = activeNode.Status.NodeInfo.BootID
 					}
 
 					instance.Status.Phase = connectionhubv1alpha1.CloudInstancePhaseConnected
@@ -249,6 +266,46 @@ func (r *CloudInstanceReconciler) reconcileUpdateInstanceStatus(ctx context.Cont
 		err1 := r.Status().Update(ctx, instance)
 		return err1
 	})
+}
+
+func (r *CloudInstanceReconciler) reconcileCheckNode(ctx context.Context, instance *connectionhubv1alpha1.CloudInstance) (*corev1.Node, error) {
+
+	tenancyMap := connectionhubv1alpha1.GetTenancyMap(instance)
+
+	requirements := []labels.Requirement{}
+	for k, v := range tenancyMap {
+		newReq, err := labels.NewRequirement(k, selection.In, []string{v})
+		if err != nil {
+			return nil, err
+		}
+		requirements = append(requirements, *newReq)
+	}
+
+	nodeSelector := labels.NewSelector().Add(requirements...)
+
+	nodes := &corev1.NodeList{}
+	err := r.List(ctx, nodes, &client.ListOptions{
+		LabelSelector: nodeSelector,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if len(nodes.Items) == 0 {
+		return nil, &robotErr.NodeNotFoundError{
+			ResourceKind:      instance.Kind,
+			ResourceName:      instance.Name,
+			ResourceNamespace: instance.Namespace,
+		}
+	} else if len(nodes.Items) > 1 {
+		return nil, &robotErr.MultipleNodeFoundError{
+			ResourceKind:      instance.Kind,
+			ResourceName:      instance.Name,
+			ResourceNamespace: instance.Namespace,
+		}
+	}
+
+	return &nodes.Items[0], nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
