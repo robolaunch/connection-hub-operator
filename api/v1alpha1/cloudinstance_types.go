@@ -55,6 +55,7 @@ type CloudInstanceStatus struct {
 	ConnectionResources ConnectionResourceStatuses `json:"connectionResources,omitempty"`
 	GatewayConnection   GatewayConnection          `json:"gatewayConnection,omitempty"`
 	Phase               CloudInstancePhase         `json:"phase,omitempty"`
+	BootID              string                     `json:"bootID,omitempty"`
 }
 
 //+kubebuilder:object:root=true
