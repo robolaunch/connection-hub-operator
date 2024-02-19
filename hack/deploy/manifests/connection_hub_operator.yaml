@@ -125,6 +125,8 @@ spec:
             status:
               description: CloudInstanceStatus defines the observed state of CloudInstance
               properties:
+                bootID:
+                  type: string
                 connectionResources:
                   properties:
                     clusterStatus:
@@ -2020,6 +2022,8 @@ spec:
             status:
               description: PhysicalInstanceStatus defines the observed state of PhysicalInstance
               properties:
+                bootID:
+                  type: string
                 connectionURL:
                   type: string
                 federation:
@@ -4357,7 +4361,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.11
+          image: robolaunchio/connection-hub-controller-manager:v0.1.7-alpha.12
           livenessProbe:
             httpGet:
               path: /healthz

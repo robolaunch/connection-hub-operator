@@ -63,6 +63,8 @@ spec:
           status:
             description: CloudInstanceStatus defines the observed state of CloudInstance
             properties:
+              bootID:
+                type: string
               connectionResources:
                 properties:
                   clusterStatus:
