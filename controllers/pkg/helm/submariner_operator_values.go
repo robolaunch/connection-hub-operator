@@ -125,7 +125,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Broker.Ca = submarinerOperator.Spec.BrokerCredentials.CA
 	valuesObj.Broker.Insecure = true
 	valuesObj.Submariner.ServiceDiscovery = true
-	valuesObj.Submariner.CableDriver = "wireguard"
+	valuesObj.Submariner.CableDriver = "libreswan"
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
 	valuesObj.Submariner.NatEnabled = submarinerOperator.Spec.NetworkType == connectionhubv1alpha1.NetworkTypeExternal
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
