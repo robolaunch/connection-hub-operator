@@ -28,7 +28,7 @@ func getSubmarinerDefault() Submariner {
 		ServiceCIDR:        "",
 		NatEnabled:         true,
 		ServiceDiscovery:   true,
-		CableDriver:        "wireguard",
+		CableDriver:        "libreswan",
 		HealthCheckEnabled: true,
 		GlobalCIDR:         "",
 		// not a safe way to indicate CoreDNS
