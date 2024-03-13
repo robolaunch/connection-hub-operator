@@ -5,15 +5,15 @@ import (
 )
 
 type Submariner struct {
-	ClusterID           string              `yaml:"clusterId"`
-	ClusterCIDR         string              `yaml:"clusterCidr"`
-	ServiceCIDR         string              `yaml:"serviceCidr"`
-	NatEnabled          bool                `yaml:"natEnabled"`
-	ServiceDiscovery    bool                `yaml:"serviceDiscovery"`
-	CableDriver         string              `yaml:"cableDriver"`
-	HealthCheckEnabled  bool                `yaml:"healthcheckEnabled"`
-	GlobalCIDR          string              `yaml:"globalCidr"`
-	CoreDNSCustomConfig CoreDNSCustomConfig `yaml:"coreDNSCustomConfig"`
+	ClusterID          string `yaml:"clusterId"`
+	ClusterCIDR        string `yaml:"clusterCidr"`
+	ServiceCIDR        string `yaml:"serviceCidr"`
+	NatEnabled         bool   `yaml:"natEnabled"`
+	ServiceDiscovery   bool   `yaml:"serviceDiscovery"`
+	CableDriver        string `yaml:"cableDriver"`
+	HealthCheckEnabled bool   `yaml:"healthcheckEnabled"`
+	// GlobalCIDR         string `yaml:"globalCidr"`
+	// CoreDNSCustomConfig CoreDNSCustomConfig `yaml:"coreDNSCustomConfig"`
 }
 
 type CoreDNSCustomConfig struct {
@@ -30,7 +30,7 @@ func getSubmarinerDefault() Submariner {
 		ServiceDiscovery:   true,
 		CableDriver:        "libreswan",
 		HealthCheckEnabled: true,
-		GlobalCIDR:         "",
+		// GlobalCIDR:         "",
 		// not a safe way to indicate CoreDNS
 		// CoreDNSCustomConfig: CoreDNSCustomConfig{
 		// 	ConfigMapName: "coredns-coredns",
@@ -43,9 +43,9 @@ type Broker struct {
 	Server    string `yaml:"server"`
 	Token     string `yaml:"token"`
 	Namespace string `yaml:"namespace"`
-	Insecure  bool   `yaml:"insecure"`
-	Ca        string `yaml:"ca"`
-	GlobalNet string `yaml:"globalnet"`
+	// Insecure  bool   `yaml:"insecure"`
+	Ca string `yaml:"ca"`
+	// GlobalNet string `yaml:"globalnet"`
 }
 
 func getBrokerDefault() Broker {
@@ -53,9 +53,9 @@ func getBrokerDefault() Broker {
 		Server:    "example.k8s.apiserver",
 		Token:     "test",
 		Namespace: "xyz",
-		Insecure:  false,
-		Ca:        "",
-		GlobalNet: "",
+		// Insecure:  false,
+		Ca: "",
+		// GlobalNet: "",
 	}
 }
 
@@ -78,16 +78,16 @@ type ServiceAccountGlobalNet struct {
 }
 
 type ServiceAccounts struct {
-	GlobalNet         ServiceAccountGlobalNet `yaml:"globalnet"`
-	LighthouseAgent   ServiceAccount          `yaml:"lighthouseAgent"`
-	LighthouseCoreDNS ServiceAccount          `yaml:"lighthouseCoreDns"`
+	// GlobalNet         ServiceAccountGlobalNet `yaml:"globalnet"`
+	LighthouseAgent   ServiceAccount `yaml:"lighthouseAgent"`
+	LighthouseCoreDNS ServiceAccount `yaml:"lighthouseCoreDns"`
 }
 
 func getServiceAccountsDefault() ServiceAccounts {
 	return ServiceAccounts{
-		GlobalNet: ServiceAccountGlobalNet{
-			Create: "",
-		},
+		// GlobalNet: ServiceAccountGlobalNet{
+		// 	Create: "",
+		// },
 		LighthouseAgent: ServiceAccount{
 			Create: true,
 		},
@@ -123,7 +123,7 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Broker.Server = submarinerOperator.Spec.APIServerURL
 	valuesObj.Broker.Token = submarinerOperator.Spec.BrokerCredentials.Token
 	valuesObj.Broker.Ca = submarinerOperator.Spec.BrokerCredentials.CA
-	valuesObj.Broker.Insecure = true
+	// valuesObj.Broker.Insecure = true
 	valuesObj.Submariner.ServiceDiscovery = true
 	valuesObj.Submariner.CableDriver = "libreswan"
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
