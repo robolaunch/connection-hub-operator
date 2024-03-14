@@ -485,6 +485,12 @@ spec:
                         - releaseName
                         - version
                       type: object
+                    cableDriver:
+                      default: libreswan
+                      enum:
+                        - libreswan
+                        - wireguard
+                      type: string
                     clusterCIDR:
                       type: string
                     helmRepository:
@@ -529,6 +535,7 @@ spec:
                   required:
                     - apiServerURL
                     - brokerHelmChart
+                    - cableDriver
                     - clusterCIDR
                     - helmRepository
                     - operatorHelmChart
@@ -684,6 +691,12 @@ spec:
                                 - releaseName
                                 - version
                               type: object
+                            cableDriver:
+                              default: libreswan
+                              enum:
+                                - libreswan
+                                - wireguard
+                              type: string
                             clusterCIDR:
                               type: string
                             helmRepository:
@@ -728,6 +741,7 @@ spec:
                           required:
                             - apiServerURL
                             - brokerHelmChart
+                            - cableDriver
                             - clusterCIDR
                             - helmRepository
                             - operatorHelmChart
@@ -2559,6 +2573,12 @@ spec:
                     - releaseName
                     - version
                   type: object
+                cableDriver:
+                  default: libreswan
+                  enum:
+                    - libreswan
+                    - wireguard
+                  type: string
                 clusterCIDR:
                   type: string
                 helmRepository:
@@ -2603,6 +2623,7 @@ spec:
               required:
                 - apiServerURL
                 - brokerHelmChart
+                - cableDriver
                 - clusterCIDR
                 - helmRepository
                 - operatorHelmChart
@@ -4368,7 +4389,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.8-alpha.1
+          image: robolaunchio/connection-hub-controller-manager:v0.1.8-alpha.2
           livenessProbe:
             httpGet:
               path: /healthz

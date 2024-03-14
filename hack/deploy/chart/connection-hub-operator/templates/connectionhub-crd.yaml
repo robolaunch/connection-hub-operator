@@ -157,6 +157,12 @@ spec:
                     - releaseName
                     - version
                     type: object
+                  cableDriver:
+                    default: libreswan
+                    enum:
+                    - libreswan
+                    - wireguard
+                    type: string
                   clusterCIDR:
                     type: string
                   helmRepository:
@@ -201,6 +207,7 @@ spec:
                 required:
                 - apiServerURL
                 - brokerHelmChart
+                - cableDriver
                 - clusterCIDR
                 - helmRepository
                 - operatorHelmChart
@@ -358,6 +365,12 @@ spec:
                             - releaseName
                             - version
                             type: object
+                          cableDriver:
+                            default: libreswan
+                            enum:
+                            - libreswan
+                            - wireguard
+                            type: string
                           clusterCIDR:
                             type: string
                           helmRepository:
@@ -402,6 +415,7 @@ spec:
                         required:
                         - apiServerURL
                         - brokerHelmChart
+                        - cableDriver
                         - clusterCIDR
                         - helmRepository
                         - operatorHelmChart
