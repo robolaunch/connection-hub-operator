@@ -56,6 +56,12 @@ spec:
                   token:
                     type: string
                 type: object
+              cableDriver:
+                default: libreswan
+                enum:
+                - libreswan
+                - wireguard
+                type: string
               clusterCIDR:
                 type: string
               clusterID:
@@ -101,6 +107,7 @@ spec:
             required:
             - apiServerURL
             - broker
+            - cableDriver
             - clusterCIDR
             - clusterID
             - helmChart
