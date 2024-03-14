@@ -146,7 +146,6 @@ spec:
                     - version
                     type: object
                   cableDriver:
-                    default: libreswan
                     enum:
                     - libreswan
                     - wireguard
@@ -195,7 +194,6 @@ spec:
                 required:
                 - apiServerURL
                 - brokerHelmChart
-                - cableDriver
                 - clusterCIDR
                 - helmRepository
                 - operatorHelmChart
@@ -354,7 +352,6 @@ spec:
                             - version
                             type: object
                           cableDriver:
-                            default: libreswan
                             enum:
                             - libreswan
                             - wireguard
@@ -403,7 +400,6 @@ spec:
                         required:
                         - apiServerURL
                         - brokerHelmChart
-                        - cableDriver
                         - clusterCIDR
                         - helmRepository
                         - operatorHelmChart

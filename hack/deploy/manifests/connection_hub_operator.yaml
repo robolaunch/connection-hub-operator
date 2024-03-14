@@ -486,7 +486,6 @@ spec:
                         - version
                       type: object
                     cableDriver:
-                      default: libreswan
                       enum:
                         - libreswan
                         - wireguard
@@ -535,7 +534,6 @@ spec:
                   required:
                     - apiServerURL
                     - brokerHelmChart
-                    - cableDriver
                     - clusterCIDR
                     - helmRepository
                     - operatorHelmChart
@@ -692,7 +690,6 @@ spec:
                                 - version
                               type: object
                             cableDriver:
-                              default: libreswan
                               enum:
                                 - libreswan
                                 - wireguard
@@ -741,7 +738,6 @@ spec:
                           required:
                             - apiServerURL
                             - brokerHelmChart
-                            - cableDriver
                             - clusterCIDR
                             - helmRepository
                             - operatorHelmChart
@@ -2574,7 +2570,6 @@ spec:
                     - version
                   type: object
                 cableDriver:
-                  default: libreswan
                   enum:
                     - libreswan
                     - wireguard
@@ -2623,7 +2618,6 @@ spec:
               required:
                 - apiServerURL
                 - brokerHelmChart
-                - cableDriver
                 - clusterCIDR
                 - helmRepository
                 - operatorHelmChart
@@ -4389,7 +4383,7 @@ spec:
             - --leader-elect
           command:
             - /manager
-          image: robolaunchio/connection-hub-controller-manager:v0.1.8-alpha.3
+          image: robolaunchio/connection-hub-controller-manager:v0.1.8-alpha.4
           livenessProbe:
             httpGet:
               path: /healthz
