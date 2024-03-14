@@ -28,7 +28,7 @@ func getSubmarinerDefault() Submariner {
 		ServiceCIDR:        "",
 		NatEnabled:         true,
 		ServiceDiscovery:   true,
-		CableDriver:        "libreswan",
+		CableDriver:        "libreswan", // or wireguard
 		HealthCheckEnabled: true,
 		// GlobalCIDR:         "",
 		// not a safe way to indicate CoreDNS
@@ -43,8 +43,8 @@ type Broker struct {
 	Server    string `yaml:"server"`
 	Token     string `yaml:"token"`
 	Namespace string `yaml:"namespace"`
-	// Insecure  bool   `yaml:"insecure"`
-	Ca string `yaml:"ca"`
+	Insecure  bool   `yaml:"insecure"`
+	Ca        string `yaml:"ca"`
 	// GlobalNet string `yaml:"globalnet"`
 }
 
@@ -123,9 +123,9 @@ func GetSubmarinerOperatorValues(submarinerOperator connectionhubv1alpha1.Submar
 	valuesObj.Broker.Server = submarinerOperator.Spec.APIServerURL
 	valuesObj.Broker.Token = submarinerOperator.Spec.BrokerCredentials.Token
 	valuesObj.Broker.Ca = submarinerOperator.Spec.BrokerCredentials.CA
-	// valuesObj.Broker.Insecure = true
+	valuesObj.Broker.Insecure = true
 	valuesObj.Submariner.ServiceDiscovery = true
-	valuesObj.Submariner.CableDriver = "libreswan"
+	valuesObj.Submariner.CableDriver = submarinerOperator.Spec.CableDriver
 	valuesObj.Submariner.ClusterID = submarinerOperator.Spec.ClusterID
 	valuesObj.Submariner.NatEnabled = submarinerOperator.Spec.NetworkType == connectionhubv1alpha1.NetworkTypeExternal
 	valuesObj.ServiceAccounts.LighthouseAgent.Create = true
