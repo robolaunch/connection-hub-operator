@@ -52,6 +52,10 @@ type SubmarinerOperatorSpec struct {
 	HelmRepository HelmRepository `json:"helmRepository"`
 	// +kubebuilder:validation:Required
 	HelmChart HelmChart `json:"helmChart"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum=libreswan;wireguard
+	// +kubebuilder:default="libreswan"
+	CableDriver string `json:"cableDriver"`
 }
 
 type SubmarinerOperatorPhase string
