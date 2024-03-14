@@ -33,6 +33,10 @@ type SubmarinerSpec struct {
 	BrokerHelmChart HelmChart `json:"brokerHelmChart"`
 	// +kubebuilder:validation:Required
 	OperatorHelmChart HelmChart `json:"operatorHelmChart"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Enum=libreswan;wireguard
+	// +kubebuilder:default="libreswan"
+	CableDriver string `json:"cableDriver"`
 }
 
 type BrokerStatus struct {
