@@ -300,6 +300,7 @@ func (r *ConnectionHubReconciler) reconcilePrepareConnectionInterfaceForPhysical
 	instance.Status.ConnectionInterfaces.ForPhysicalInstance.InstanceType = connectionhubv1alpha1.InstanceTypePhysical
 	instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.ClusterCIDR = "<PHYSICAL-INSTANCE-CLUSTER-CIDR>"
 	instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.ServiceCIDR = "<PHYSICAL-INSTANCE-SERVICE-CIDR>"
+	instance.Status.ConnectionInterfaces.ForPhysicalInstance.SubmarinerSpec.CableDriver = instance.Spec.SubmarinerSpec.CableDriver
 
 }
 
