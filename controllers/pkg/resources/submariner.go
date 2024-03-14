@@ -56,6 +56,7 @@ func GetSubmarinerOperator(cr *connectionhubv1alpha1.Submariner) *connectionhubv
 		APIServerURL:   cr.Spec.APIServerURL,
 		HelmRepository: cr.Spec.HelmRepository,
 		HelmChart:      cr.Spec.OperatorHelmChart,
+		CableDriver:    cr.Spec.CableDriver,
 	}
 
 	operator := connectionhubv1alpha1.SubmarinerOperator{
