@@ -29,6 +29,7 @@ func (r *Submariner) Default() {
 
 	r.SetName(GlobalSubmarinerResourceName)
 	r.setInstanceType()
+	r.setCableDriver()
 
 	if instanceType := r.getInstanceType(); instanceType == InstanceTypeCloud {
 		r.generatePresharedKey()
@@ -134,6 +135,12 @@ func (r *Submariner) checkTenancyLabelsForSubmariner() error {
 
 func (r *Submariner) setInstanceType() {
 	r.Spec.InstanceType = r.getInstanceType()
+}
+
+func (r *Submariner) setCableDriver() {
+	if r.Spec.CableDriver == "" {
+		r.Spec.CableDriver = "libreswan"
+	}
 }
 
 func (r *Submariner) getInstanceType() InstanceType {
